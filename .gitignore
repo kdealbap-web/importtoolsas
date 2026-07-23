@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno y secretos (NUNCA versionar)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Licencias / activos comerciales del tema (no versionar)
+theme-autosoe/*.zip
+*-license.txt
+
+# Respaldos locales
+backups/
+
+# Documentos e imágenes generados (cotizaciones, salidas .docx/.pdf, páginas)
+*.docx
+*.pdf
+page-*.jpg
+!docs/**/*.docx
+!docs/**/*.pdf
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporales / locks de editores de oficina
+*.tmp
+.~lock.*#
+
+# Sistema operativo / editores
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
