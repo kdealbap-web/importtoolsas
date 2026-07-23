@@ -1,4 +1,11 @@
 {
+  "name": "importtoolsas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tienda en línea Importtools Latam S.A.S — PrestaShop 9.1 + plantilla AutoSoe. Incluye generador de la cotización COT-2026-001.",
+  "scripts": {
+    "cotizacion": "node gen_cotizacion.js"
+  },
   "dependencies": {
     "docx": "^9.7.1"
   }

@@ -1,0 +1,38 @@
+/* ============================================================================
+   Tokens de marca — Importtools Latam S.A.S
+   ----------------------------------------------------------------------------
+   PLACEHOLDER: rellenar con la paleta y tipografías reales cuando el cliente
+   entregue el logo y el manual de marca (Fase 3 — bloqueo 🔴).
+   Estos valores se cargan como CSS personalizado del child theme AutoSoe.
+   ============================================================================ */
+
+:root {
+  /* --- Colores de marca (TODO: reemplazar con la paleta real) --- */
+  --brand-primary:      #1F3864;  /* provisional: azul (igual que la cotización) */
+  --brand-secondary:    #C00000;  /* provisional: rojo acento */
+  --brand-accent:       #FFB800;  /* provisional: destacado / CTA */
+  --brand-dark:         #222222;
+  --brand-light:        #F2F2F2;
+  --brand-white:        #FFFFFF;
+
+  /* --- Estados --- */
+  --color-success:      #2E7D32;
+  --color-warning:      #ED6C02;
+  --color-error:        #C00000;
+
+  /* --- Tipografías (TODO: confirmar con el cliente) --- */
+  --font-heading:       "Poppins", "Segoe UI", Arial, sans-serif;
+  --font-body:          "Inter", "Segoe UI", Arial, sans-serif;
+
+  /* --- Escala tipográfica base --- */
+  --fs-base:            16px;
+  --lh-base:            1.6;
+
+  /* --- Radios y sombras --- */
+  --radius-sm:          4px;
+  --radius-md:          8px;
+  --shadow-card:        0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* --- Logo (TODO: ruta definitiva una vez cargado en el tema) --- */
+  --logo-url:           url("/img/logo-importtools.svg");
+}

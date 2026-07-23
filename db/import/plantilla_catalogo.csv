@@ -1,0 +1,3 @@
+Referencia;Nombre;Categorias;Precio_sin_IVA;Regla_impuesto;Cantidad;Marca;EAN13;Peso_kg;Descripcion_corta;Descripcion;URLs_imagenes;Activo
+TAL-001;Taladro percutor 1/2" 750W;Herramientas eléctricas;189900;IVA 19%;25;Bosch;7891234567890;2.3;Taladro percutor con velocidad variable;Taladro percutor de 750W, mandril de 13mm, ideal para concreto y madera.;https://ejemplo.com/img/taladro.jpg;1
+JGO-014;Juego de llaves mixtas 8-19mm (8 pzs);Herramientas manuales;79900;IVA 19%;40;Stanley;7899876543210;1.1;Set de 8 llaves combinadas en acero Cr-V;Juego de 8 llaves combinadas 8-19mm, acero cromo vanadio, acabado espejo.;https://ejemplo.com/img/llaves.jpg;1

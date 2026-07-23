@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
   Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType, PageBreak
@@ -232,7 +233,8 @@ const doc = new Document({
   }],
 });
 
+const outPath = path.join(__dirname, 'Cotizacion_Importtools_Latam.docx');
 Packer.toBuffer(doc).then(buf => {
-  fs.writeFileSync('/sessions/laughing-youthful-meitner/mnt/outputs/Cotizacion_Importtools_Latam.docx', buf);
-  console.log('OK', buf.length);
+  fs.writeFileSync(outPath, buf);
+  console.log('OK ->', outPath, '(' + buf.length + ' bytes)');
 });
