@@ -24,9 +24,13 @@ Prefijo de tablas: **`psjy_`** · Carpeta del back office: **`panel-4h5o`** · I
 | `vt_autosoe_child.zip` | Tema hijo (8,8 MB, 658 ficheros) | Back office → Diseño → Tema y logotipo → *Añadir nuevo tema* |
 | `img-importtools.zip` | Imágenes de contenido, logos de marca y logotipos | Descomprimir en `<raíz>/img/` |
 | `modules/leoproductsearch/translations/es.php` | Traducción del buscador | `<raíz>/modules/leoproductsearch/translations/` |
+| `modules/leoelements/translations/es.php` | Traducción de Leo Elements (564 claves) | `<raíz>/modules/leoelements/translations/` |
 | `02-ajustes-tras-importar.sql` | Correcciones obligatorias tras el volcado | phpMyAdmin |
-| `03-opcional-precios-prueba.sql` | Qué hacer con los precios generados | phpMyAdmin |
-| `backups/importtools-completo-*.sql.gz` | **Volcado de la base de datos** (696 KB comprimido, 8,3 MB) | phpMyAdmin / cPanel |
+| `02b-limpieza-datos-demo.sql` | **Ya aplicado al volcado.** Traza de qué datos de ejemplo se limpiaron | no hay que ejecutarlo |
+| `03-opcional-precios-prueba.sql` | Qué hacer con los precios generados. **Decidido: no se ejecuta**, se dejan visibles | — |
+| `04-PLAN-IMPORTACION.md` | El plan paso a paso, con comprobaciones y diagnóstico | leerlo antes de empezar |
+| `06-cargar-precios-reales.sql` | **Para cuando el cliente envíe los precios.** Cruce en seco, respaldo, transacción y marcha atrás | phpMyAdmin, más adelante |
+| `backups/importtools-FINAL-20260729-0948.sql.gz` | **Volcado de la base de datos** (634 KB comprimido, 7,9 MB) | phpMyAdmin / cPanel |
 
 > El volcado **no viaja dentro del paquete**: contiene hashes de contraseñas de empleados y
 > datos de clientes, así que vive en `backups/`, que está fuera del control de versiones.
@@ -36,16 +40,17 @@ Prefijo de tablas: **`psjy_`** · Carpeta del back office: **`panel-4h5o`** · I
 ### 2.1 Base de datos
 
 1. phpMyAdmin → selecciona la base de datos de la tienda.
-2. **Importa** `importtools-completo-*.sql.gz`. El volcado trae `DROP TABLE IF EXISTS`, así
+2. **Importa** `importtools-FINAL-20260729-0948.sql.gz` — este y no uno anterior: es el único
+   que trae la limpieza de datos de ejemplo. El volcado trae `DROP TABLE IF EXISTS`, así
    que reemplaza el contenido anterior.
 3. Ejecuta **`02-ajustes-tras-importar.sql`**. Es obligatorio: corrige el dominio (el volcado
    viene con `localhost:8080`), activa HTTPS y **vacía la caché de CSS de Elementor**.
 4. Decide sobre **`03-opcional-precios-prueba.sql`** (ver §4).
 
-Restauración ya probada: importé este mismo volcado en una base limpia y quedó con
-**3.036 productos**, 6.072 filas de `category_product`, 3.036 de stock, 7 marcas,
-6.072 características, los 17 contenidos de Leo Elements con `JSON_VALID = 1`, el menú de
-7 secciones y es-CO activo.
+Restauración ya probada: importé este mismo volcado en una base limpia y pasan las 25
+comprobaciones — **3.036 productos** (los 3.036 en la categoría raíz y con stock), 7 marcas,
+6.072 características, los 34 contenidos de Leo Elements con `JSON_VALID = 1`, el menú de
+7 secciones, es-CO activo, y **0 pedidos, 0 carritos, 0 proveedores y 0 visitas** de ejemplo.
 
 ### 2.2 Ficheros
 
@@ -98,7 +103,9 @@ las dos salidas: ocultar los productos, o dejarlos como catálogo a precio 0 con
   quitan el enfoque automotriz del demo, pero no son fotografías.
 - **Transportistas y tarifas de envío reales.** Siguen los 4 de ejemplo.
 - **Pasarela de pago.** Se cotiza aparte.
-- **Datos demo residuales**: 2 clientes, 5 pedidos, 5 carritos, 2 proveedores.
+- ~~Datos demo residuales~~ **Limpiados el 29/07** en el volcado FINAL: 0 pedidos, 0 carritos,
+  0 proveedores, 0 visitas y solo el cliente «Anonymous» del módulo de RGPD. Detalle en
+  `02b-limpieza-datos-demo.sql`.
 
 ## 6. Ajustes del servidor a confirmar
 

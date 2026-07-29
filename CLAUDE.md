@@ -424,12 +424,51 @@ importtools-store/
       `CARRERA CORDIALIDAD KM 2 5 66`; se publicó como **`Carrera Cordialidad Km 2.5 #66`**.
 - [ ] ¿Pasarela de pago en línea en esta fase? (se cotiza aparte si aplica).
 - [ ] Confirmar cantidad de productos del catálogo inicial.
+- [ ] **Precios reales: el cliente los enviará más adelante.** Decidido 29/07/2026 dejar
+      visibles los **precios generados** mientras tanto (`03-opcional-precios-prueba.sql`
+      **no** se ejecuta), así que la tienda muestra importes que no son los definitivos y el
+      carrito está operativo. Los 3.036 siguen marcados con
+      `supplier_reference = 'PRECIO-PRUEBA'`, que es lo que permite el cruce.
+      El mecanismo de carga ya está listo y probado: **`deploy/paquete/06-cargar-precios-reales.sql`**
+      (cruce en seco, respaldo, transacción, verificación y marcha atrás).
+      ⚠️ **Antes de ejecutarlo hay que preguntar al cliente si sus precios llevan IVA.**
+      `psjy_product.price` es el precio **sin** impuesto y los tres grupos tienen
+      `price_display_method = 1` (mostrar sin IVA), con los 3.036 productos en la regla
+      `CO Standard Rate (19%)` (id 53). Equivocarse deja el catálogo con un 19 % de desvío.
+      ⚠️ Sobre el cruce por código, comprobado en el espejo (colación `utf8mb4_general_ci`):
+      el `=` **ignora** espacios finales y mayúsculas, pero **no** ignora espacios iniciales,
+      tabuladores ni `\r` — y `TRIM()` tampoco quita `\r`. Un CSV guardado en Windows (CRLF)
+      deja `\r` en la última columna; si cae en el código, el cruce da 0 filas **sin avisar**.
+      Por eso el script normaliza los códigos en un paso propio antes de cruzar.
 - [ ] **Transportistas y costos de envío**: siguen los 4 demo (`Click and collect`,
       `My carrier`, …). Requiere definir con el cliente cobertura y tarifas reales.
-- [ ] **Datos demo restantes** (no bloquean, pero no deben llegar a producción):
-      2 clientes, 5 pedidos, 5 carritos, 2 fabricantes, 2 proveedores de ejemplo,
-      y 5 páginas CMS en inglés (Delivery, Legal Notice, Terms, About us, Secure payment)
-      pendientes de reescribir en español.
+- [x] **Datos demo eliminados del volcado de entrega** (29/07/2026). Script y justificación en
+      `deploy/paquete/02b-limpieza-datos-demo.sql`; volcado bueno
+      `backups/importtools-FINAL-20260729-0948.sql.gz`. Quedan 0 pedidos, 0 carritos,
+      0 proveedores, 0 direcciones ajenas y 0 visitas. **Se conserva a propósito el cliente
+      `id 1` «Anonymous» (`anonymous@psgdpr.com`)**: lo crea el módulo de RGPD y el core lo
+      necesita para anonimizar.
+      También se limpiaron 1.822 visitas / 1.902 invitados generados por mis pruebas en local
+      (habrían salido como estadísticas falsas en el cuadro de mando del cliente),
+      `pub@prestashop.com` en 2 filas de configuración de módulos que ya no existen, y
+      `GBLEOELEMENTS`, que guardaba atajos del back office del **autor del tema**
+      (`192.168.1.80` con sus tokens y `D:\xampp\htdocs\…`, heredados de
+      `themes/vt_autosoe/samples/leoelements.xml`). Es seguro borrarlo:
+      `LeoSlideshow.php:188` lo lee bajo `isset()` con defecto `''` y
+      `AdminLeoElementsCreator.php:53` lo reescribe con `getAdminLink()` al abrir el editor.
+      ⚠️ Quedan **14 filas de `leoelements_contents_lang` con URLs a `192.168.1.80`** dentro
+      del JSON de Elementor (contenidos 1, 4, 5, 8, 9, 12, 13 × 2 idiomas). **No se
+      renderizan** (0 apariciones de `192.168` en el HTML de portada, catálogo, categoría,
+      marcas y *Quiénes somos*) y editar ese JSON por SQL es lo que corrompe los contenidos
+      de Leo, así que se dejan.
+- [x] **Fallo corregido antes de desplegar**: la página *Quiero ser cliente* (`id_cms 7`)
+      tenía dos enlaces absolutos a `http://localhost:8080/` — el botón *Crear mi cuenta* y el
+      enlace a contacto. En producción no habrían llevado a ninguna parte. Ahora son relativos
+      (`/login?create_account=1`, `/contact-us`, que son las URL amigables reales en es-CO).
+      Era el único hallazgo de la auditoría del paquete que habría llegado roto al cliente.
+- [x] **Las 7 páginas CMS están en español** (Envíos y entregas, Aviso legal, Términos y
+      condiciones, Quiénes somos, Pago seguro, Preguntas frecuentes, Quiero ser cliente).
+      El pendiente anterior de «5 páginas CMS en inglés» estaba desactualizado.
 
 ---
 

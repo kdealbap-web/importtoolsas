@@ -56,30 +56,63 @@ Comprobación: la lista de temas muestra `Importtools (AutoSoe child)` como acti
 
 **2.1** phpMyAdmin → seleccionar la base de datos de la tienda.
 
-**2.2** Importar `backups/importtools-FINAL-*.sql.gz`. El volcado trae
-`DROP TABLE IF EXISTS`, así que **reemplaza** el contenido anterior.
+**2.2** Importar **`backups/importtools-FINAL-20260729-0948.sql.gz`** — usa este, no uno
+anterior: es el único que trae la limpieza de datos de ejemplo (ver más abajo). El volcado
+trae `DROP TABLE IF EXISTS`, así que **reemplaza** el contenido anterior.
 
 Si phpMyAdmin da tiempo de espera, usar cPanel → Terminal:
 
 ```
-mysql -u USUARIO -p BASEDEDATOS < importtools-FINAL-*.sql
+mysql -u USUARIO -p BASEDEDATOS < importtools-FINAL-20260729-0948.sql
 ```
 
 **2.3** Ejecutar **`02-ajustes-tras-importar.sql`**. Es obligatorio: cambia el dominio (el
-volcado viene con `localhost:8080`), activa HTTPS y **vacía la caché de CSS de Elementor**.
+volcado viene con `localhost:8080` en `psjy_shop_url`), activa HTTPS y **vacía la caché de CSS
+de Elementor**.
 
-**2.4** Decidir sobre **`03-opcional-precios-prueba.sql`** (ver Fase 5).
+**2.4** **`02b-limpieza-datos-demo.sql` ya está aplicado al volcado del 29/07.** No hay que
+ejecutarlo. Se incluye para dejar constancia de qué se limpió y para poder repetirlo si algún
+día se importa un volcado anterior.
+
+**2.5** Decidir sobre **`03-opcional-precios-prueba.sql`** (ver Fase 5).
+
+### Qué se limpió antes de generar el volcado (29/07, tras auditar el paquete)
+
+| Hallazgo | Por qué importaba |
+|---|---|
+| **2 botones de la página «Quiero ser cliente» apuntaban a `http://localhost:8080/`** (*Crear mi cuenta* y el enlace a contacto) | Era el único fallo que habría llegado roto a producción. Ahora son relativos: `/login?create_account=1` y `/contact-us`, que son las URL amigables reales en es-CO |
+| 1.822 visitas · 1.902 invitados · 1.855 orígenes de tráfico, generados por mis pruebas en local | El cuadro de mando del cliente habría arrancado con estadísticas falsas de julio de 2026 |
+| 5 pedidos de ejemplo de PrestaShop (John DOE) con líneas de camisetas y tazas ya borradas | Se veían como 5 ventas inexistentes en el panel |
+| Cliente demo John DOE, 6 carritos, 5 direcciones (París, Miami, New York, Bayonne) y 2 proveedores demo | Datos ajenos en la base del cliente. Se conserva el cliente 1 «Anonymous», que lo necesita el módulo de RGPD |
+| Un correo comercial no solicitado en atención al cliente | Entró por el formulario cuando el sitio servía la demo del tema |
+| `pub@prestashop.com` en 2 filas de configuración de módulos que ya no existen | No se mostraba en la tienda (comprobado), pero dejaba correos ajenos en la base |
+| `GBLEOELEMENTS`: atajos del back office del autor del tema (`192.168.1.80` + sus tokens + `D:\xampp\...`) | El cliente los habría visto muertos dentro del editor. Leo lo regenera solo con la URL correcta al abrir el editor |
+
+Lo que **no** se tocó, a propósito: 14 filas de contenidos de Leo llevan URLs a
+`192.168.1.80` dentro del JSON de Elementor, heredadas del `leoelements.xml` del tema.
+**No se renderizan** — el HTML de portada, catálogo, categoría, marcas y *Quiénes somos*
+tiene 0 apariciones de `192.168` — y editar ese JSON por SQL es justo lo que corrompe los
+contenidos de Leo.
 
 ### Ya probado
 
-Restauré este mismo volcado en una base limpia antes de entregarlo:
+Restauré este volcado en una base limpia (`prueba_final`) y pasan las 25 comprobaciones:
 
 ```
-productos 3036 · en catálogo 3036 · stock 3036 · marcas 7 · características 6072
-contenidos Leo 34 (JSON válido 34/34) · perfiles Leo 1 · menú 54 items · CMS 14
-empleados 3 · perfiles admin 5 · permisos del cliente 302 + 48 de módulo
-LEOELEMENTS_PANEL_TOOL = 0 · contenidos con rastro demo = 0
+productos 3036 · en catálogo 3036 · stock 3036 · categorías activas 17
+marcas 7 · características 6072 · contenidos Leo 34 (JSON válido 34/34)
+perfiles Leo 1 · menú 54 items · CMS 14 filas · idioma es / es-CO
+empleados 3 (0 sin fecha de estadísticas) · perfiles admin 5
+permisos del cliente 302 + 48 de módulo · LEOELEMENTS_PANEL_TOOL = 0
+pedidos 0 · clientes 1 (solo Anonymous) · proveedores 0 · visitas 0
+rastro demo en Leo 0 · CMS con localhost 0
 ```
+
+Y sobre el espejo, después de la limpieza: portada 200 con 70 productos,
+`/2-catalogo` «Hay 3036 productos», `/17-herramientas-electricas` 118 productos,
+las 8 listas del back office que ahora quedan vacías (Pedidos, Clientes, Proveedores,
+Carritos, Direcciones…) cargan sin error, cuadro de mando del perfil del cliente 73 KB,
+0 errores CRITICAL.
 
 ---
 
@@ -125,6 +158,8 @@ find var img upload download -type f -exec chmod 644 {} +
 | 8 | `/content/4-quienes-somos` | Datos de la empresa y mapa de la ubicación |
 | 9 | Ver código fuente y buscar `cdn.shopify.com` | **0 resultados** |
 | 10 | Buscar en el código `leo-paneltool` | **0 resultados** (el panel público quedó apagado) |
+| 11 | `/content/7-quiero-ser-cliente` → botón **Crear mi cuenta** | Lleva a `https://www.importtoolsas.com/login?create_account=1`. **Si lleva a `localhost:8080` importaste un volcado anterior al 29/07** |
+| 12 | Buscar en el código `192.168` y `localhost` | **0 resultados** |
 
 ### 4.2 Back office como administrador
 
@@ -133,6 +168,7 @@ Entrar en `https://www.importtoolsas.com/panel-4h5o/` con el súper-admin.
 | # | Ruta | Esperado |
 |---|---|---|
 | 1 | Catálogo → Productos | Lista con 3.036 productos |
+| 1b | Pedidos, Clientes, Carritos, Proveedores | **Vacíos** (los datos de ejemplo se limpiaron). Clientes muestra solo «Anonymous», que es del módulo de RGPD y no se borra |
 | 2 | Catálogo → Marcas | Las 7, con logotipo |
 | 3 | Catálogo → Características | Línea (88 valores) y Sublínea (128) |
 | 4 | Diseño → Páginas | 7 páginas en español |
@@ -163,17 +199,31 @@ módulos: ver=sí  configurar=sí  desinstalar=NO
 
 ---
 
-## Fase 5 — Precios de prueba: **decidir antes de abrir al público**
+## Fase 5 — Precios de prueba: **DECIDIDO el 29/07/2026**
 
 Los 3.036 productos tienen **precios generados** para poder ver la tienda funcionando. Están
 marcados con `supplier_reference = 'PRECIO-PRUEBA'`.
 
-`03-opcional-precios-prueba.sql` trae las dos salidas:
+**Decisión: se dejan visibles tal cual. `03-opcional-precios-prueba.sql` NO se ejecuta.**
 
-- **Opción A** — ocultar los productos hasta tener precios reales.
-- **Opción B** — dejarlos visibles como catálogo, a precio 0, con «consultar precio».
+Lo que hay que tener presente mientras siga así:
 
-Y la receta para cargar los precios reales por referencia.
+- La tienda muestra al público precios que no son los reales.
+- Con el modo catálogo apagado, **el carrito funciona**: alguien podría hacer un pedido a un
+  precio inventado, y los transportistas siguen siendo los 4 de ejemplo. Si eso preocupa, la
+  vía más rápida es no quitar el mantenimiento hasta tener los precios reales, o activar
+  `PS_CATALOG_MODE = 1` (una sola fila), que deja navegar el catálogo y quita el carrito.
+- **Cuando el cliente envíe los precios**, usar **`06-cargar-precios-reales.sql`**. Está
+  probado de principio a fin en el espejo y trae: cruce en seco antes de tocar nada, respaldo
+  de los precios actuales, transacción, verificación y marcha atrás. Lo único que hay que
+  aclarar con el cliente antes de ejecutarlo es **si sus precios llevan IVA o no** — la tienda
+  guarda el precio sin impuesto y muestra sin IVA (`price_display_method = 1`), así que
+  equivocarse ahí deja todo el catálogo con un 19 % de diferencia.
+
+```sql
+-- cuántos siguen con precio generado
+SELECT COUNT(*) FROM psjy_product WHERE supplier_reference = 'PRECIO-PRUEBA';
+```
 
 ---
 
