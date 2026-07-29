@@ -396,7 +396,44 @@ importtools-store/
 - [x] **Catálogo demo eliminado** (27/07/2026): los 19 productos y 7 categorías de ejemplo
       de PrestaShop se borraron con la API para dejar limpio el import del catálogo real.
       Se conservan Root y Home.
-- [x] **Tienda 100 % en español** (28/07/2026). Auditoría sobre 10 páginas: 0 textos en inglés.
+- [x] **Tienda 100 % en español** — completado el **29/07/2026**. La auditoría del 28/07 decía
+      «0 textos en inglés» y **era incorrecta**: buscaba cadenas traducibles, y quedaban dos
+      clases que no lo son. Se encontraron leyendo el HTML servido, que es la única forma fiable:
+
+      **a) 140 «Quick view» en la portada** (24 en catálogo y categoría). Las 15 plantillas de
+      listado la pedían con `{l s='Quick view'}`, **sin `d=` ni `mod=`**. En ese caso
+      `smartyfront.config.inc.php:285` no consulta el XLIFF del tema ni el fichero del módulo:
+      usa `$_LANG`, que **en PrestaShop 9 no se rellena nunca** (ningún tema tiene ya carpeta
+      `lang/`), así que devuelve el original inglés. **Es intraducible por fichero**: hay que
+      añadir el dominio en la plantilla. Corregido en el tema hijo →
+      `{l s='Quick view' d='Shop.Theme.Actions'}`, con la traducción ya presente en el XLIFF.
+      ⚠️ Mi primer intento fue añadir 45 claves al `es.php` de `leoelements` y **no sirvió de
+      nada**, justamente porque sin `mod=` ese fichero no se consulta.
+
+      **b) Cinco textos que son DATOS, no cadenas** — ningún fichero de traducción los toca:
+
+      | Dónde | Clave | Causa |
+      |---|---|---|
+      | Radios *Mr./Mrs.* del registro | `psjy_gender_lang` | Datos del catálogo |
+      | Casilla RGPD del registro | `PSGDPR_CREATION_FORM`, `PSGDPR_CUSTOMER_FORM` | `psgdpr.php:45` elige el texto **por ISO al instalarse**; tiene `'es'` correcto pero también `'cb'` en inglés |
+      | Aviso de privacidad del registro | `CUSTPRIV_MSG_AUTH` | Semilla en inglés |
+      | Nota de baja del boletín (oculta) | `NW_CONDITIONS` | `ps_emailsubscription.php:1414` `getConditionFixtures()` |
+      | **Página de mantenimiento** | `PS_MAINTENANCE_TEXT` | Texto de fábrica |
+
+      La causa común de tres de ellos es el **`iso_code = 'cb'`**: esos módulos se instalaron
+      con el ISO inválido y sembraron el inglés. Corregir el `iso_code` después **no reescribe
+      lo ya guardado**. Script: `deploy/paquete/02c-textos-en-ingles-en-datos.sql`.
+      `PS_MAINTENANCE_TEXT` importaba para el propio despliegue, porque el plan manda activar
+      mantenimiento.
+
+      Queda a propósito en inglés **`PS_SEARCH_BLACKLIST`** (palabras que el buscador ignora):
+      cambiarla obliga a reconstruir el índice y es una decisión sobre el buscador. La lista en
+      español está preparada y comentada en ese script.
+
+      Verificación final: barrido insensible a mayúsculas sobre 15 páginas (portada, catálogo,
+      categoría, ficha, marcas, marca, buscador, 7 CMS, login, registro, carrito, 404 y
+      mantenimiento) → **0 apariciones**. Y en el tema hijo: 858 llamadas `{l …}`, 587 con `d=`,
+      271 con `mod=`, **0 intraducibles**.
       El catálogo **es-CO sí estaba instalado** (169 XLIFF en `translations/es-CO/`);
       `psjy_translation` a 0 filas es lo normal, esa tabla solo guarda ediciones manuales.
       Las causas reales del inglés eran otras cinco — ver §7 de la bitácora del 28/07:
@@ -444,7 +481,7 @@ importtools-store/
       `My carrier`, …). Requiere definir con el cliente cobertura y tarifas reales.
 - [x] **Datos demo eliminados del volcado de entrega** (29/07/2026). Script y justificación en
       `deploy/paquete/02b-limpieza-datos-demo.sql`; volcado bueno
-      `backups/importtools-FINAL-20260729-0948.sql.gz`. Quedan 0 pedidos, 0 carritos,
+      `backups/importtools-FINAL-20260729-1726.sql.gz`. Quedan 0 pedidos, 0 carritos,
       0 proveedores, 0 direcciones ajenas y 0 visitas. **Se conserva a propósito el cliente
       `id 1` «Anonymous» (`anonymous@psgdpr.com`)**: lo crea el módulo de RGPD y el core lo
       necesita para anonimizar.

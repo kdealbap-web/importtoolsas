@@ -96,25 +96,63 @@ Comprobación: la lista de temas muestra `Importtools (AutoSoe child)` como acti
 
 **2.1** phpMyAdmin → seleccionar la base de datos de la tienda.
 
-**2.2** Importar **`backups/importtools-FINAL-20260729-0948.sql.gz`** — usa este, no uno
-anterior: es el único que trae la limpieza de datos de ejemplo (ver más abajo). El volcado
-trae `DROP TABLE IF EXISTS`, así que **reemplaza** el contenido anterior.
+**2.2** Importar **`backups/importtools-FINAL-20260729-1726.sql.gz`** — usa este, no uno
+anterior: es el único que trae la limpieza de datos de ejemplo y los textos en inglés
+corregidos (ver más abajo). El volcado trae `DROP TABLE IF EXISTS`, así que **reemplaza** el
+contenido anterior.
 
 Si phpMyAdmin da tiempo de espera, usar cPanel → Terminal:
 
 ```
-mysql -u USUARIO -p BASEDEDATOS < importtools-FINAL-20260729-0948.sql
+mysql -u USUARIO -p BASEDEDATOS < importtools-FINAL-20260729-1726.sql
 ```
 
 **2.3** Ejecutar **`02-ajustes-tras-importar.sql`**. Es obligatorio: cambia el dominio (el
 volcado viene con `localhost:8080` en `psjy_shop_url`), activa HTTPS y **vacía la caché de CSS
 de Elementor**.
 
-**2.4** **`02b-limpieza-datos-demo.sql` ya está aplicado al volcado del 29/07.** No hay que
-ejecutarlo. Se incluye para dejar constancia de qué se limpió y para poder repetirlo si algún
-día se importa un volcado anterior.
+**2.4** **`02b-limpieza-datos-demo.sql` y `02c-textos-en-ingles-en-datos.sql` ya están
+aplicados al volcado.** No hay que ejecutarlos. Se incluyen para dejar constancia de qué se
+cambió y para poder repetirlo si algún día se importa un volcado anterior.
 
 **2.5** Decidir sobre **`03-opcional-precios-prueba.sql`** (ver Fase 5).
+
+### Textos que estaban en inglés porque son DATOS, no cadenas (corregido el 29/07)
+
+Los encontré leyendo el HTML servido, no los ficheros de traducción — y por eso la auditoría de
+idioma del 28/07 los pasó por alto: buscaba cadenas traducibles.
+
+| Dónde se veía | Clave | Por qué estaba en inglés |
+|---|---|---|
+| Radios *Mr./Mrs.* del formulario de registro | `psjy_gender_lang` | Son datos del catálogo, nunca pasan por traducción |
+| Casilla *«I agree to the terms and conditions…»* en el registro | `PSGDPR_CREATION_FORM`, `PSGDPR_CUSTOMER_FORM` | `psgdpr.php:45` elige el texto **por código ISO al instalarse**. Tiene entrada `'es'` correcta, pero también `'cb' => …` en inglés, y el módulo se instaló cuando el idioma tenía `iso_code = 'cb'` (el ISO inválido que corregimos a `es` después) |
+| Aviso de privacidad del registro | `CUSTPRIV_MSG_AUTH` | Igual: semilla en inglés |
+| Nota de baja del boletín (en `<p class="hidden">`, no visible) | `NW_CONDITIONS` | `ps_emailsubscription.php:1414`, `getConditionFixtures()`: misma semilla al instalar |
+| **Página de mantenimiento** | `PS_MAINTENANCE_TEXT` | Texto de fábrica. **Importa para este despliegue**: la Fase 0.4 manda activar mantenimiento, así que sin esto los clientes habrían visto *«We are currently updating our shop…»* durante la importación |
+
+Cambiar el `iso_code` después **no reescribe lo ya guardado**, que es la razón de que
+sobrevivieran. Detalle y marcha atrás en `02c-textos-en-ingles-en-datos.sql`.
+
+Queda **a propósito** en inglés `PS_SEARCH_BLACKLIST` (las palabras que el buscador ignora):
+cambiarla obliga a reconstruir el índice y es una decisión sobre el buscador, no una
+traducción. La alternativa en español está preparada y comentada en ese mismo script.
+
+### «Quick view» salía 140 veces en inglés en la portada
+
+También corregido el 29/07, y es de otra clase: sí era una cadena, pero **pedida de una forma
+que PrestaShop 9 no puede traducir**. Las 15 plantillas de listado la pedían con
+`{l s='Quick view'}`, sin `d=` ni `mod=`. En ese caso `smartyfront.config.inc.php:285` no
+consulta ni el XLIFF del tema ni el fichero del módulo: usa `$_LANG`, que **en PrestaShop 9 no
+se rellena nunca** (ningún tema tiene ya carpeta `lang/`), así que devuelve el original inglés.
+
+El arreglo es en el origen: las 15 plantillas del **tema hijo** ahora piden
+`{l s='Quick view' d='Shop.Theme.Actions'}`, y la traducción ya estaba en el XLIFF del hijo.
+Viene dentro de `vt_autosoe_child.zip`.
+
+> Barrido completo del tema hijo: **858** llamadas `{l …}`, 587 con `d=`, 271 con `mod=`,
+> **0 intraducibles**. De las 271 con `mod=`, 56 no tienen clave en el fichero del módulo, pero
+> ninguna se renderiza en las páginas del sitio (son ramas inactivas de listados, el popup de
+> `leopopupsale` y el formulario de `leoquicklogin`).
 
 ### Qué se limpió antes de generar el volcado (29/07, tras auditar el paquete)
 
@@ -200,6 +238,10 @@ find var img upload download -type f -exec chmod 644 {} +
 | 10 | Buscar en el código `leo-paneltool` | **0 resultados** (el panel público quedó apagado) |
 | 11 | `/content/7-quiero-ser-cliente` → botón **Crear mi cuenta** | Lleva a `https://www.importtoolsas.com/login?create_account=1`. **Si lleva a `localhost:8080` importaste un volcado anterior al 29/07** |
 | 12 | Buscar en el código `192.168` y `localhost` | **0 resultados** |
+| 13 | Portada, pasar el ratón por una ficha de producto | **«Vista rápida»**, no *«Quick view»*. Si sale en inglés, el zip del tema es anterior al 29/07 |
+| 14 | `/login?create_account=1` | **«Sr.»/«Sra.»** en los radios y **«Acepto los términos…»** en la casilla. Si salen en inglés, el volcado es anterior al 29/07 |
+| 15 | Una dirección inventada, p. ej. `/esto-no-existe` | Página 404 **en español** («Vaya, no encontramos esa página») |
+| 16 | Con el mantenimiento aún activo, verlo desde otro navegador | **«Estamos actualizando la tienda…»**, no *«We are currently updating our shop»* |
 
 ### 4.2 Back office como administrador
 
