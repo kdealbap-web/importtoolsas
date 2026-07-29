@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="Shop.Theme.Actions.xlf" source-language="en" target-language="es-CO" datatype="plaintext">
+    <body>
+      <trans-unit id="c91e4ee170226d66e90f99ba917e4c20" approved="yes">
+        <source>Quick view</source>
+        <target state="final">Vista rápida</target>
+      </trans-unit>
+      <trans-unit id="7eece51cf3938103677db7a5051ef8f5" approved="yes">
+        <source>Compare</source>
+        <target state="final">Comparar</target>
+      </trans-unit>
+      <trans-unit id="2d0f6b8300be19cf35e89e66f0677f95" approved="yes">
+        <source>Add to cart</source>
+        <target state="final">Añadir al carrito</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

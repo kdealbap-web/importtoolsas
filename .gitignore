@@ -10,6 +10,7 @@ node_modules/
 
 # Licencias / activos comerciales del tema (no versionar)
 theme-autosoe/*.zip
+*.zip
 *-license.txt
 
 # Respaldos locales
@@ -30,9 +31,25 @@ npm-debug.log*
 *.tmp
 .~lock.*#
 
+# Entorno local (Docker): datos y clones de producción (grandes / con secretos)
+local-dev/prestashop/
+local-dev/dump/*
+!local-dev/dump/.gitkeep
+local-dev/data/
+
+# Dumps de base de datos (datos reales de producción: hashes de empleados,
+# clientes, configuración) — NUNCA versionar. Se conservan los CSV de import.
+db/*.sql
+!db/import/**
+
 # Sistema operativo / editores
 Thumbs.db
 Desktop.ini
 .DS_Store
 .vscode/
 .idea/
+
+# Ficheros de bloqueo de Office (se crean al tener el xlsx abierto)
+~$*
+# Comprimidos redundantes: los logos ya estan extraidos en docs/brands_logos/Logos/
+docs/*.rar

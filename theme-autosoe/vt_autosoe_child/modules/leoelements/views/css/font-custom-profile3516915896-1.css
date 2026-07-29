@@ -1,0 +1,10 @@
+@import url("//fonts.googleapis.com/css?family=Rubik:wght@400");
+:root {
+--font-family-base: 'Rubik', sans-serif;
+--font-family-septenary: 'Rubik', sans-serif;
+--font-family-slider: 'Rubik', sans-serif;
+--font-family-megamenu: 'Rubik', sans-serif;
+--font-family-heading: 'Rubik', sans-serif;
+--font-family-senary: 'Rubik', sans-serif;
+--theme-color-default: #000;
+}

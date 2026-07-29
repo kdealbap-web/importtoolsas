@@ -1,0 +1,308 @@
+/***************************************************
+  Mixins Themes 
+/***************************************************/
+/* Mixin Normal*/
+/* Mixin Clear */
+/* Mixin Border */
+/*background RGBA
+============================================*/
+/***************************************************
+  Mixins RTL Themes 
+/***************************************************/
+/************************************ 
+	Override Bootstrap 
+*************************************/
+/**
+ * Web Application Prefix Apply For Making Owner Styles
+ */
+/**
+ *   Blocks Layout Selectors 
+ */
+/***********************************************************************/
+/*Preview Admin */
+#module-leoslideshow-preview .container {
+  width: 100%; }
+#module-leoslideshow-preview .content-only {
+  overflow: hidden; }
+#module-leoslideshow-preview #leo-paneltool {
+  display: none; }
+
+/* The slider */
+.iviewSlider {
+  overflow: hidden; }
+
+/* The timer in the Slider */
+.iview-timer {
+  position: absolute;
+  z-index: 100;
+  cursor: pointer;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px; }
+  .iview-timer div {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    -ms-border-radius: 3px;
+    -o-border-radius: 3px;
+    border-radius: 3px; }
+
+/* The Preloader in the Slider */
+.iview-preloader {
+  position: absolute;
+  z-index: 1000;
+  border: #000 1px solid;
+  padding: 1px;
+  width: 100px;
+  height: 3px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px; }
+  .iview-preloader div {
+    background: #000;
+    float: left;
+    width: 0px;
+    height: 3px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    -ms-border-radius: 2px;
+    -o-border-radius: 2px;
+    border-radius: 2px; }
+
+/* The strips and boxes in the Slider */
+.iview-strip,
+.iview-block {
+  display: block;
+  position: absolute;
+  z-index: 5; }
+
+/* Direction nav styles (e.g. Next & Prev) */
+.iview-directionNav a {
+  position: absolute;
+  top: 50%;
+  z-index: 9;
+  cursor: pointer;
+  margin-top: -25px;
+  color: #fff;
+  text-align: center;
+  font-size: 0px;
+  width: 50px;
+  height: 50px;
+  background-color: #000;
+  background-color: rgba(0, 0, 0, 0.1);
+  zoom: 1;
+  background-color: transparent\9;
+  -webkit-transition: left 0.3s ease-in-out;
+  -moz-transition: left 0.3s ease-in-out;
+  -ms-transition: left 0.3s ease-in-out;
+  -o-transition: left 0.3s ease-in-out;
+  transition: left 0.3s ease-in-out;
+  -webkit-transition-property: left, right;
+  -moz-transition-property: left, right;
+  transition-property: left, right; }
+  .iview-directionNav a:before {
+    content: "";
+    font-family: "Material Icons";
+    font-size: 20px;
+    line-height: 48px;
+    color: #fff; }
+  .iview-directionNav a.iview-prevNav {
+    left: -50px; }
+    .iview-directionNav a.iview-prevNav:before {
+      content: "\E5CB"; }
+  .iview-directionNav a.iview-nextNav {
+    right: -50px; }
+    .iview-directionNav a.iview-nextNav:before {
+      content: "\E5CC"; }
+  .iview-directionNav a:hover {
+    background: var(--theme-color-default);
+    color: #fff; }
+  @media (max-width: 600px) {
+    .iview-directionNav a {
+      width: 40px;
+      height: 40px; }
+      .iview-directionNav a:before {
+        line-height: 40px; } }
+
+.iview.iview-hover .iview-directionNav a.iview-prevNav {
+  left: 10px; }
+.iview.iview-hover .iview-directionNav a.iview-nextNav {
+  right: 10px; }
+
+/* Control nav styles (e.g. 1,2,3...) */
+.iview-controlNav div.iview-items {
+  z-index: 25;
+  position: absolute;
+  text-align: center;
+  display: inline-block;
+  width: 100%;
+  bottom: 10px;
+  -webkit-transition: opacity 0.2s ease-out;
+  -moz-transition: opacity 0.2s ease-out;
+  -ms-transition: opacity 0.2s ease-out;
+  -o-transition: opacity 0.2s ease-out;
+  transition: opacity 0.2s ease-out; }
+  .iview-controlNav div.iview-items ul {
+    margin-bottom: 0px; }
+    .iview-controlNav div.iview-items ul li {
+      display: inline-block;
+      position: relative;
+      height: 10px;
+      padding: 0px; }
+      .iview-controlNav div.iview-items ul li a.iview-control {
+        background-color: #fff;
+        text-indent: -9999px;
+        display: inline-block;
+        cursor: pointer;
+        margin: 0px 5px;
+        width: 10px;
+        height: 10px;
+        -webkit-border-radius: 100%;
+        -moz-border-radius: 100%;
+        -ms-border-radius: 100%;
+        -o-border-radius: 100%;
+        border-radius: 100%; }
+        .iview-controlNav div.iview-items ul li a.iview-control.active, .iview-controlNav div.iview-items ul li a.iview-control:hover {
+          background: #fafafa; }
+  .iview-controlNav div.iview-items.customHtmlBullet {
+    padding: 0px;
+    height: 96px;
+    width: 100%;
+    background: #fff;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    text-align: left;
+    z-index: 3; }
+    .iview-controlNav div.iview-items.customHtmlBullet ul li {
+      width: 33%;
+      height: 96px;
+      float: left;
+      padding: 0; }
+    .iview-controlNav div.iview-items.customHtmlBullet a.iview-control {
+      padding: 20px 25px 20px 16%;
+      float: left;
+      width: 100%;
+      height: 100%;
+      background: none;
+      text-transform: uppercase;
+      border-left: 1px solid #ddd;
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      -ms-border-radius: 0;
+      -o-border-radius: 0;
+      border-radius: 0;
+      text-indent: inherit;
+      margin: 0; }
+      .iview-controlNav div.iview-items.customHtmlBullet a.iview-control.active, .iview-controlNav div.iview-items.customHtmlBullet a.iview-control:hover {
+        background: #fafafa;
+        cursor: pointer; }
+        .iview-controlNav div.iview-items.customHtmlBullet a.iview-control.active:after, .iview-controlNav div.iview-items.customHtmlBullet a.iview-control:hover:after {
+          font-family: "Material Icons";
+          content: "\f0d8";
+          position: absolute;
+          top: -33px;
+          right: auto;
+          left: 50%;
+          margin-left: -10px;
+          font-size: 40px;
+          color: #fafafa; }
+        .iview-controlNav div.iview-items.customHtmlBullet a.iview-control.active span, .iview-controlNav div.iview-items.customHtmlBullet a.iview-control:hover span {
+          background-color: var(--theme-color-default);
+          color: #fff; }
+      .iview-controlNav div.iview-items.customHtmlBullet a.iview-control h5 {
+        font-size: 1rem;
+        font-weight: 400;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 20px; }
+      .iview-controlNav div.iview-items.customHtmlBullet a.iview-control span {
+        -webkit-border-radius: 100%;
+        -moz-border-radius: 100%;
+        -ms-border-radius: 100%;
+        -o-border-radius: 100%;
+        border-radius: 100%;
+        -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16);
+        -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16);
+        -o-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16);
+        -ms-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16);
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16);
+        background: #eaeaea;
+        width: 56px;
+        height: 56px;
+        line-height: 56px;
+        display: inline-block;
+        text-align: center;
+        font-size: 1.125rem;
+        margin: 0 1.125rem 0 0;
+        float: left; }
+      .iview-controlNav div.iview-items.customHtmlBullet a.iview-control p {
+        margin: 0;
+        color: var(--text-color); }
+.iview-controlNav.iview-thumbnail div.iview-items {
+  bottom: 0; }
+  .iview-controlNav.iview-thumbnail div.iview-items ul li {
+    width: 200px;
+    height: auto;
+    overflow: hidden;
+    vertical-align: bottom; }
+    .iview-controlNav.iview-thumbnail div.iview-items ul li a {
+      width: 100%;
+      height: auto;
+      margin: 0;
+      text-indent: inherit;
+      background: transparent;
+      -webkit-transition: all 0.3s ease-out;
+      -moz-transition: all 0.3s ease-out;
+      -ms-transition: all 0.3s ease-out;
+      -o-transition: all 0.3s ease-out;
+      transition: all 0.3s ease-out; }
+      .iview-controlNav.iview-thumbnail div.iview-items ul li a.active, .iview-controlNav.iview-thumbnail div.iview-items ul li a:hover {
+        -webkit-transform: scale(1.1);
+        -moz-transform: scale(1.1);
+        -ms-transform: scale(1.1);
+        -o-transform: scale(1.1);
+        transform: scale(1.1); }
+      .iview-controlNav.iview-thumbnail div.iview-items ul li a img {
+        max-width: 100%;
+        height: auto; }
+
+/* The video show in the Slider */
+.iview-video-show {
+  background: #000;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 101; }
+  .iview-video-show .iview-video-container {
+    position: relative;
+    width: 100%;
+    height: 100%; }
+    .iview-video-show .iview-video-container a.iview-video-close {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: #222;
+      color: #fff;
+      text-align: center;
+      line-height: 29px;
+      font-size: 1.375rem;
+      font-weight: bold;
+      overflow: hidden;
+      width: 1.25rem;
+      height: 1.25rem;
+      -webkit-border-radius: 15px;
+      -moz-border-radius: 15px;
+      -ms-border-radius: 15px;
+      -o-border-radius: 15px;
+      border-radius: 15px; }
+      .iview-video-show .iview-video-container a.iview-video-close:hover {
+        background: #444; }
+
+.ApSlideShow .slide_config,
+.LeoSlideshow .slide_config {
+  display: none; }
+
+/*# sourceMappingURL=iview.css.map */

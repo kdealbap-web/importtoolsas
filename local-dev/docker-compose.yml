@@ -1,0 +1,48 @@
+# Entorno local ESPEJO de producción — Importtools (PrestaShop 9.1.4 + PHP 8.5)
+# Uso:
+#   1) Coloca el dump SQL de prod en   ./dump/importtools.sql
+#   2) Coloca los archivos de prod en  ./prestashop/   (index.php debe quedar en ./prestashop/index.php)
+#   3) docker compose up -d --build
+#   Front:  http://localhost:8080     Admin: http://localhost:8080/<carpeta-admin>
+#   phpMyAdmin: http://localhost:8081  (server: db / user: root / pass: root)
+services:
+  db:
+    image: mariadb:10.11
+    container_name: it_db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: importtools
+      MARIADB_USER: ps
+      MARIADB_PASSWORD: ps
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./dump:/docker-entrypoint-initdb.d:ro   # el .sql se importa AUTOMÁTICO en el primer arranque
+    ports:
+      - "3307:3306"                              # acceso externo opcional (host:3307)
+
+  web:
+    build: .
+    container_name: it_web
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - ./prestashop:/var/www/html
+    ports:
+      - "8080:80"
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: it_pma
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      UPLOAD_LIMIT: 512M
+    ports:
+      - "8081:80"
+
+volumes:
+  dbdata:

@@ -1,0 +1,147 @@
+/***************************************************
+  Mixins Themes 
+/***************************************************/
+/* Mixin Normal*/
+/* Mixin Clear */
+/* Mixin Border */
+/*background RGBA
+============================================*/
+/***************************************************
+  Mixins RTL Themes 
+/***************************************************/
+/************************************ 
+	Override Bootstrap 
+*************************************/
+/**
+ * Web Application Prefix Apply For Making Owner Styles
+ */
+/**
+ *   Blocks Layout Selectors 
+ */
+/***********************************************************************/
+#index:not(.keep-header) #header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  background-color: transparent; }
+
+.leo-megamenu .dropdown.aligned-fullwidth > .dropdown-menu {
+  width: calc(100vw - 15px); }
+
+#header, #header .header-top {
+  background-color: transparent; }
+
+.popup-over a.popup-title .expand-more, .popup-over .popup-title .expand-more {
+  color: #fff; }
+
+.popup-over a.popup-title, .popup-over .popup-title {
+  color: #fff; }
+
+.header__nav--left {
+  flex: 1; }
+
+.header__nav--right {
+  max-width: 522px;
+  width: 100% !important;
+  margin-right: 0;
+  margin-left: auto; }
+  @media (max-width: 767px) {
+    .header__nav--right {
+      width: fit-content !important;
+      padding: 0 30px; } }
+  .header__nav--right::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--theme-color-default);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 38px) 100%, 38px 100%); }
+    @media (max-width: 767px) {
+      .header__nav--right::before {
+        clip-path: polygon(0 0, 100% 0, calc(100% - 25px) 100%, 25px 100%); } }
+
+.leo-verticalmenu .title_block {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1); }
+
+.popup-over a.popup-title:hover .expand-more, .popup-over .popup-title:hover .expand-more, .popup-over a.popup-title:hover, .popup-over .popup-title:hover {
+  color: #fff; }
+
+#leo_block_top .popup-title i {
+  font-family: "Font Awesome Light"; }
+
+#leo_block_top.popup-over a.popup-title {
+  color: #fff; }
+
+section:not(.header__fixed--bottom) .header__button--wishlist .ap-btn-wishlist {
+  color: #fff; }
+
+section:not(.header__fixed--bottom) .header__button--wishlist .ap-btn-wishlist i {
+  font-family: "Font Awesome Light"; }
+
+#_desktop_cart .header i, #_desktop_cart .header a i {
+  color: #fff;
+  font-family: "Font Awesome Light"; }
+
+.header__menu {
+  position: initial; }
+  .header__menu > .elementor-container {
+    position: initial; }
+
+.col-menu {
+  position: initial; }
+  .col-menu .elementor-widget-wrap, .col-menu .elementor-column-wrap {
+    position: initial; }
+
+.leo-verticalmenu > .block_content {
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(100% + 40px); }
+
+.leo-verticalmenu.active > .block_content {
+  transform: translateX(-50%);
+  top: calc(100% + 20px); }
+
+.leo-verticalmenu.active .title_block {
+  background-color: var(--theme-color-default); }
+
+@media (max-width: 1300px) and (min-width: 1025px) {
+  .el-menu {
+    width: 100% !important; }
+
+  .header__menu {
+    flex: 1; } }
+@media (max-width: 1024px) and (min-width: 992px) {
+  .header__menu {
+    order: 2;
+    width: 100% !important; } }
+@media (max-width: 991px) {
+  .mega__menu {
+    display: none; }
+
+  .header__menu {
+    order: -1;
+    flex: 1; }
+
+  .navbar-header .navbar-toggler {
+    margin-left: 0;
+    color: #fff; }
+
+  .header__info {
+    flex: 1; } }
+@media (max-width: 480px) {
+  .header_logo {
+    max-width: 150px; }
+
+  .header__menu {
+    width: fit-content !important;
+    flex: none;
+    padding-right: 30px !important; }
+    .rtl .header__menu {
+      padding-left: 30px !important;
+      padding-right: inherit; } }
+
+/*# sourceMappingURL=headerposition2940059986.css.map */

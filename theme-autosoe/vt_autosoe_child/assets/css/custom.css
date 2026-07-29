@@ -1,0 +1,91 @@
+/* ============================================================================
+   Importtools Latam S.A.S — overrides del child theme (padre: vt_autosoe)
+   ----------------------------------------------------------------------------
+   Criterio: tocar lo MINIMO y apoyarse en el CSS del propio tema.
+   No se modifica ningun fichero del tema padre. El cliente sigue editando con
+   las herramientas de Leo: panel lateral del front + Leo Elements en el back office.
+   ============================================================================ */
+
+:root {
+  --it-red:  #E2211C;   /* rojo de marca (muestreado del logo) */
+  --it-navy: #1F3864;   /* azul marino de marca */
+}
+
+/* ----------------------------------------------------------------------------
+   1) LOGO
+   El del cliente mide 1600x280 px; el de AutoSoe medía 204x44. Sin limitarlo se
+   desborda. El tema fija `.header__logo img{max-width:160px}` en
+   themes/vt_autosoe/modules/leoelements/views/css/positions/headerposition*.css,
+   que la tuberia de assets concatena DESPUES de este archivo: se usa un selector
+   mas especifico (0,2,1) en vez de !important.
+   Resultado: cabecera 228x40 px, pie 160x28 px.
+   ---------------------------------------------------------------------------- */
+.header__logo .header_logo img,
+.header_logo img.logo-second,
+.header_logo img.logo {
+  max-height: 40px;
+  max-width: 230px;
+  height: auto;
+  width: auto;
+}
+
+@media (max-width: 991px) {
+  .header__logo .header_logo img,
+  .header_logo img.logo-second,
+  .header_logo img.logo {
+    max-height: 32px;
+    max-width: 185px;
+  }
+}
+
+.elementor-image img[src*="logo-importtools-white"],
+footer img[src*="logo-importtools-white"] {
+  max-height: 28px;
+  max-width: 170px;
+  height: auto;
+  width: auto;
+}
+
+/* ----------------------------------------------------------------------------
+   2) ANCHO DEL PANEL DE LOS DESPLEGABLES
+   El ocultado, la transicion y todo el aspecto (fondo, padding, sombra) los pone
+   el propio tema sobre `.dropdown-menu`:
+
+       .leo-megamenu .dropdown-menu { display:block; opacity:0; visibility:hidden;
+                                      transform:translateY(20px); transition:.25s;
+                                      background:#fff; padding:20px 30px; box-shadow:... }
+       .leo-megamenu .dropdown:hover > .dropdown-menu { opacity:1; visibility:visible }
+
+   Lo unico que falta es el ancho: `leobootstrapmenu.js:449` ejecuta
+   `$('.dropdown-menu.level1').parent().removeClass('aligned-fullwidth')`, con lo que
+   el panel pierde la variante a todo el ancho del tema y queda en `width:max-content`.
+   Como dentro van columnas Bootstrap (`ul.col-md-4`), cuyo % se calcula sobre el
+   padre, sin un ancho concreto la rejilla se colapsa.
+
+   `leo-N` es la clase que el modulo genera con el numero de columnas del item:
+   CATEGORIAS usa 3 y MARCAS 2.
+   ---------------------------------------------------------------------------- */
+.leo-megamenu .navbar-nav > li.dropdown.leo-3 > .dropdown-menu.level1 {
+  width: 740px;
+  max-width: 92vw;
+}
+
+.leo-megamenu .navbar-nav > li.dropdown.leo-2 > .dropdown-menu.level1 {
+  width: 440px;
+  max-width: 92vw;
+}
+
+@media (max-width: 991px) {
+  .leo-megamenu .navbar-nav > li.dropdown.leo-3 > .dropdown-menu.level1,
+  .leo-megamenu .navbar-nav > li.dropdown.leo-2 > .dropdown-menu.level1 {
+    width: auto;
+  }
+}
+
+/* Las categorias del panel, en su rejilla, sin las viñetas de la lista */
+.leo-megamenu .dropdown-menu.level1 .row > ul {
+  margin-bottom: 0;
+  padding-left: 0;
+  list-style: none;
+}
+

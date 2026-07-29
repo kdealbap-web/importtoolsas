@@ -1,0 +1,230 @@
+name: vt_autosoe_child
+display_name: Importtools (AutoSoe child)
+version: 1.0.0
+parent: vt_autosoe
+author:
+  name: "Importtools Latam SAS / Ing. Kevin De Alba"
+  email: "etl@supergirosatlantico.co"
+  url: "https://www.importtoolsas.com"
+
+meta:
+  compatibility:
+    from: 9.0.0
+    to: ~
+
+  available_layouts:
+    layout-full-width:
+      name: Full Width
+      description: No side columns, ideal for distraction-free pages such as product pages.
+    layout-both-columns:
+      name: Three Columns
+      description: One large central column and 2 side columns.
+    layout-left-column:
+      name: Two Columns, small left column
+      description: Two columns with a small left column
+    layout-right-column:
+      name: Two Columns, small right column
+      description: Two columns with a small right column
+
+# Child theme: carga los assets del padre vt_autosoe y ademas nuestro custom.css
+assets:
+  use_parent_assets: true
+  css:
+    all:
+      - id: importtools-custom
+        path: assets/css/custom.css
+        media: all
+        priority: 300
+
+dependencies:
+  modules:
+    - leoelements
+    - leobootstrapmenu
+    - leoslideshow
+    - leoblog
+    - leofeature
+    - blockgrouptop
+    - leoquicklogin
+    - leoproductsearch
+    - leogallery
+    - leosizechart
+    - leoextratab
+    - leonextprevious
+    - leopopupsale
+    - leopartsfilter
+global_settings:
+  configuration:
+    PS_IMAGE_QUALITY: png
+  modules:
+    to_disable:
+      - ps_contactinfo
+      - ps_mainmenu
+      - ps_imageslider
+      - ps_featuredproducts
+      - ps_banner
+      - ps_customtext
+      - productcomments
+      - blockwishlist
+  hooks:
+    modules_to_hook:
+      header:
+        - leoelements
+      displayBanner:
+        - leoelements
+      displayDashboardTop:
+        - leoelements
+      backOfficeHeader:
+        - leoelements
+      backOfficeFooter:
+        - leoelements
+      actionObjectAddAfter:
+        - leoelements
+      actionObjectUpdateAfter:
+        - leoelements
+      actionCmsPageFormBuilderModifier:
+        - leoelements
+      overrideLayoutTemplate:
+        - leoelements
+      moduleRoutes:
+        - leoelements
+      filterCmsContent:
+        - leoelements
+      filterCategoryContent:
+        - leoelements
+      displayHeaderCategory:
+        - leoelements
+      displayFooterCategory:
+        - leoelements
+      leoECatConfig:
+        - leoelements
+      actionCategoryFormBuilderModifier:
+        - leoelements
+      actionAfterUpdateCategoryFormHandler:
+        - leoelements
+      actionAfterCreateCategoryFormHandler:
+        - leoelements
+      actionObjectProductUpdateAfter:
+        - leoelements
+      filterProductContent:
+        - leoelements
+      displayFooterProduct:
+        - leoelements
+      displayAdminProductsExtra:
+        - leoelements
+      displayAfterBodyOpeningTag:
+        - blockreassurance
+      displayNavFullWidth:
+        - leoelements
+      displayNav1:
+        - leoelements
+      displayNav2:
+        - leoelements
+      displayTop:
+        - leoelements
+      displayHome:
+        - leoelements
+      displayFooterBefore:
+        - leoelements
+      displayFooter:
+        - leoelements
+      displayFooterAfter:
+        - leoelements
+      displayLeftColumn:
+        - ps_categorytree
+        - ps_facetedsearch
+        - leoelements
+      displayContactLeftColumn:
+        - ps_contactinfo
+      displayContactRightColumn:
+        - ps_contactinfo
+        - leoelements
+      displaySearch:
+        - leoelements
+        - ps_searchbar
+      displayProductAdditionalInfo:
+        - leoelements
+        - ps_sharebuttons
+      displayReassurance:
+        - leoelements
+      displayOrderConfirmation2:
+        - leoelements
+      displayCrossSellingShoppingCart:
+        - leoelements
+      actionAdminControllerSetMedia:
+        - leoelements
+        - leobootstrapmenu
+        - leoslideshow
+        - leoblog
+        - leofeature
+        - blockgrouptop
+        - leoquicklogin
+        - leoproductsearch
+        - leogallery
+        - leosizechart
+        - leoextratab
+        - leonextprevious
+        - leopopupsale
+        - leopartsfilter
+      actionAdminBefore:
+        - leoelements
+        - leobootstrapmenu
+        - leoslideshow
+        - leoblog
+        - leofeature
+        - blockgrouptop
+        - leoquicklogin
+        - leoproductsearch
+        - leogallery
+        - leosizechart
+        - leoextratab
+        - leonextprevious
+        - leopopupsale
+        - leopartsfilter
+  image_types:
+    cart_default:
+      width: 125
+      height: 125
+      scope: [products]
+    small_default:
+      width: 100
+      height: 100
+      scope: [products, suppliers]
+    medium_default:
+      width: 450
+      height: 450
+      scope: [products, suppliers]
+    home_default:
+      width: 350
+      height: 350
+      scope: [products]
+    large_default:
+      width: 800
+      height: 800
+      scope: [products, suppliers]
+    category_default:
+      width: 100
+      height: 100
+      scope: [categories]
+    stores_default:
+      width: 170
+      height: 115
+      scope: [stores]
+    brand_default:
+      width: 128
+      height: 128
+      scope: [manufacturers]
+  new_password_policy_feature: true
+
+theme_settings:
+  default_layout: layout-full-width
+  layouts:
+    category: layout-left-column
+    best-sales: layout-left-column
+    new-products: layout-left-column
+    prices-drop: layout-left-column
+    contact: layout-left-column
+    manufacturer: layout-left-column
+    supplier: layout-left-column
+    module-leoblog-blog: layout-left-column
+    module-leoblog-category: layout-left-column
+    module-leoblog-list: layout-left-column

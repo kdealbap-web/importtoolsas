@@ -1,0 +1,56 @@
+/***************************************************
+  Mixins Themes 
+/***************************************************/
+/* Mixin Normal*/
+/* Mixin Clear */
+/* Mixin Border */
+/*background RGBA
+============================================*/
+/***************************************************
+  Mixins RTL Themes 
+/***************************************************/
+/************************************ 
+	Override Bootstrap 
+*************************************/
+/**
+ * Web Application Prefix Apply For Making Owner Styles
+ */
+/**
+ *   Blocks Layout Selectors 
+ */
+/***********************************************************************/
+@media (max-width: 1199px) {
+  .nav2__center {
+    width: 100% !important; } }
+@media (min-width: 992px) {
+  .col__menu {
+    width: fit-content !important; }
+
+  .col__logo,
+  .col__info {
+    flex: 1; } }
+@media (max-width: 1024px) and (min-width: 992px) {
+  .col__menu .elementor-widget-wrap {
+    justify-content: center !important; }
+
+  .col__logo .elementor-widget-wrap {
+    justify-content: flex-start !important; } }
+@media (max-width: 991px) {
+  .col__menu {
+    order: -1; } }
+@media (max-width: 991px) and (min-width: 768px) {
+  .col__menu,
+  .col__info,
+  .col__menu {
+    flex: 1; } }
+@media (max-width: 575px) {
+  .col__logo {
+    width: fit-content !important; }
+
+  .col__info, .col__menu {
+    flex: 1; } }
+@media (max-width: 350px) {
+  .col__logo .logo {
+    max-width: 110px; } }
+
+/*# sourceMappingURL=headerposition3518540910.css.map */

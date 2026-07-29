@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="Shop.Theme.Global.xlf" source-language="en" target-language="es-CO" datatype="plaintext">
+    <body>
+      <trans-unit id="641254d77e7a473aa5910574f3f9453c" approved="yes">
+        <source>Wishlist</source>
+        <target state="final">Lista de deseos</target>
+      </trans-unit>
+      <trans-unit id="d95cf4ab2cbf1dfb63f066b50558b07d" approved="yes">
+        <source>My account</source>
+        <target state="final">Mi cuenta</target>
+      </trans-unit>
+      <trans-unit id="08bd40c7543007ad06e4fce31618f6ec" approved="yes">
+        <source>Account</source>
+        <target state="final">Cuenta</target>
+      </trans-unit>
+      <trans-unit id="7eece51cf3938103677db7a5051ef8f5" approved="yes">
+        <source>Compare</source>
+        <target state="final">Comparar</target>
+      </trans-unit>
+      <trans-unit id="2273d1167a6212812d95dc8fadbae78e" approved="yes">
+        <source>Customer service</source>
+        <target state="final">Atención al cliente</target>
+      </trans-unit>
+      <trans-unit id="02d4482d332e1aef3437cd61c9bcc624" approved="yes">
+        <source>Contact us</source>
+        <target state="final">Contáctanos</target>
+      </trans-unit>
+      <trans-unit id="13348442cc6a27032d2b4aa28b75a5d3" approved="yes">
+        <source>Search</source>
+        <target state="final">Buscar</target>
+      </trans-unit>
+      <trans-unit id="06a943c59f33a34bb5924aaf72cd2995" approved="yes">
+        <source>search</source>
+        <target state="final">buscar</target>
+      </trans-unit>
+      <trans-unit id="e0fd9b310aba555f96e76738ff192ac3" approved="yes">
+        <source>Wishlists</source>
+        <target state="final">Listas de deseos</target>
+      </trans-unit>
+      <trans-unit id="2d96bb66d8541a89620d3c158ceef42b" approved="yes">
+        <source>Add to wishlist</source>
+        <target state="final">Añadir a la lista de deseos</target>
+      </trans-unit>
+      <trans-unit id="38b391ed8b1773ff81c071decccd4811" approved="yes">
+        <source>Compare products</source>
+        <target state="final">Comparar productos</target>
+      </trans-unit>
+      <trans-unit id="3aea774cdcd8f2c45549f10758a71323" approved="yes">
+        <source>Store information</source>
+        <target state="final">Datos de la tienda</target>
+      </trans-unit>
+      <trans-unit id="d918f99442796e88b6fe5ad32c217f76" approved="yes">
+        <source>Follow us</source>
+        <target state="final">Síguenos</target>
+      </trans-unit>
+      <trans-unit id="ffb7e666a70151215b4c55c6268d7d72" approved="yes">
+        <source>Newsletter</source>
+        <target state="final">Boletín</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

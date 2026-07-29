@@ -1,0 +1,94 @@
+/***************************************************
+  Mixins Themes 
+/***************************************************/
+/* Mixin Normal*/
+/* Mixin Clear */
+/* Mixin Border */
+/*background RGBA
+============================================*/
+/***************************************************
+  Mixins RTL Themes 
+/***************************************************/
+/************************************ 
+	Override Bootstrap 
+*************************************/
+/**
+ * Web Application Prefix Apply For Making Owner Styles
+ */
+/**
+ *   Blocks Layout Selectors 
+ */
+/***********************************************************************/
+#leo_search_block_top .title_block {
+  display: none; }
+
+.leo-verticalmenu .title_block {
+  padding: 10px 20px;
+  border-radius: 8px; }
+
+.header__menu {
+  position: initial; }
+  .header__menu .elementor-container, .header__menu .elementor-row {
+    position: initial; }
+
+.col-menu {
+  position: initial; }
+  .col-menu .elementor-column-wrap, .col-menu .elementor-widget-wrap {
+    position: initial; }
+
+.leo-verticalmenu > .block_content {
+  left: 0;
+  right: 0;
+  top: calc(100% + 27px); }
+
+.leo-megamenu .navbar-nav > li > a {
+  color: #000; }
+
+@media (max-width: 991px) {
+  .mega__menu {
+    display: none; }
+
+  .navbar-header .navbar-toggler {
+    margin-left: 0;
+    color: #000; } }
+@media (max-width: 767px) {
+  .header__button--filter .elementor-image-box-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px; }
+  .header__button--filter .elementor-image-box-img {
+    margin-bottom: 0 !important; }
+
+  .header__logo {
+    margin-right: 20px; }
+    .rtl .header__logo {
+      margin-left: 20px;
+      margin-right: inherit; } }
+@media (max-width: 575px) {
+  .header__search .block.exclusive {
+    text-align: right; }
+    .rtl .header__search .block.exclusive {
+      text-align: left; }
+    .header__search .block.exclusive .title_block {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-size: 0;
+      margin-bottom: 0; }
+      .header__search .block.exclusive .title_block::before {
+        content: "\f002";
+        font-family: "Font Awesome Regular";
+        font-size: 20px; }
+      .header__search .block.exclusive .title_block:hover {
+        color: var(--theme-color-default); }
+    .header__search .block.exclusive form {
+      display: none; }
+
+  .header__review {
+    display: none; } }
+@media (max-width: 767px) {
+  .header__logo img {
+    max-width: 160px; } }
+
+/*# sourceMappingURL=headerposition3011951205.css.map */

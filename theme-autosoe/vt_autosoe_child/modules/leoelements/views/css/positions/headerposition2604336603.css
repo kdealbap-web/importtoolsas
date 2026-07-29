@@ -1,0 +1,121 @@
+/***************************************************
+  Mixins Themes 
+/***************************************************/
+/* Mixin Normal*/
+/* Mixin Clear */
+/* Mixin Border */
+/*background RGBA
+============================================*/
+/***************************************************
+  Mixins RTL Themes 
+/***************************************************/
+/************************************ 
+	Override Bootstrap 
+*************************************/
+/**
+ * Web Application Prefix Apply For Making Owner Styles
+ */
+/**
+ *   Blocks Layout Selectors 
+ */
+/***********************************************************************/
+#leo_search_block_top .title_block {
+  display: none; }
+
+.leo-verticalmenu .title_block {
+  padding: 10px 20px;
+  border-radius: 8px; }
+
+.header__menu {
+  position: initial; }
+  .header__menu .elementor-container, .header__menu .elementor-row {
+    position: initial; }
+
+.col-menu {
+  position: initial; }
+  .col-menu .elementor-column-wrap, .col-menu .elementor-widget-wrap {
+    position: initial; }
+
+.leo-verticalmenu > .block_content {
+  left: 0;
+  right: 0;
+  top: calc(100% + 27px); }
+
+@media (min-width: 576px) {
+  #leo_search_block_top .form-control {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #999999; } }
+
+#leo_search_block_top .btn {
+  color: #fff; }
+
+#leo_block_top .popup-title i {
+  font-family: "Font Awesome Light"; }
+
+#leo_block_top.popup-over a.popup-title {
+  color: #fff; }
+
+section:not(.header__fixed--bottom) .header__button--wishlist .ap-btn-wishlist {
+  color: #fff; }
+
+section:not(.header__fixed--bottom) .header__button--wishlist .ap-btn-wishlist i {
+  font-family: "Font Awesome Light"; }
+
+#_desktop_cart .header i, #_desktop_cart .header a i {
+  color: #fff;
+  font-family: "Font Awesome Light"; }
+
+.popup-over a.popup-title .expand-more, .popup-over .popup-title .expand-more {
+  color: #fff; }
+
+.popup-over a.popup-title, .popup-over .popup-title {
+  color: #fff; }
+
+@media (max-width: 991px) {
+  .mega__menu {
+    display: none; }
+
+  .navbar-header .navbar-toggler {
+    margin-left: 0;
+    color: #fff; } }
+@media (max-width: 767px) {
+  .header__button--filter .elementor-image-box-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px; }
+  .header__button--filter .elementor-image-box-img {
+    margin-bottom: 0 !important; }
+
+  .header__logo {
+    margin-right: 20px; }
+    .rtl .header__logo {
+      margin-left: 20px;
+      margin-right: inherit; } }
+@media (max-width: 575px) {
+  .header__search .block.exclusive {
+    text-align: right; }
+    .rtl .header__search .block.exclusive {
+      text-align: left; }
+    .header__search .block.exclusive .title_block {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 0;
+      margin-bottom: 0; }
+      .header__search .block.exclusive .title_block::before {
+        content: "\f002";
+        font-family: "Font Awesome Regular";
+        font-size: 20px; }
+      .header__search .block.exclusive .title_block:hover {
+        color: var(--theme-color-default); }
+    .header__search .block.exclusive form {
+      display: none; }
+
+  .header__review {
+    display: none; } }
+@media (max-width: 767px) {
+  .header__logo img {
+    max-width: 160px; } }
+
+/*# sourceMappingURL=headerposition2604336603.css.map */
