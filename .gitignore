@@ -53,3 +53,8 @@ Desktop.ini
 ~$*
 # Comprimidos redundantes: los logos ya estan extraidos en docs/brands_logos/Logos/
 docs/*.rar
+
+# Credenciales de entrega: lleva la clave temporal del cliente. Se entrega por canal aparte.
+deploy/paquete/05-CREDENCIALES.md
+# php.ini de produccion: no es secreto, pero es config del servidor, no del proyecto
+deploy/paquete/config/php.ini.produccion

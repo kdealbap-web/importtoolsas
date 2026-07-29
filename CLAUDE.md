@@ -267,11 +267,56 @@ Precios en Latinoamérica Hosting (mismo proveedor del hosting, cómodo para fac
 - [ ] Cargar catálogo inicial desde el archivo del cliente (import CSV de PrestaShop).
 - [ ] Configurar formularios de contacto / captación de leads.
 
+### Fase 3-bis — Blindaje de la entrega (29/07/2026)
+
+> Detalle completo en **`docs/fase3-bitacora-2026-07-29-blindaje.md`**.
+
+- [x] **Panel del engranaje del front apagado** (`LEOELEMENTS_PANEL_TOOL = 0`).
+      Verificado antes de decidir: `paneltool.js` solo hace `setCookie` (0 ajax, 0 post) y un
+      anónimo **no puede escribir** (huella MD5 de los 34 contenidos idéntica antes y después
+      de invocar `action_element`). No era una vulnerabilidad, pero exponía el personalizador
+      al público y permitía **cargar las portadas de muestra** (automoción, en inglés) con
+      pérdida del menú. **No se pierde nada**: los mismos ajustes están en
+      `AdminLeoElementsProfiles` con **151 campos**.
+- [x] **Un solo diseño.** Borrados los perfiles Leo 1, 2, 4 y 5. Los 12 contenidos de muestra
+      **no se borraron**: se sobreescribieron con copia de los limpios equivalentes
+      (`c=9→1,5,13` · `c=10→2,6,14` · `c=11→3,7,15,16` · `c=12→4,8`).
+      ⚠️ **Dos razones para no borrar**: la prueba empírica mostró que el contenido **9 SÍ
+      está en uso** (`elementor-9` se renderiza en la portada), y el perfil guarda catálogos
+      JSON (`product_list_data`, `category_list_data`, `product_detail_data`) que quedarían
+      colgando. Resultado: 0 contenido genérico, 0 menú vertical, 0 JSON roto.
+- [x] **Perfil `Cliente Importtools` (id 5)**: 302 roles de pestaña + 48 de módulo.
+      Configurar módulos sí, instalar/desinstalar no.
+      ⚠️ PrestaShop 9 usa **1.160 roles** (`ROLE_MOD_TAB_*` y `ROLE_MOD_MODULE_*`), no columnas
+      view/add/edit/delete. Y **comprueba la cadena de pestañas padre**: hubo que dar READ a 20
+      contenedoras (`IMPROVE`, `SELL`, `AdminParentModulesSf`…) y al listado de módulos, porque
+      las páginas de configuración viven bajo *Mejorar → Módulos*.
+      ⚠️ `Profile::getProfileAccesses()` y la capa HTTP **no coinciden** para pestañas de
+      módulo: validar por HTTP, no solo por el modelo.
+- [x] **Validado con sesión HTTP real**: Productos 253 KB, Categorías 172 KB, CMS 135 KB,
+      Pedidos 128 KB, menú Leo 90 KB, slideshow 208 KB, dashboard 41 KB.
+      403 en Tema, Módulos, Empleados, Rendimiento, SQL, Transportistas, Impuestos.
+      **0 errores CRITICAL.**
+- [x] **Paquete de importación** en `deploy/paquete/` con volcado probado en base limpia.
+
+#### Tres trampas del entorno, con su síntoma
+
+| Síntoma | Causa | Nota |
+|---|---|---|
+| El back office pide login una y otra vez tras entrar bien | `prestashop/php.ini` (traído de producción) fija `session.save_path = /var/cpanel/php/sessions/ea-php85`, que no existe en local | **En producción es correcto.** Original guardado en `deploy/paquete/config/php.ini.produccion` |
+| 500 al entrar al panel, `Date must be a string` en `HelperCalendar.php:135` | Empleado con `stats_date_from`/`stats_date_to` en `NULL` | Fallo mío al crear el empleado por `INSERT` directo |
+| 500 intermitentes, `SmartyException: unable to create directory var/cache/...` | Ejecutar PHP **como root** en el contenedor deja `var/cache/prod` sin escritura para `www-data` | Limpiar la caché **desde el contenedor como www-data** |
+
+Y dos comportamientos del core que **no** son fallos: el bucle a
+`/security/compromised?uri=...` (PS 9 exige token por URL en el back office) y la interstitial
+«Token no válido» de algunas páginas de módulo.
+
 ### Fase 4 — Pruebas y entrega (contra 30% final)
 - [ ] Pruebas responsive (desktop / tablet / móvil).
 - [ ] Revisión de checkout y flujo de compra.
-- [ ] SEO básico (URLs amigables, metadatos, sitemap) y velocidad.
-- [ ] Copia de seguridad inicial y activación de backups automáticos.
+- [x] SEO básico: URLs amigables activas y los 25 títulos/descripciones de página en español.
+- [x] Copia de seguridad: volcados con fecha en `backups/`. Falta activar JetBackup automático.
+- [x] **Paquete de entrega listo** (`deploy/paquete/`, 6 documentos + 2 zip + traducciones).
 - [ ] Entrega de accesos + inducción de uso del panel al cliente.
 
 ---

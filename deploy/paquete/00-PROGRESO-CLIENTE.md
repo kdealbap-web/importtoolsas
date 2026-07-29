@@ -46,9 +46,38 @@ Se conservan **íntegras** las herramientas de LeoTheme. No se modificó ningún
 plantilla original: los ajustes propios viven en un **tema hijo**, de modo que la plantilla
 se puede actualizar sin perder el trabajo.
 
-### 2.1 Panel lateral de la tienda (el engranaje de la derecha)
-Estando en la tienda, el engranaje del lado derecho abre el personalizador del tema:
-**colores, tipografías y opciones de presentación**. Los cambios se ven al instante.
+Todo se administra desde el **panel de administración**, con usuario y contraseña. Cada cosa
+se edita en un sitio distinto y no se pisan entre sí:
+
+| Qué quieren cambiar | Dónde |
+|---|---|
+| Productos, precios, stock, categorías, marcas, línea y sublínea | **Catálogo** |
+| Textos de Quiénes somos, legales, preguntas frecuentes | **Diseño → Páginas** |
+| Portada, cabecera y pie: mover y editar bloques | **Diseño → Leo Elements** |
+| **Colores y tipografías** | **Diseño → Leo Elements → Profiles** (151 opciones) |
+| Menú y sus secciones | **Módulos → Leo Megamenu** |
+| Carrusel principal | **Módulos → LeoSlideShow** |
+| Fotos de producto y miniaturas | **Catálogo → Productos** e **Imágenes** |
+
+### 2.1 Sobre el engranaje que salía en la tienda
+
+Antes aparecía un engranaje en el lateral derecho **de la tienda pública** que abría un
+personalizador de colores. Lo hemos retirado por dos razones:
+
+1. **Lo veía cualquier visitante**, no solo ustedes. Comprobamos que no podía modificar la
+   tienda —solo guardaba preferencias en el navegador de quien lo abría— pero no es algo que
+   deba estar a la vista del público.
+2. Desde ahí se podían **cargar las portadas de muestra** que trae la plantilla, que son de
+   una tienda de repuestos de automóvil y están en inglés. Al hacerlo se perdía el menú y el
+   diseño quedaba descolocado.
+
+**No se pierde ninguna capacidad de personalizar.** Los mismos colores y tipografías están en
+el panel de administración, en *Diseño → Leo Elements → Profiles*, con 151 opciones: colores
+de fondo, botones, titulares, precios, etiquetas de producto y tipografías. La diferencia es
+que ahora hace falta iniciar sesión, como debe ser.
+
+Además dejamos **un solo diseño**: el que ustedes eligieron. Ya no hay portadas de muestra que
+se puedan cargar por error.
 
 ### 2.2 Editor visual — Diseño → Leo Elements
 Es donde se edita el contenido arrastrando y soltando. Hay **17 bloques** disponibles;
@@ -97,15 +126,25 @@ producto se editan en la ficha del producto, y los filtros se actualizan solos.
 
 ---
 
-## 4. Un par de cosas que conviene saber
+## 4. Su usuario y qué alcance tiene
 
-**El panel del engranaje lo ve cualquier visitante.** Es la herramienta con la que ustedes
-personalizan, pero está a la vista de todo el mundo, no solo del administrador. Si prefieren
-que solo lo vea quien haya iniciado sesión como administrador, se puede ajustar; háganoslo
-saber.
+Se creó una cuenta para ustedes con permisos ajustados: pueden editar todo el contenido y el
+catálogo, pero no cambiar el tema, desinstalar módulos ni tocar la configuración técnica del
+servidor. Así se evita que un clic accidental deje la tienda inservible.
+
+Los datos de acceso van aparte, en el documento de credenciales. **Cambien la contraseña en su
+primer ingreso.**
+
+Si en algún momento necesitan hacer algo que el sistema no les permite, escríbannos: está
+dentro de las 4 horas mensuales de soporte incluidas los primeros 6 meses.
+
+## 5. Un par de cosas que conviene saber
 
 **La ficha de Google Maps** está a nombre de «HERRAMIENTAS Y SEGURIDAD S.A.». Nos confirmaron
 que la empresa también se conoce así, y se dejó tal cual.
 
 **Dos dominios.** La tienda es `importtoolsas.com` y el correo `@importtoolslatam.com`. Se
 mantiene así por indicación suya.
+
+**Si se equivocan editando un bloque**, Leo Elements guarda un historial de revisiones para
+deshacer, y nosotros conservamos respaldos con fecha y hora.

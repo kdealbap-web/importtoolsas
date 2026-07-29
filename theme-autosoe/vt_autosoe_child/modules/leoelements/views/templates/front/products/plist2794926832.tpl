@@ -121,12 +121,12 @@
 <a
   href="#"
   class="quick-view"
-  data-link-action="quickview" title="{l s='Quick view' d='Shop.Theme.Actions'}"
+  data-link-action="quickview" title="{l s='Quick view'}"
 >
 	<span class="leo-quickview-bt-loading cssload-speeding-wheel"></span>
 	<span class="leo-quickview-bt-content">
 		<i class="material-icons search">&#xE8B6;</i>
-		<span>{l s='Quick view' d='Shop.Theme.Actions'}</span>
+		<span>{l s='Quick view'}</span>
 	</span>
 </a>
 </div>
