@@ -42,13 +42,40 @@ modules/leoelements/translations/es.php          (564 claves)
 modules/leoproductsearch/translations/es.php     (25 claves)
 ```
 
-⚠️ **En `leoproductsearch` ya existe un `es.php` del fabricante, y sobrescribirlo es seguro.**
-Los dos casos no son iguales:
+⚠️ **Hay que subir los dos. Que ya exista un `es.php` no lo hace innecesario** — lo comprobé
+quitándolos y midiendo qué se rompe:
 
-| Fichero | ¿Lo trae el tema? | Qué hacer |
+| Fichero | ¿Lo trae el tema? | Si NO subes el nuestro |
 |---|---|---|
-| `leoproductsearch/translations/es.php` | **Sí**, 17 claves ya en español | Sobrescribir. El nuestro **contiene las 17 originales sin cambiar una sola** y añade 8 |
-| `leoelements/translations/es.php` | **No.** Esa carpeta solo trae `index.php` | Subirlo tal cual. Las 564 claves son nuestras |
+| `leoproductsearch/translations/es.php` | **Sí**, 17 claves ya en español | El buscador de la cabecera muestra **«Search here...»** en inglés, 2 veces en **todas** las páginas (versión escritorio y móvil) |
+| `leoelements/translations/es.php` | **No.** Esa carpeta solo trae `index.php` | Las **151 etiquetas del personalizador del cliente** salen en inglés: *Block Heading Color*, *Button Background*, *Available fonts*… La tienda pública no cambia |
+
+Sobrescribir `leoproductsearch` **es seguro**: comprobado clave por clave que el nuestro
+contiene las 17 del fabricante **sin cambiar una sola traducción** y añade 8.
+
+Por qué hacen falta esas 8, aunque el fabricante ya traduzca: `Translate.php:130-137` busca la
+clave en dos pasos — primero con el nombre del **tema activo**, y si no la encuentra, con
+`prestashop`. Las 2 que importan son del buscador y **el fabricante no las tiene con ningún
+prefijo**, así que caían al original inglés:
+
+```
+<{leoproductsearch}prestashop>leosearch_top_…073a75f  = 'Buscar aquí...'   <- ESTA es la visible
+<{leoproductsearch}prestashop>leosearch_top_…06a943c  = 'buscar'
+```
+
+Comprobado A/B en el espejo: con el fichero del fabricante,
+`<p class="title_block">Search here...</p>` sale 2 veces en la portada; con el nuestro,
+«Buscar aquí...».
+
+El de `leoelements` es de otra naturaleza: sus 564 claves son **del back office**, no del front
+(285 del personalizador de perfiles + 279 del panel público, que está apagado). Quitarlo no
+cambia ni un byte del HTML de la portada — lo verifiqué comparando el texto renderizado línea a
+línea — pero deja al cliente la pantalla de colores y tipografías en inglés. Prueba directa:
+
+```
+sin el fichero:  Block Heading Color -> Block Heading Color   (sin traducir)
+con el fichero:  Block Heading Color -> Color del título del bloque
+```
 
 Comprobado clave por clave: del original de `leoproductsearch` **no se pierde ninguna** y **no
 se cambia ninguna traducción existente**. Las 8 que añadimos son las mismas cadenas repetidas
@@ -64,12 +91,22 @@ con el prefijo del tema, que es lo que hace falta para que se apliquen:
 Que `leoelements` no traiga traducciones no es un descuido del fabricante: es la razón por la
 que la tienda salía en inglés (ver §7 de la bitácora del 28/07).
 
+Además, el tema hijo lleva dentro del zip un tercer fichero,
+`themes/vt_autosoe_child/modules/leoquicklogin/translations/es.php` (15 claves). No hay que
+subirlo aparte: va en `vt_autosoe_child.zip`. Está ahí y no en la carpeta del módulo a propósito
+— el core carga primero el del módulo y después el del tema, y hace `array_merge`, así que el
+del tema **añade sin sustituir** las 109 claves del fabricante, y sobrevive a una actualización
+del módulo.
+
 **Antes de subir, renombra el que exista en lugar de machacarlo** — cuesta diez segundos y deja
 marcha atrás:
 
 ```
 mv modules/leoproductsearch/translations/es.php modules/leoproductsearch/translations/es.php.bak
 ```
+
+El original del fabricante está guardado en el repositorio, en
+`deploy/translations/FABRICANTE-original-leoproductsearch-es.php`, por si hiciera falta volver.
 
 Y si en `leoelements/translations/` **sí** hubiera un `es.php` en producción, **no lo
 sobrescribas todavía**: en el entorno espejo no existe, así que sería algo que no hemos visto.
