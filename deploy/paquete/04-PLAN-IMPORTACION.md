@@ -254,18 +254,41 @@ contenido de Leo Elements por SQL.
 
 ---
 
-## Si producción cambió después del 24/07/2026
+## Comprobación de que producción no cambió — HECHA el 29/07/2026
 
-Este volcado **sobrescribe** la base de datos entera. Si en producción se añadieron pedidos,
-clientes o productos después de esa fecha, **avísame antes de importar**: hay que hacer una
-importación selectiva por tablas en lugar de la completa, y eso se prepara aparte.
-
-Para saberlo:
+Este volcado **sobrescribe la base de datos entera**, así que antes de importar hay que
+confirmar que producción no tiene actividad posterior a la copia del 24/07/2026.
 
 ```sql
-SELECT MAX(date_add) FROM psjy_orders;
-SELECT MAX(date_add) FROM psjy_customer;
-SELECT MAX(date_upd) FROM psjy_product;
+SELECT MAX(date_add) AS ultimo_pedido   FROM psjy_orders;
+SELECT MAX(date_add) AS ultimo_cliente  FROM psjy_customer;
+SELECT MAX(date_upd) AS ultimo_producto FROM psjy_product;
 ```
 
-Si alguna fecha es posterior al 24/07/2026, para y consúltalo.
+**Resultado obtenido: las tres devuelven `2026-07-24 11:07:54`.**
+
+Las tres idénticas al segundo es la firma del momento en que se instalaron los **datos de
+ejemplo** de PrestaShop: pedidos, clientes y productos se crearon de golpe en la instalación.
+Coincide con lo que ya sabíamos de producción (19 productos demo, 2 clientes, 5 pedidos) y
+significa que **no ha habido ventas ni cambios de catálogo reales**. Vía libre para la
+importación completa.
+
+### Antes de importar: confirma que estás en la base correcta
+
+Diez segundos, y evita el único error irreversible de todo el proceso:
+
+```sql
+SELECT COUNT(*) FROM psjy_product;
+```
+
+| Resultado | Qué es | Qué hacer |
+|---|---|---|
+| **~19** | Producción (datos de ejemplo) | Adelante con la importación |
+| **3036** | La base del entorno espejo | **Para.** Repite las consultas de fechas en producción |
+
+### Si en el futuro hubiera actividad real
+
+Si al repetir las consultas alguna fecha fuera posterior al 24/07/2026, **no importes el
+volcado completo**: habría pedidos o clientes reales que se perderían. En ese caso hay que
+preparar una importación selectiva por tablas (contenido y catálogo sí, pedidos y clientes no),
+que es un trabajo distinto y se monta aparte.
