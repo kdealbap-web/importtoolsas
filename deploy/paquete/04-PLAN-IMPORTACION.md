@@ -35,12 +35,52 @@ img/logo-importtools-dark.png
 
 Comprobación: abrir `https://www.importtoolsas.com/img/it/tornilleria.jpg` → debe mostrar el degradado azul.
 
-**1.2 Traducciones de módulo.** Subir sobrescribiendo:
+**1.2 Traducciones de módulo.** Subir:
 
 ```
 modules/leoelements/translations/es.php          (564 claves)
 modules/leoproductsearch/translations/es.php     (25 claves)
 ```
+
+⚠️ **En `leoproductsearch` ya existe un `es.php` del fabricante, y sobrescribirlo es seguro.**
+Los dos casos no son iguales:
+
+| Fichero | ¿Lo trae el tema? | Qué hacer |
+|---|---|---|
+| `leoproductsearch/translations/es.php` | **Sí**, 17 claves ya en español | Sobrescribir. El nuestro **contiene las 17 originales sin cambiar una sola** y añade 8 |
+| `leoelements/translations/es.php` | **No.** Esa carpeta solo trae `index.php` | Subirlo tal cual. Las 564 claves son nuestras |
+
+Comprobado clave por clave: del original de `leoproductsearch` **no se pierde ninguna** y **no
+se cambia ninguna traducción existente**. Las 8 que añadimos son las mismas cadenas repetidas
+con el prefijo del tema, que es lo que hace falta para que se apliquen:
+
+```
+<{leoproductsearch}prestashop>…        17 originales + 2
+<{leoproductsearch}vt_autosoe>…         3   ← el tema sobrescribe las plantillas del módulo,
+<{leoproductsearch}vt_autosoe_child>…   3      así que PrestaShop busca la cadena bajo el
+                                               nombre del tema activo, no bajo «prestashop»
+```
+
+Que `leoelements` no traiga traducciones no es un descuido del fabricante: es la razón por la
+que la tienda salía en inglés (ver §7 de la bitácora del 28/07).
+
+**Antes de subir, renombra el que exista en lugar de machacarlo** — cuesta diez segundos y deja
+marcha atrás:
+
+```
+mv modules/leoproductsearch/translations/es.php modules/leoproductsearch/translations/es.php.bak
+```
+
+Y si en `leoelements/translations/` **sí** hubiera un `es.php` en producción, **no lo
+sobrescribas todavía**: en el entorno espejo no existe, así que sería algo que no hemos visto.
+Guárdalo y compara antes:
+
+```
+grep -c '^\$_MODULE\[' modules/leoelements/translations/es.php
+```
+
+Si devuelve **564**, es el nuestro (ya subido antes) y no hay nada que hacer. Cualquier otro
+número: pásamelo antes de tocarlo.
 
 **1.3 Tema hijo.** Back office → **Diseño → Tema y logotipo → Añadir nuevo tema → subir
 `vt_autosoe_child.zip`**. Luego **Usar este tema**.
