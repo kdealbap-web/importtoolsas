@@ -357,8 +357,14 @@ lectura primero:
 
 | | Qué hace | Cuándo |
 |---|---|---|
-| **A — modo catálogo** | `PS_CATALOG_MODE = 1`. Una fila. Quita carrito y checkout; los 3.036 productos siguen navegables con filtros y marcas | **Lo que recomiendo mientras los precios sean los generados.** Hoy la tienda aparenta algo que no puede hacer |
+| **A — modo catálogo con precios** ★ | `PS_CATALOG_MODE = 1` **y** `PS_CATALOG_MODE_WITH_PRICES = 1`. Dos filas. Quita carrito y checkout, **mantiene los precios visibles**; los 3.036 productos siguen navegables con filtros y marcas, y el registro sigue captando leads | **Lo que recomiendo mientras los precios sean los generados.** Hoy la tienda aparenta algo que no puede hacer |
 | **B — transportista real** | Crear uno que cubra Colombia. Lo práctico en mayoreo: «Coordinar con un asesor» a coste 0 y el flete se cotiza aparte | Cuando el cliente dé cobertura y tarifas |
+
+> ⚠️ La opción A son **dos** ajustes, no uno. Con `PS_CATALOG_MODE = 1` a secas PrestaShop
+> **también oculta los precios** (`ProductListingFrontController.php:344`), lo que contradiría la
+> decisión de dejarlos visibles. Comprobado en el espejo con los dos a 1: catálogo con precios,
+> 0 botones de carrito, filtros intactos, registro operativo. Y no es cosmético — `/cart?add=1`
+> por URL deja el carrito en 0 filas y `/order` redirige a la portada.
 
 > ⚠️ La opción B tiene cuatro trampas, todas comprobadas: hay que insertar en `carrier_zone`
 > **y** en `delivery`; `id_shop`/`id_shop_group` van a **NULL**; el rango debe ser del propio

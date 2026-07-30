@@ -44,19 +44,32 @@ SELECT 'modo catalogo', value, '1 = sin carrito ni checkout'
 
 
 -- ============================================================================
---  OPCION A — Modo catalogo (una sola fila, reversible al instante)
+--  OPCION A — Modo catalogo CON precios  ★ RECOMENDADA
 --
---  Quita el carrito y el checkout de toda la tienda. Los 3.036 productos siguen
---  navegables con sus filtros y marcas, pero no se puede pedir.
+--  Dos filas, reversible al instante. Quita el carrito y el checkout, pero
+--  **mantiene los precios visibles**, que es lo que se decidio el 29/07.
 --
---  Es lo coherente mientras los precios sean los generados: hoy la tienda
---  aparenta vender y no puede. Encaja con el flujo «Quiero ser cliente», que es
---  el que el cliente pidio.
+--  ⚠️ Son DOS ajustes, no uno. Con `PS_CATALOG_MODE = 1` a secas, PrestaShop
+--     tambien OCULTA los precios: `ProductListingFrontController.php:344` hace
+--         if (PS_CATALOG_MODE && !PS_CATALOG_MODE_WITH_PRICES) -> quita el precio
+--     Asi que hay que poner el segundo a 1 tambien.
+--
+--  Comprobado en el espejo con las dos a 1:
+--      /2-catalogo            -> «Hay 3036 productos», precios visibles
+--      botones add-to-cart    -> 0        · bloque del carrito -> 0
+--      ficha de producto      -> precio 84.300, div de añadir al carrito VACIO
+--      /17-herramientas-...   -> filtros intactos
+--      /login?create_account=1 -> el registro sigue funcionando (captacion de leads)
+--
+--  Y no es cosmetico, el controlador tambien lo aplica:
+--      /cart?add=1&id_product=20&token=...  -> psjy_cart_product se queda en 0 filas
+--      /order                               -> redirige a la portada
 -- ============================================================================
 -- UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_CATALOG_MODE';
+-- UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_CATALOG_MODE_WITH_PRICES';
 --
--- Para volver atras:
--- UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_CATALOG_MODE';
+-- Para volver atras (cuando haya precios reales y transportista):
+-- UPDATE psjy_configuration SET value = '0' WHERE name IN ('PS_CATALOG_MODE','PS_CATALOG_MODE_WITH_PRICES');
 
 
 -- ============================================================================
