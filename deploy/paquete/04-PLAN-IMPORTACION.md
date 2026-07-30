@@ -3,34 +3,68 @@
 Import Tools Latam S.A.S · `www.importtoolsas.com` · hosting Latinoamérica Hosting H2 (cPanel)
 Prefijo de tablas `psjy_` · back office `panel-4h5o` · PrestaShop 9.1.4 · PHP 8.5
 
-Duración estimada: **50–70 minutos**, más 20 de comprobaciones.
-Hazlo en horario de baja actividad: el paso 3 sustituye la base de datos.
+## Cuánto tarda de verdad
+
+> Las estimaciones que había antes en este documento («50–70 minutos», «Fase 1 — 15 min»…)
+> **eran inventadas**: nunca se midieron. Estas sí están medidas, y lo que no se puede medir
+> se dice.
+
+**Medido** en el entorno espejo (Docker sobre WSL2 en el equipo de desarrollo, 29/07/2026):
+
+| Operación | Tiempo real | Nota |
+|---|---|---|
+| Importar el volcado | **16 s** | 373 tablas, 194 sentencias `INSERT`, 7,58 MB sin comprimir. Medido por línea de comandos |
+| `02-ajustes-tras-importar.sql` | **< 1 s** | son 6 sentencias |
+| **Primera petición tras vaciar `var/cache/`** | **57,3 s** | HTTP 200. Es la reconstrucción del contenedor de Symfony, y ocurre **una sola vez** |
+| Cualquier página después de esa | **0,3 – 0,5 s** | portada, catálogo, categoría, ficha y registro, todas HTTP 200 |
+
+**No se puede estimar** — depende de tu conexión y del hosting, no de la tienda:
+
+- Subir los **12 MB** de ficheros (`img-importtools.zip` 3,8 MB + `vt_autosoe_child.zip` 9,3 MB).
+- El respaldo de **JetBackup**.
+- El import **por phpMyAdmin**: los 16 s son por consola en el espejo. phpMyAdmin añade su
+  propia sobrecarga, aunque el volcado es pequeño y no debería dar tiempo de espera.
+- El tiempo que tardes tú navegando el panel.
+
+> ⚠️ **Los 57 segundos son la trampa práctica de todo esto.** Después de vaciar la caché la
+> primera página parece colgada. **No es un error, no recargues en bucle ni toques nada**:
+> espera a que responda. Y por lo mismo, **no vacíes la caché justo antes de mostrarle la tienda
+> al cliente** — cárgala tú una vez primero.
+
+Ventana total realista con el sitio en mantenimiento: **el tiempo de subida más unos 2 minutos
+de trabajo de servidor.** Las comprobaciones son aparte y no requieren mantenimiento.
 
 ---
 
-## Fase 0 — Antes de tocar nada (10 min)
+## Fase 0 — Antes de tocar nada  ·  ✅ HECHA el 29/07/2026
 
 | # | Acción | Cómo se comprueba |
 |---|---|---|
 | 0.1 | **JetBackup: respaldo completo** (archivos + base de datos) y esperar a que termine | El respaldo aparece listado con la fecha de hoy |
 | 0.2 | Anotar el nombre exacto de la base de datos y su usuario | cPanel → MySQL Databases |
 | 0.3 | Ejecutar **`00-comprobacion-antes-de-importar.sql`** en phpMyAdmin | Todo de solo lectura. Cómo leer el resultado, en el propio script |
-| 0.4 | Activar mantenimiento y **añadir tu IP** a las permitidas | La tienda muestra la página de mantenimiento; tú sigues viéndola |
+| 0.4 | Activar mantenimiento | La tienda muestra el aviso en una ventana de incógnito; tú, logueado, la sigues viendo |
 | 0.5 | Comprobar PHP 8.5 y `memory_limit ≥ 512M` | cPanel → MultiPHP INI Editor |
 
-> El paso 0.3 sustituye a mirar las consultas una a una: devuelve en una fila los productos,
-> las tres fechas, la versión, el dominio, los idiomas y el prefijo de tablas.
+> **No hace falta configurar tu IP.** `PS_MAINTENANCE_ALLOW_ADMINS` ya está en `1` en producción
+> (comprobado el 29/07), así que con estar logueado en el back office ya ves la tienda normal.
+> La fila `PS_MAINTENANCE_IP` no existe siquiera. Este paso estaba de más en el plan.
 >
-> ⚠️ Ojo con el **orden de 0.3 y 0.4** si quieres la página de mantenimiento en español: la
-> corrección de `PS_MAINTENANCE_TEXT` viaja **dentro del volcado**, así que llega después de que
-> actives el mantenimiento. El `00-comprobacion` trae al final el `UPDATE` de una línea para
-> aplicarlo antes, comentado. Si te da igual (son ~60 min de ventana), sáltatelo.
+> Ruta en el panel — ojo, **producción está hoy en inglés** (`PS_LANG_DEFAULT = 1`, solo `en-US`):
+> `Configure → Shop Parameters → General → pestaña Maintenance → Enable Shop: NO`.
+> Por SQL es una línea: `UPDATE psjy_configuration SET value='0' WHERE name='PS_SHOP_ENABLE';`
+>
+> ⚠️ Si quieres la página de mantenimiento **en español**, hay que aplicarlo antes del 0.4: la
+> corrección de `PS_MAINTENANCE_TEXT` viaja dentro del volcado y por tanto llega después. El
+> `00-comprobacion` trae ese `UPDATE` al final, comentado. Si te da igual, sáltatelo — la ventana
+> real es corta (ver §«Cuánto tarda de verdad») y son visitas de una tienda que aún no se ha
+> anunciado.
 
 > Si el paso 0.1 falla, **para aquí**. Todo lo demás es reversible solo con ese respaldo.
 
 ---
 
-## Fase 1 — Ficheros (15 min)
+## Fase 1 — Ficheros  ·  depende de tu conexión (12 MB)
 
 **1.1 Imágenes.** Subir `img-importtools.zip` a la raíz de la tienda y extraer. Debe quedar:
 
@@ -85,9 +119,7 @@ sin el fichero:  Block Heading Color -> Block Heading Color   (sin traducir)
 con el fichero:  Block Heading Color -> Color del título del bloque
 ```
 
-Comprobado clave por clave: del original de `leoproductsearch` **no se pierde ninguna** y **no
-se cambia ninguna traducción existente**. Las 8 que añadimos son las mismas cadenas repetidas
-con el prefijo del tema, que es lo que hace falta para que se apliquen:
+Reparto de las 25 claves del nuestro:
 
 ```
 <{leoproductsearch}prestashop>…        17 originales + 2
@@ -95,9 +127,6 @@ con el prefijo del tema, que es lo que hace falta para que se apliquen:
 <{leoproductsearch}vt_autosoe_child>…   3      así que PrestaShop busca la cadena bajo el
                                                nombre del tema activo, no bajo «prestashop»
 ```
-
-Que `leoelements` no traiga traducciones no es un descuido del fabricante: es la razón por la
-que la tienda salía en inglés (ver §7 de la bitácora del 28/07).
 
 Además, el tema hijo lleva dentro del zip un tercer fichero,
 `themes/vt_autosoe_child/modules/leoquicklogin/translations/es.php` (15 claves). No hay que
@@ -137,7 +166,7 @@ Comprobación: la lista de temas muestra `Importtools (AutoSoe child)` como acti
 
 ---
 
-## Fase 2 — Base de datos (20 min)
+## Fase 2 — Base de datos  ·  16 s el volcado + < 1 s los ajustes (medido)
 
 **2.1** phpMyAdmin → seleccionar la base de datos de la tienda.
 
@@ -239,7 +268,7 @@ Carritos, Direcciones…) cargan sin error, cuadro de mando del perfil del clien
 
 ---
 
-## Fase 3 — Caché y permisos (10 min)
+## Fase 3 — Caché  ·  ⚠️ la primera página tarda 57 s (medido)
 
 El orden importa. La caché la tiene que escribir **el usuario del servidor web**, no root.
 
@@ -265,7 +294,7 @@ find var img upload download -type f -exec chmod 644 {} +
 
 ---
 
-## Fase 4 — Comprobaciones (20 min)
+## Fase 4 — Comprobaciones  ·  el tiempo que tardes en mirar 7 páginas
 
 ### 4.1 Tienda pública
 

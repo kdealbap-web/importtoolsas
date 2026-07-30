@@ -5,6 +5,20 @@ referencia; aquí está lo que hay que hacer y en qué orden.
 
 Estado: **29/07/2026** · Producción verificada, vía libre para importar.
 
+> **Cómo leer los indicadores de este documento.** Cada afirmación lleva su origen, porque no
+> todas valen lo mismo:
+>
+> | | Significa |
+> |---|---|
+> | **✅ verificado** | Lo comprobé yo ejecutándolo en el entorno espejo, o sobre datos reales de producción que me pasaste |
+> | **📋 reportado** | Me lo dijiste tú y no lo he comprobado. Puede estar bien, pero no es evidencia |
+> | **⏳ pendiente** | Ni hecho ni verificado |
+>
+> Y una distinción que importa: **«verificado en el espejo» no es «verificado en producción».**
+> El espejo es una copia fiel (misma versión, mismo prefijo, mismos ficheros), pero el hosting
+> es LiteSpeed sobre CloudLinux y el espejo es Apache en Docker. Lo que se comporte distinto,
+> se verá al hacerlo.
+
 ---
 
 ## 1. Resumen ejecutivo
@@ -18,15 +32,18 @@ En producción hoy hay una instalación de PrestaShop con **19 productos de ejem
 
 ### Qué se entrega
 
-| | |
-|---|---|
-| **Catálogo** | 3.036 productos en 15 categorías, 7 marcas (4 con logotipo) |
-| **Filtros** | Marca, Línea (88 valores), Sublínea (128), Precio, Disponibilidad |
-| **Idioma** | Español (es-CO) al 100 %, verificado sobre 15 páginas |
-| **Fiscal** | Peso colombiano sin decimales, IVA 19 / 5 / 0 % |
-| **Contenido** | Datos reales de la empresa, 7 páginas redactadas, mapa de ubicación |
-| **Diseño** | Tema hijo propio (`vt_autosoe_child`), un solo perfil, sin rastro de la plantilla genérica |
-| **Panel del cliente** | Perfil con permisos acotados: gestiona catálogo, contenido y pedidos; no puede romper el tema ni los módulos |
+Todo lo de esta tabla está **✅ verificado en el espejo**, con el número que lo respalda:
+
+| | | Evidencia |
+|---|---|---|
+| **Catálogo** | 3.036 productos en 15 categorías, 7 marcas (4 con logotipo) | los 3.036 en la categoría raíz y con stock; `/2-catalogo` dice «Hay 3036 productos» |
+| **Filtros** | Marca, Línea, Sublínea, Precio, Disponibilidad | 88 líneas y 128 sublíneas, 6.072 filas en `feature_product` |
+| **Idioma** | Español (es-CO) | barrido insensible a mayúsculas sobre 15 páginas → 0 apariciones de inglés; en el tema hijo, 858 llamadas `{l …}` y 0 intraducibles |
+| **Fiscal** | Peso colombiano sin decimales, IVA 19 / 5 / 0 % | carrito real: 84.300 sin IVA → 100.317 con el 19 % |
+| **Contenido** | Datos reales de la empresa, 7 páginas, mapa | las 7 páginas CMS en español |
+| **Diseño** | Tema hijo `vt_autosoe_child`, un solo perfil | 34 contenidos Leo con JSON válido 34/34, 1 perfil, 54 ítems de menú |
+| **Panel del cliente** | Permisos acotados | 302 permisos de pestaña + 48 de módulo, validados con sesión HTTP real: 403 en Tema, Módulos, Empleados, Rendimiento, SQL, Transportistas e Impuestos |
+| **Volcado** | Restaurado en base limpia | 30 comprobaciones en verde |
 
 ### Qué NO está listo, y de quién depende
 
@@ -35,6 +52,21 @@ En producción hoy hay una instalación de PrestaShop con **19 productos de ejem
 | **Precios reales** | El cliente los enviará | Hoy se muestran precios generados. Mecanismo de carga ya probado (`06`) |
 | **Transportistas y fletes** | Definir con el cliente cobertura y tarifas | **Hoy nadie puede completar un pedido**: los transportistas son los de ejemplo y no cubren Colombia. Se resuelve con el modo catálogo hasta tener datos (`07`) |
 | **Fotos de producto** | El cliente | Los 3.036 productos salen sin imagen |
+
+### Estado real, frente por frente
+
+| Frente | Estado | Origen del dato |
+|---|---|---|
+| Construcción de la tienda en el espejo | ✅ terminada | 30 comprobaciones sobre el volcado restaurado |
+| Comprobación previa de producción | ✅ hecha | tus resultados: 19 productos, sin actividad posterior al 24/07 |
+| Imágenes subidas a producción | 📋 reportado | me lo dijiste; no verificado |
+| Tema subido a producción | 📋 reportado | me lo dijiste; no verificado |
+| **Tema activado en producción** | ⏳ **es el paso de hoy** | — |
+| Traducciones (`es.php`) subidas | ⏳ pendiente | son 2 ficheros pequeños |
+| Base de datos importada | ⏳ mañana | — |
+| Precios reales | ⏳ los envía el cliente | mecanismo probado (`06`) |
+| Transportistas | ⏳ definir con el cliente | **bloquea vender** (§5) |
+| Fotos de producto | ⏳ las envía el cliente | `psjy_image` = 0 filas |
 
 ### Riesgo del traslado
 
@@ -46,7 +78,14 @@ al 24/07), y el respaldo de JetBackup es la marcha atrás.
 
 ## 2. HOY — subir el tema y verlo funcionando
 
-Ya subiste las imágenes y el tema. Faltan dos cosas: poner mantenimiento y activar el tema.
+**📋 Reportado por ti:** imágenes subidas y extraídas, y el tema subido. No lo he verificado —
+se confirmará solo cuando actives el tema y cargue.
+
+Faltan dos cosas: poner mantenimiento y activar el tema.
+
+**Tiempo real de esta sesión:** son 4 clics en el panel y mirar la portada. Lo único que puede
+tardar es la primera carga tras activar el tema, porque PrestaShop reconstruye la caché
+(**57 s medidos** en el espejo — ver el aviso del paso 2.3).
 
 > Tu back office está **en inglés** ahora mismo (`PS_LANG_DEFAULT = 1`, solo `en-US`).
 > Los menús de abajo van en inglés por eso. Tras el import quedará en español.
@@ -90,6 +129,10 @@ Debe aparecer `Importtools (AutoSoe child)` en la lista. Pulsa **"Use this theme
 
 Con mantenimiento puesto y tu sesión de admin abierta, entra a la portada.
 
+> ⏱️ **La primera carga tarda alrededor de un minuto y parece colgada. Es normal, no recargues.**
+> Medido en el espejo: **57,3 s** la primera petición tras activar el tema (PrestaShop reconstruye
+> el contenedor de Symfony), y **0,3–0,5 s** todas las siguientes. Ocurre **una sola vez**.
+
 Verás **el diseño del tema hijo con el contenido de ejemplo en inglés** (19 productos, textos
 demo). **Eso es lo correcto en este punto**: el diseño viene de los ficheros que acabas de
 subir, y el contenido en español viene mañana con la base de datos.
@@ -107,13 +150,20 @@ hoy es irreversible: son ficheros, y la base de datos no se ha tocado.
 
 Orden exacto. Los pasos 3.2 y 3.3 van **seguidos, en la misma sesión de phpMyAdmin**.
 
-| # | Qué | Con qué |
-|---|---|---|
-| 3.1 | **Respaldo JetBackup** (archivos + base). Esperar a que termine | cPanel → JetBackup |
-| 3.2 | Importar el volcado | `backups/importtools-FINAL-20260729-1726.sql.gz` |
-| 3.3 | Ejecutar los ajustes obligatorios | `02-ajustes-tras-importar.sql` |
-| 3.4 | Vaciar cachés | ver 3.4 abajo |
-| 3.5 | Comprobar | ver §4 |
+| # | Qué | Con qué | Cuánto tarda |
+|---|---|---|---|
+| 3.1 | **Respaldo JetBackup** (archivos + base). Esperar a que termine | cPanel → JetBackup | depende del hosting |
+| 3.2 | Importar el volcado | `backups/importtools-FINAL-20260729-1726.sql.gz` | **16 s medidos** (373 tablas, 7,58 MB) |
+| 3.3 | Ejecutar los ajustes obligatorios | `02-ajustes-tras-importar.sql` | **< 1 s** (6 sentencias) |
+| 3.4 | Vaciar cachés | ver 3.4 abajo | el borrado es inmediato; **la primera página después tarda ~57 s** |
+| 3.5 | Comprobar | ver §4 | lo que tardes en mirar 7 páginas |
+
+> Los tiempos con «medidos» son reales, cronometrados en el espejo el 29/07. Los 16 s son por
+> línea de comandos; phpMyAdmin añade su propia sobrecarga, pero el volcado es pequeño (7,58 MB)
+> y no debería agotar el tiempo de espera.
+>
+> **Ventana total con el sitio en mantenimiento: el respaldo, más unos 2 minutos.** No es la hora
+> que decía este plan antes.
 
 ### ⚠️ Lo único que puede dejarte fuera
 
@@ -137,9 +187,12 @@ themes/vt_autosoe_child/assets/cache/       (todo, la carpeta se queda)
 
 Y si el hosting tiene LiteSpeed Cache, púrgalo (cPanel → LiteSpeed Web Cache Manager).
 
+> ⏱️ **Tras vaciar la caché, la primera página tarda ~57 s** (medido). No es un error: espera.
+> Y **no vacíes la caché justo antes de mostrarle la tienda al cliente** — cárgala tú una vez.
+
 > Si aparecen HTTP 500 intermitentes después, es esto: caché escrita por un usuario distinto al
 > del servidor web. Se arregla borrando `var/cache/` otra vez y dejando que la reconstruya la
-> primera visita.
+> primera visita. Me pasó a mí en el espejo hoy mismo por ejecutar scripts como root.
 
 ### Scripts: cuáles se ejecutan y cuáles NO
 
@@ -226,7 +279,8 @@ Si prefieres no exportar la base entera, el `03` y el `04` ya me sirven para cas
 ```
 deploy/paquete/
 ├── EMPEZAR-AQUI.md                     ← este fichero, lo único que hay que leer
-├── 00-comprobacion-antes-de-importar.sql   ya ejecutado ✓ (19 productos, vía libre)
+├── 00-comprobacion-antes-de-importar.sql   ✅ ejecutado (19 productos, vía libre)
+├── 00-RESULTADOS-produccion-20260729.txt   ✅ tus resultados, guardados como evidencia
 ├── 02-ajustes-tras-importar.sql        ★ el único obligatorio tras el volcado
 ├── 02b-limpieza-datos-demo.sql             ya aplicado al volcado
 ├── 02c-textos-en-ingles-en-datos.sql       ya aplicado al volcado
@@ -236,9 +290,9 @@ deploy/paquete/
 ├── 04-PLAN-IMPORTACION.md                  detalle largo y diagnóstico de fallos
 ├── 05-CREDENCIALES.md                      accesos (no se versiona)
 ├── 00-PROGRESO-CLIENTE.md                  documento para el cliente
-├── vt_autosoe_child.zip                ya subido ✓
-├── img-importtools.zip                 ya subido ✓
-└── modules/                            los dos es.php + el de leoquicklogin
+├── vt_autosoe_child.zip                📋 subido según tu reporte, sin verificar
+├── img-importtools.zip                 📋 subido y extraído según tu reporte, sin verificar
+└── modules/                            los dos es.php + el de leoquicklogin (⏳ pendientes de subir)
 
 backups/importtools-FINAL-20260729-1726.sql.gz   ← el volcado a importar
 deploy/entrada/                                  ← lo que me dejas para revisar (§6)
@@ -248,8 +302,23 @@ deploy/entrada/                                  ← lo que me dejas para revisa
 
 ## Resumen en cinco líneas
 
-1. **Hoy:** mantenimiento ON → activar el tema hijo → confirmar que carga. Nada irreversible.
-2. **Mañana:** JetBackup → importar volcado → `02-ajustes` **seguido** → vaciar cachés.
+1. **Hoy:** mantenimiento ON → activar el tema hijo → confirmar que carga. 4 clics, nada
+   irreversible. Aguanta el minuto de la primera carga.
+2. **Mañana:** JetBackup → importar volcado (16 s) → `02-ajustes` **seguido** (< 1 s) → vaciar
+   cachés (+57 s la primera página).
 3. **Comprobar** las 7 cosas de §4.
 4. **Decidir** el modo catálogo antes de quitar el mantenimiento (§5).
-5. **Dejarme** los cuatro ficheros de §6 y lo reviso.
+5. **Dejarme** los ficheros de §6 y lo reviso.
+
+---
+
+## Registro de correcciones a este documento
+
+Para que se sepa qué cambió y por qué:
+
+| Fecha | Corrección |
+|---|---|
+| 29/07 | **Los tiempos del plan estaban inventados** («50–70 minutos», «Fase 1 — 15 min»). Sustituidos por los medidos: 16 s el volcado, 57,3 s la primera página tras vaciar caché, 0,3–0,5 s el resto. Lo que no se puede medir (subida, JetBackup) se declara como tal |
+| 29/07 | **El paso «añadir tu IP a las permitidas» sobraba.** `PS_MAINTENANCE_ALLOW_ADMINS` ya está en 1 y la fila `PS_MAINTENANCE_IP` no existe: basta estar logueado |
+| 29/07 | Los menús del panel se dieron **en inglés**, porque producción tiene `PS_LANG_DEFAULT = 1` y solo `en-US`. Antes se daban en español, que es lo que se verá **después** del import |
+| 29/07 | Indicadores separados por origen: **✅ verificado** por mí / **📋 reportado** por ti / **⏳ pendiente**. Antes había «✓ ya subido» sobre cosas que no comprobé |
