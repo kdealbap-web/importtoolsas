@@ -3,7 +3,7 @@
 **Único documento que necesitas.** Los demás ficheros de esta carpeta son material de
 referencia; aquí está lo que hay que hacer y en qué orden.
 
-Estado: **29/07/2026** · Producción verificada, vía libre para importar.
+Estado: **30/07/2026** · Producción verificada, vía libre para importar.
 
 > **Cómo leer los indicadores de este documento.** Cada afirmación lleva su origen, porque no
 > todas valen lo mismo:
@@ -61,9 +61,9 @@ Todo lo de esta tabla está **✅ verificado en el espejo**, con el número que 
 | Comprobación previa de producción | ✅ hecha | tus resultados: 19 productos, sin actividad posterior al 24/07 |
 | Imágenes subidas a producción | 📋 reportado | me lo dijiste; no verificado |
 | Tema subido a producción | 📋 reportado | me lo dijiste; no verificado |
-| **Tema activado en producción** | ⏳ **es el paso de hoy** | — |
+| **Tema activado en producción** | ⏳ **el paso siguiente** | — |
 | Traducciones (`es.php`) subidas | ⏳ pendiente | son 2 ficheros pequeños |
-| Base de datos importada | ⏳ mañana | — |
+| Base de datos importada | ⏳ sesión 2 | — |
 | Precios reales | ⏳ los envía el cliente | mecanismo probado (`06`) |
 | Transportistas | ⏳ definir con el cliente | **bloquea vender** (§5) |
 | Fotos de producto | ⏳ las envía el cliente | `psjy_image` = 0 filas |
@@ -76,7 +76,7 @@ al 24/07), y el respaldo de JetBackup es la marcha atrás.
 
 ---
 
-## 2. HOY — subir el tema y verlo funcionando
+## 2. SESIÓN 1 — subir el tema y verlo funcionando
 
 **📋 Reportado por ti:** imágenes subidas y extraídas, y el tema subido. No lo he verificado —
 se confirmará solo cuando actives el tema y cargue.
@@ -135,18 +135,18 @@ Con mantenimiento puesto y tu sesión de admin abierta, entra a la portada.
 
 Verás **el diseño del tema hijo con el contenido de ejemplo en inglés** (19 productos, textos
 demo). **Eso es lo correcto en este punto**: el diseño viene de los ficheros que acabas de
-subir, y el contenido en español viene mañana con la base de datos.
+subir, y el contenido en español llega en la sesión 2, con la base de datos.
 
-Lo que importa hoy es que **cargue sin error 500 y con estilos**. Si se ve así, terminamos.
+Lo que importa en esta sesión es que **cargue sin error 500 y con estilos**. Si se ve así, terminamos.
 
 ### 2.4 Si algo se rompe
 
-Deja el mantenimiento puesto y vuelve al tema anterior en `Design → Theme & Logo`. Nada de lo de
-hoy es irreversible: son ficheros, y la base de datos no se ha tocado.
+Deja el mantenimiento puesto y vuelve al tema anterior en `Design → Theme & Logo`. Nada de esta sesión
+es irreversible: son ficheros, y la base de datos no se ha tocado.
 
 ---
 
-## 3. MAÑANA — la base de datos
+## 3. SESIÓN 2 — la base de datos
 
 Orden exacto. Los pasos 3.2 y 3.3 van **seguidos, en la misma sesión de phpMyAdmin**.
 
@@ -207,7 +207,7 @@ Y si el hosting tiene LiteSpeed Cache, púrgalo (cPanel → LiteSpeed Web Cache 
 
 ---
 
-## 4. Comprobar (mañana, tras el 3.4)
+## 4. Comprobar (tras el 3.4)
 
 Con esto basta para saber si salió bien:
 
@@ -302,9 +302,9 @@ deploy/entrada/                                  ← lo que me dejas para revisa
 
 ## Resumen en cinco líneas
 
-1. **Hoy:** mantenimiento ON → activar el tema hijo → confirmar que carga. 4 clics, nada
+1. **Sesión 1:** mantenimiento ON → activar el tema hijo → confirmar que carga. 4 clics, nada
    irreversible. Aguanta el minuto de la primera carga.
-2. **Mañana:** JetBackup → importar volcado (16 s) → `02-ajustes` **seguido** (< 1 s) → vaciar
+2. **Sesión 2:** JetBackup → importar volcado (16 s) → `02-ajustes` **seguido** (< 1 s) → vaciar
    cachés (+57 s la primera página).
 3. **Comprobar** las 7 cosas de §4.
 4. **Decidir** el modo catálogo antes de quitar el mantenimiento (§5).
