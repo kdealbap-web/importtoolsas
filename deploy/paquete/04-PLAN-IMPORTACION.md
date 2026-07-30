@@ -326,6 +326,57 @@ módulos: ver=sí  configurar=sí  desinstalar=NO
 
 ---
 
+## Fase 4-bis — ⚠️ Nadie en Colombia puede completar un pedido
+
+Revisando el checkout (era un pendiente de la Fase 4) apareció esto, y conviene resolverlo
+antes de quitar el mantenimiento. **No lo provoca el despliegue: ya está así en producción.**
+
+El carrito funciona, los precios se ven, el checkout como invitado está activado… y al llegar
+al paso **«Método de envío» no hay ninguna opción**, así que el pedido no se puede terminar.
+
+Los 4 transportistas son los de ejemplo de PrestaShop y solo cubren **Europa y Norteamérica**.
+Colombia está en la zona 6 (*South America*), sin un solo transportista ni tarifa asociada.
+Comprobado con la API del core:
+
+```
+Carrier::getCarriersForOrder(6)  -> 0 transportistas     (6 = zona de Colombia)
+Carrier::getCarriersForOrder(1)  -> sí encuentra          (1 = Europe)
+Carrier::getCarriersForOrder(2)  -> sí encuentra          (2 = North America)
+psjy_carrier_zone -> solo zonas 1 y 2 · psjy_delivery -> 0 filas para la zona 6
+```
+
+Dos consecuencias que conviene tener claras:
+
+- El riesgo que señalé antes —«alguien podría pedir a un precio inventado»— **no puede pasar**:
+  el checkout no llega al final.
+- Pero lo que queda es peor de cara al cliente: la tienda **aparenta vender** y cualquiera que
+  lo intente choca contra un muro en el último paso.
+
+Las dos salidas están en **`07-transportistas-colombia.sql`**, con el diagnóstico de solo
+lectura primero:
+
+| | Qué hace | Cuándo |
+|---|---|---|
+| **A — modo catálogo** | `PS_CATALOG_MODE = 1`. Una fila. Quita carrito y checkout; los 3.036 productos siguen navegables con filtros y marcas | **Lo que recomiendo mientras los precios sean los generados.** Hoy la tienda aparenta algo que no puede hacer |
+| **B — transportista real** | Crear uno que cubra Colombia. Lo práctico en mayoreo: «Coordinar con un asesor» a coste 0 y el flete se cotiza aparte | Cuando el cliente dé cobertura y tarifas |
+
+> ⚠️ La opción B tiene cuatro trampas, todas comprobadas: hay que insertar en `carrier_zone`
+> **y** en `delivery`; `id_shop`/`id_shop_group` van a **NULL**; el rango debe ser del propio
+> transportista; y **debe coincidir con cómo factura** — si es por peso hay que rellenar
+> `id_range_weight`, no `id_range_price`. Fallar cualquiera de las cuatro hace que el
+> transportista **no aparezca, sin ningún error**. Me costó tres intentos.
+
+**Lo bueno del repaso:** el checkout se muestra **íntegro en español** —«Información personal»,
+«Ordenar como visitante», «Sr./Sra.», «Acepto los términos y condiciones y la política de
+privacidad», «Método de envío», «Pago»— y el carrito calcula bien el IVA: producto 84.300 sin
+impuesto → total **100.317** con el 19 %.
+
+> Ojo con eso último: el catálogo muestra **84.300** (sin IVA, que es lo pedido para venta al
+> por mayor) y el checkout cobra **100.317**. Es correcto, pero conviene que el cliente lo sepa,
+> porque un comprador desprevenido ve un 19 % de diferencia entre lo que miró y lo que paga.
+
+---
+
 ## Fase 5 — Precios de prueba: **DECIDIDO el 29/07/2026**
 
 Los 3.036 productos tienen **precios generados** para poder ver la tienda funcionando. Están

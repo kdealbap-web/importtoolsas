@@ -479,6 +479,27 @@ importtools-store/
       Por eso el script normaliza los códigos en un paso propio antes de cruzar.
 - [ ] **Transportistas y costos de envío**: siguen los 4 demo (`Click and collect`,
       `My carrier`, …). Requiere definir con el cliente cobertura y tarifas reales.
+      ⚠️ **Y hoy esto impide vender: nadie en Colombia puede completar un pedido.** El carrito
+      funciona y el checkout de invitado está activo, pero el paso «Método de envío» sale sin
+      ninguna opción. Los 4 demo solo cubren Europa y Norteamérica; Colombia está en la zona 6
+      (*South America*), con 0 filas en `psjy_carrier_zone` y 0 en `psjy_delivery`.
+      Verificado con el core: `Carrier::getCarriersForOrder(6)` → **0**, mientras que para las
+      zonas 1 y 2 sí encuentra. Salidas en `deploy/paquete/07-transportistas-colombia.sql`
+      (A: modo catálogo con una fila — lo recomendado mientras los precios sean los generados;
+      B: transportista real para Colombia).
+      ⚠️ Cuatro trampas al crear el transportista, comprobadas en el espejo: hay que insertar en
+      `carrier_zone` **y** en `delivery`; `id_shop`/`id_shop_group` a **NULL** (con 1 se
+      descarta); el rango debe ser **del propio** transportista; y debe coincidir con **cómo
+      factura** — `shipping_method = 0` significa «usar `PS_SHIPPING_METHOD`», que aquí es `1`
+      = **por peso**, así que va en `id_range_weight` y no en `id_range_price`. Con el rango
+      equivocado `getMaxDeliveryPriceByWeight()` devuelve `false` y el transportista
+      **desaparece sin ningún error**.
+- [x] **Checkout revisado** (29/07/2026, pendiente de la Fase 4). Está **íntegro en español** y
+      el IVA se calcula bien: producto 84.300 sin impuesto → total **100.317** con el 19 %.
+      El checkout de invitado funciona (crea el cliente con `is_guest = 1`).
+      ⚠️ Conviene avisar al cliente de que el catálogo muestra **sin IVA** (84.300) y el
+      checkout cobra **con IVA** (100.317). Es lo correcto para venta al por mayor
+      (`price_display_method = 1`), pero un comprador desprevenido ve un 19 % de diferencia.
 - [x] **Datos demo eliminados del volcado de entrega** (29/07/2026). Script y justificación en
       `deploy/paquete/02b-limpieza-datos-demo.sql`; volcado bueno
       `backups/importtools-FINAL-20260729-1726.sql.gz`. Quedan 0 pedidos, 0 carritos,
