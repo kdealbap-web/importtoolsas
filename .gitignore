@@ -58,3 +58,7 @@ docs/*.rar
 deploy/paquete/05-CREDENCIALES.md
 # php.ini de produccion: no es secreto, pero es config del servidor, no del proyecto
 deploy/paquete/config/php.ini.produccion
+
+# Carpeta de entrada: volcados y logs de produccion (datos reales)
+deploy/entrada/*
+!deploy/entrada/LEEME.md
