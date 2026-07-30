@@ -92,7 +92,18 @@ tardar es la primera carga tras activar el tema, porque PrestaShop reconstruye l
 
 ### 2.1 Activar el mantenimiento
 
-**Por el panel** — entra en `https://www.importtoolsas.com/panel-4h5o/` y ve a:
+**Por el panel** — la dirección exacta, con la barra final:
+
+```
+https://www.importtoolsas.com/panel-4h5o/
+```
+
+> Es `panel-4h5o`. Si te sale **404**, es el nombre de la carpeta: cualquier otra variante da 404
+> porque la carpeta del back office se renombró por seguridad. Comprobado en los ficheros de
+> producción: las carpetas que existen son `panel-4h5o/`, `admin-api/` (no es el panel, es la API)
+> y `admin_dev/` (vacía).
+
+Una vez dentro, ve a:
 
 ```
 Configure  →  Shop Parameters  →  General  →  pestaña "Maintenance"

@@ -61,7 +61,14 @@ Antes de instalar, confirma en cPanel:
    - **Configuración de BD:** host `localhost`, nombre/usuario/contraseña creados en el paso 2 → *Probar conexión* → siguiente.
 5. Al finalizar:
    - **Borra la carpeta `/install`** (Administrador de archivos).
-   - **Renombra la carpeta `/admin`** a algo aleatorio (p. ej. `/gestion-9f3a`) y usa esa URL para entrar.
+   - **Renombra la carpeta `/admin`** a algo aleatorio y usa esa URL para entrar.
+
+> ⚠️ **El nombre que se usó de verdad es `panel-4h5o`** →
+> `https://www.importtoolsas.com/panel-4h5o/`
+>
+> Antes había aquí un ejemplo inventado (`/gestion-9f3a`) que se confundió con el valor real y
+> costó un 404. Los ejemplos que parecen datos reales son una trampa: si no es el valor de
+> verdad, no se escribe.
 
 ---
 
