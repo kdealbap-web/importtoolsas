@@ -14,9 +14,17 @@ Hazlo en horario de baja actividad: el paso 3 sustituye la base de datos.
 |---|---|---|
 | 0.1 | **JetBackup: respaldo completo** (archivos + base de datos) y esperar a que termine | El respaldo aparece listado con la fecha de hoy |
 | 0.2 | Anotar el nombre exacto de la base de datos y su usuario | cPanel → MySQL Databases |
-| 0.3 | Confirmar que nadie ha cambiado nada en producción desde el **24/07/2026** | Ver §«Si producción cambió» al final |
+| 0.3 | Ejecutar **`00-comprobacion-antes-de-importar.sql`** en phpMyAdmin | Todo de solo lectura. Cómo leer el resultado, en el propio script |
 | 0.4 | Activar mantenimiento y **añadir tu IP** a las permitidas | La tienda muestra la página de mantenimiento; tú sigues viéndola |
 | 0.5 | Comprobar PHP 8.5 y `memory_limit ≥ 512M` | cPanel → MultiPHP INI Editor |
+
+> El paso 0.3 sustituye a mirar las consultas una a una: devuelve en una fila los productos,
+> las tres fechas, la versión, el dominio, los idiomas y el prefijo de tablas.
+>
+> ⚠️ Ojo con el **orden de 0.3 y 0.4** si quieres la página de mantenimiento en español: la
+> corrección de `PS_MAINTENANCE_TEXT` viaja **dentro del volcado**, así que llega después de que
+> actives el mantenimiento. El `00-comprobacion` trae al final el `UPDATE` de una línea para
+> aplicarlo antes, comentado. Si te da igual (son ~60 min de ventana), sáltatelo.
 
 > Si el paso 0.1 falla, **para aquí**. Todo lo demás es reversible solo con ese respaldo.
 
