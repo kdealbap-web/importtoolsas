@@ -223,13 +223,59 @@ redirigen a `localhost:8080`** y no podrás entrar por el panel a arreglarlo.
 importación.** Si te pasa, se sale ejecutando ese mismo fichero desde phpMyAdmin, que sigue
 siendo accesible desde cPanel.
 
+### 3.3-bis ⚠️ Dos cosas sin las que NADA de lo que subas se aplica
+
+Descubiertas en el despliegue real del 31/07, después de perder un buen rato:
+
+**a) Los catálogos de traducción son ficheros, no filas de la base.** Producción estaba en
+inglés, así que `translations/es-CO/` no existía. El volcado trae el idioma español, pero sin
+esos 169 XLIFF **todo el núcleo cae al inglés**: «There are 3036 products», «Sort by»,
+«Subcategories», «Back to top», «Quick view»…
+
+```
+Sube y extrae en la raíz:  translations-es-CO.zip   (169 ficheros + sf-es-CO.zip)
+Debe quedar:               public_html/translations/es-CO/
+```
+
+**b) Smarty no recompila las plantillas.** El volcado trae la configuración optimizada para
+producción, `PS_SMARTY_FORCE_COMPILE = 0`, y el núcleo hace:
+
+```php
+$smarty->compile_check = (PS_SMARTY_FORCE_COMPILE >= _PS_SMARTY_CHECK_COMPILE_)
+                        ? COMPILECHECK_ON : COMPILECHECK_OFF;
+```
+
+Con `compile_check` apagado, **Smarty ni mira si la plantilla cambió**: sigue usando lo
+compilado del install anterior. Por eso puedes subir tema, traducciones y widgets y no cambiar
+nada en pantalla. Apágalo mientras despliegas:
+
+```sql
+UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_SMARTY_FORCE_COMPILE';
+UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SMARTY_CACHE';
+```
+
+Y **devuélvelo al terminar**, que es lo que hace la tienda rápida:
+
+```sql
+UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SMARTY_FORCE_COMPILE';
+UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_SMARTY_CACHE';
+```
+
+> **Lo que NO es el problema, aunque lo parezca:** `modules/leoelements/gencode/`. Ese
+> directorio solo se lee en el editor del back office — `LeoGenCode.php` hace
+> `if (!Leo_Helper::is_admin()) return $html;` —; en la tienda se escribe como subproducto de
+> cada render. Borrarlo no cambia nada en el front. El fichero que sí manda es
+> `modules/leoelements/views/templates/front/LeoGenCode_<id>.tpl`, que se reescribe en cada
+> visita con el HTML de la base… y que Smarty ignora si `compile_check` está apagado.
+
 ### 3.4 Cachés (después del 3.3)
 
 Desde el Administrador de archivos de cPanel, **con tu usuario** (no como root), borra el
 contenido de:
 
 ```
-var/cache/                                  (todo)
+var/cache/prod/smarty/compile/   ← la que de verdad importa
+var/cache/                       (todo)
 modules/leoelements/gencode/LeoGenCode_*.html
 themes/vt_autosoe_child/assets/cache/       (todo, la carpeta se queda)
 ```
