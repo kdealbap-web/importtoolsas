@@ -336,3 +336,23 @@ body .elementor-12 .elementor-element-a0df6a6 .footer_icon-box .elementor-icon-b
 }
 .leo-megamenu .navbar-nav > li > a .menu-icon-class > i { flex: none; font-size: 1rem; opacity: .92; }
 .leo-megamenu .navbar-nav > li > a .menu-icon-class .menu-title { line-height: 1; }
+
+/* --- Correcciones vistas en las capturas del 01/08 ------------------------- */
+
+/* El spinner del buscador quedaba girando siempre, arriba a la derecha. Debe
+   aparecer solo mientras busca: jQuery lo muestra con display inline, que gana
+   a esta regla sin necesidad de !important. */
+.leoproductsearch-loading.cssload-speeding-wheel { display: none; }
+
+/* La hamburguesa fija tapaba «Atención por WhatsApp» de la barra superior.
+   Se le reserva sitio. */
+@media (max-width: 991px) {
+  .header-nav .topnav,
+  .header-nav .bottomnav { padding-right: 62px; }
+}
+
+/* Los spinners de Leo son position:absolute con inset:0; si su contenedor no
+   tiene position, se escapan del boton. Se ancla el contenedor. (No se ocultan
+   en bloque: son la senal de «cargando» de anadir a lista y comparar.) */
+.leo-bt-cart, .leo-wishlist-button, .leo-compare-button, .quick-view,
+.leoproductsearch-result { position: relative; }

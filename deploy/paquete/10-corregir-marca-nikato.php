@@ -82,3 +82,12 @@ while ($f = $r->fetch_assoc()) printf("    id %s  %-14s %s productos\n", $f['id_
 
    Sin eso el filtro sigue diciendo «Nikatto» aunque la marca ya este bien.
    ============================================================================ */
+
+/* ============================================================================
+   ANADIDO 01/08 — enlace roto en la barra inferior del movil
+   El icono «Catálogo» apuntaba a «2-home», que dejo de existir cuando la
+   categoria raiz se renombro a «Catálogo» (/2-catalogo).
+   Va dentro del JSON de Elementor como objeto de enlace, NO como href:
+       "link":{"url":"2-home", ...}
+   Reemplazo:  "url":"2-home"  ->  "url":"/2-catalogo"      (8 filas)
+   ============================================================================ */
