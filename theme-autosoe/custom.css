@@ -1,0 +1,214 @@
+/* ============================================================================
+   Importtools Latam S.A.S — overrides del child theme (padre: vt_autosoe)
+   ----------------------------------------------------------------------------
+   Criterio: tocar lo MINIMO y apoyarse en el CSS del propio tema.
+   No se modifica ningun fichero del tema padre. El cliente sigue editando con
+   las herramientas de Leo: panel lateral del front + Leo Elements en el back office.
+   ============================================================================ */
+
+:root {
+  --it-red:  #E2211C;   /* rojo de marca (muestreado del logo) */
+  --it-navy: #1F3864;   /* azul marino de marca */
+}
+
+/* ----------------------------------------------------------------------------
+   1) LOGO
+   El del cliente mide 1600x280 px; el de AutoSoe medía 204x44. Sin limitarlo se
+   desborda. El tema fija `.header__logo img{max-width:160px}` en
+   themes/vt_autosoe/modules/leoelements/views/css/positions/headerposition*.css,
+   que la tuberia de assets concatena DESPUES de este archivo: se usa un selector
+   mas especifico (0,2,1) en vez de !important.
+   Resultado: cabecera 228x40 px, pie 160x28 px.
+   ---------------------------------------------------------------------------- */
+.header__logo .header_logo img,
+.header_logo img.logo-second,
+.header_logo img.logo {
+  max-height: 40px;
+  max-width: 230px;
+  height: auto;
+  width: auto;
+}
+
+@media (max-width: 991px) {
+  .header__logo .header_logo img,
+  .header_logo img.logo-second,
+  .header_logo img.logo {
+    max-height: 32px;
+    max-width: 185px;
+  }
+}
+
+.elementor-image img[src*="logo-importtools-white"],
+footer img[src*="logo-importtools-white"] {
+  max-height: 28px;
+  max-width: 170px;
+  height: auto;
+  width: auto;
+}
+
+/* ----------------------------------------------------------------------------
+   2) ANCHO DEL PANEL DE LOS DESPLEGABLES
+   El ocultado, la transicion y todo el aspecto (fondo, padding, sombra) los pone
+   el propio tema sobre `.dropdown-menu`:
+
+       .leo-megamenu .dropdown-menu { display:block; opacity:0; visibility:hidden;
+                                      transform:translateY(20px); transition:.25s;
+                                      background:#fff; padding:20px 30px; box-shadow:... }
+       .leo-megamenu .dropdown:hover > .dropdown-menu { opacity:1; visibility:visible }
+
+   Lo unico que falta es el ancho: `leobootstrapmenu.js:449` ejecuta
+   `$('.dropdown-menu.level1').parent().removeClass('aligned-fullwidth')`, con lo que
+   el panel pierde la variante a todo el ancho del tema y queda en `width:max-content`.
+   Como dentro van columnas Bootstrap (`ul.col-md-4`), cuyo % se calcula sobre el
+   padre, sin un ancho concreto la rejilla se colapsa.
+
+   `leo-N` es la clase que el modulo genera con el numero de columnas del item:
+   CATEGORIAS usa 3 y MARCAS 2.
+   ---------------------------------------------------------------------------- */
+.leo-megamenu .navbar-nav > li.dropdown.leo-3 > .dropdown-menu.level1 {
+  width: 740px;
+  max-width: 92vw;
+}
+
+.leo-megamenu .navbar-nav > li.dropdown.leo-2 > .dropdown-menu.level1 {
+  width: 440px;
+  max-width: 92vw;
+}
+
+@media (max-width: 991px) {
+  .leo-megamenu .navbar-nav > li.dropdown.leo-3 > .dropdown-menu.level1,
+  .leo-megamenu .navbar-nav > li.dropdown.leo-2 > .dropdown-menu.level1 {
+    width: auto;
+  }
+}
+
+/* Las categorias del panel, en su rejilla, sin las viñetas de la lista */
+.leo-megamenu .dropdown-menu.level1 .row > ul {
+  margin-bottom: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+
+/* ==========================================================================
+   Ajustes del 01/08/2026 — pedidos por el cliente
+   ========================================================================== */
+
+/* --- Logo un 25 % mas grande (40 -> 50 px de alto, 230 -> 288 de ancho) ----
+   Se repite la escalera de selectores del bloque de arriba porque
+   headerposition*.css del tema padre se concatena DESPUES de este archivo. */
+.header__logo .header_logo img,
+.header_logo img.logo-second,
+.header_logo img.logo {
+  max-height: 50px;
+  max-width: 288px;
+}
+
+/* --- Iconos del menu principal ------------------------------------------- */
+.leo-megamenu .navbar-nav > li > a .menu-icon-class,
+.leo-megamenu .navbar-nav > li > a .hasicon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: .45rem;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: .9;
+}
+.leo-megamenu .navbar-nav > li > a:hover .hasicon { opacity: 1; }
+/* que el enlace alinee icono y texto en la misma linea base */
+.leo-megamenu .navbar-nav > li > a.nav-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ==========================================================================
+   RESPONSIVE — el menu movil estaba roto en Safari
+   Tres problemas distintos:
+     a) la hamburguesa cae DEBAJO del header, porque el megamenu vive en su
+        propia seccion de Elementor, hermana de la del logo.
+     b) al abrir, Bootstrap anima la ALTURA del panel; en pantalla completa eso
+        se ve como un salto, no como una transicion.
+     c) el fondo «no era constante»: el panel no tenia fondo propio y en iOS
+        100vh cambia cuando la barra de direcciones aparece o se oculta.
+   ========================================================================== */
+@media (max-width: 991px) {
+
+  /* (a) La hamburguesa, a una esquina. position:fixed y no absolute a
+     proposito: las secciones de Elementor crean su propio contexto de
+     posicionamiento y un absolute quedaria anclado a la seccion equivocada. */
+  .ApMegamenu .navbar-header {
+    position: fixed;
+    top: 10px;
+    right: 12px;
+    z-index: 1040;
+    margin: 0;
+    padding: 0;
+  }
+  .ApMegamenu .navbar-header .navbar-toggler {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;               /* 44 px es el minimo comodo para el pulgar */
+    height: 44px;
+    border: 0;
+    border-radius: 4px;
+    background: #E2211C;
+    color: #fff;
+    font-size: 1.35rem;
+    line-height: 1;
+    box-shadow: 0 2px 10px -2px rgba(0,0,0,.35);
+  }
+
+  /* (b) Fuera la animacion de altura de Bootstrap: es la que se ve como un bug */
+  .leo-top-menu.collapsing {
+    -webkit-transition: none !important;
+    transition: none !important;
+    height: auto !important;
+  }
+
+  /* (c) El panel: fondo solido, alto real del viewport y scroll propio */
+  .leo-megamenu .leo-top-menu.collapse.show,
+  .leo-megamenu .leo-top-menu.collapse.in {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh;            /* iOS: el alto que de verdad se ve */
+    z-index: 1035;
+    margin: 0;
+    padding: 68px 0 2rem;
+    background: #1F3864;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .leo-megamenu .leo-top-menu.collapse.show .navbar-nav,
+  .leo-megamenu .leo-top-menu.collapse.in .navbar-nav {
+    width: 100%;
+    margin: 0;
+    padding: 0 1.1rem;
+  }
+  .leo-megamenu .leo-top-menu.collapse.show .nav-item > a,
+  .leo-megamenu .leo-top-menu.collapse.in .nav-item > a {
+    color: #fff;
+    padding: .9rem .25rem;
+    border-bottom: 1px solid rgba(255,255,255,.14);
+    font-size: 1rem;
+  }
+  .leo-megamenu .leo-top-menu.collapse.show .dropdown-menu,
+  .leo-megamenu .leo-top-menu.collapse.in .dropdown-menu {
+    background: rgba(0,0,0,.18);
+    border: 0;
+    box-shadow: none;
+  }
+  .leo-megamenu .leo-top-menu.collapse.show .dropdown-menu a,
+  .leo-megamenu .leo-top-menu.collapse.in .dropdown-menu a {
+    color: rgba(255,255,255,.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leo-top-menu, .leo-top-menu.collapsing { transition: none !important; }
+}
