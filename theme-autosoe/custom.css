@@ -320,3 +320,19 @@ body .elementor-12 .elementor-element-a0df6a6 .footer_icon-box .elementor-icon-b
 body .elementor-12 .elementor-element-a0df6a6 .footer_icon-box .elementor-icon-box-description {
   color: #fff;
 }
+
+/* --- Correccion 01/08 (segunda pasada, tras ver capturas reales) -----------
+   El titulo del menu va DENTRO del span del icono:
+     <span class="hasicon menu-icon-class"><i class="fa-light fa-x"></i>
+       <span class="menu-title">…</span></span>
+   asi que un margin-right en .menu-icon-class movia el conjunto, no separaba
+   el icono del texto. Se resuelve con flex + gap en el propio contenedor. */
+.leo-megamenu .navbar-nav > li > a .menu-icon-class,
+.leo-megamenu .navbar-nav > li > a .hasicon {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-right: 0;
+}
+.leo-megamenu .navbar-nav > li > a .menu-icon-class > i { flex: none; font-size: 1rem; opacity: .92; }
+.leo-megamenu .navbar-nav > li > a .menu-icon-class .menu-title { line-height: 1; }
