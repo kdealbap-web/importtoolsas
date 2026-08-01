@@ -22,6 +22,10 @@
         <source>Out Of Stock</source>
         <target state="final">Agotado</target>
       </trans-unit>
+      <trans-unit id="0ba7583639a274c434bbe6ef797115a4" approved="yes">
+        <source>Register</source>
+        <target state="final">Registrarse</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

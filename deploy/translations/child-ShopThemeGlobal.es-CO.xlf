@@ -70,6 +70,18 @@
         <source>Home Page</source>
         <target state="final">página de inicio</target>
       </trans-unit>
+      <trans-unit id="51ac4bf63a0c6a9cefa7ba69b4154ef1" approved="yes">
+        <source>Setting</source>
+        <target state="final">Opciones</target>
+      </trans-unit>
+      <trans-unit id="9b3619ad52ed4c5d937946e15b836ae8" approved="yes">
+        <source>Last product</source>
+        <target state="final">Último producto</target>
+      </trans-unit>
+      <trans-unit id="53e5aa2c97fef1555d2511de8218c544" approved="yes">
+        <source>By</source>
+        <target state="final">Por</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
