@@ -145,6 +145,16 @@ public_html/themes/vt_autosoe_child/modules/        ← 607 entradas, imprescind
 Si en vez de eso te aparece `public_html/themes/config/` y `themes/templates/` sueltos, es el zip
 equivocado: borra esas carpetas y usa el que dice `EXTRAER-EN-themes`.
 
+> ⚠️ **Borra el zip de `themes/` en cuanto termines de extraer.** El `.htaccess` de esa carpeta
+> bloquea casi todo, pero **permite `.zip` explícitamente** (está en su lista de extensiones junto
+> a `css`, `js` e imágenes). Comprobado: descargué un zip de 9,25 MB desde `themes/` con
+> **HTTP 200**. Mientras siga ahí, cualquiera que escriba la dirección se lleva el tema completo,
+> incluida la plantilla comercial AutoSoe.
+>
+> ```
+> public_html/themes/vt_autosoe_child.zip     ← borrar
+> ```
+
 Los dos zip del paquete tienen el mismo contenido, cambia solo la estructura:
 
 | Fichero | Estructura | Para qué |
