@@ -156,8 +156,17 @@ grep -c '^\$_MODULE\[' modules/leoelements/translations/es.php
 Si devuelve **564**, es el nuestro (ya subido antes) y no hay nada que hacer. Cualquier otro
 número: pásamelo antes de tocarlo.
 
-**1.3 Tema hijo.** Back office → **Diseño → Tema y logotipo → Añadir nuevo tema → subir
-`vt_autosoe_child.zip`**. Luego **Usar este tema**.
+**1.3 Tema hijo.** ⚠️ **No uses el importador del panel: falla con «Missing configuration
+file».** `ThemeManager.php:413` busca `config/theme.yml` en la **raíz** del zip, y el paquete lo
+trae dentro de `vt_autosoe_child/`.
+
+**Sube `vt_autosoe_child-EXTRAER-EN-themes.zip` a `public_html/themes/` y extráelo ahí**, de modo
+que quede `themes/vt_autosoe_child/config/theme.yml`. No hace falta importar nada:
+`ThemeRepository::getThemesOnDisk()` lista los temas con `glob(themes/*/config/theme.yml)`, así
+que aparece solo. Luego, en **Diseño → Tema y logotipo → Usar este tema**.
+
+Si prefieres el importador, usa `vt_autosoe_child-SUBIR-POR-PANEL.zip`, que trae el contenido en
+la raíz. Mismo contenido, distinta estructura.
 
 > ⚠️ El tema padre **`vt_autosoe` debe seguir instalado**. El hijo lo necesita: sin él no
 > hay plantillas y la tienda se cae.

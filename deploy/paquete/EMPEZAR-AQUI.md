@@ -85,7 +85,7 @@ Faltan dos cosas: poner mantenimiento y activar el tema.
 
 **Tiempo real de esta sesión:** son 4 clics en el panel y mirar la portada. Lo único que puede
 tardar es la primera carga tras activar el tema, porque PrestaShop reconstruye la caché
-(**57 s medidos** en el espejo — ver el aviso del paso 2.3).
+(**57 s medidos** en el espejo — ver el aviso del paso 2.4).
 
 > Tu back office está **en inglés** ahora mismo (`PS_LANG_DEFAULT = 1`, solo `en-US`).
 > Los menús de abajo van en inglés por eso. Tras el import quedará en español.
@@ -123,20 +123,48 @@ UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SHOP_ENABLE';
 Comprobación: abre la tienda en una **ventana de incógnito** (sin sesión de admin). Debes ver el
 aviso de mantenimiento. En tu ventana normal la sigues viendo bien.
 
-### 2.2 Activar el tema hijo
+### 2.2 Subir el tema — **extraer a mano, no usar el importador**
+
+> ⚠️ **El importador del panel («Add new theme») falla con «Missing configuration file».**
+> Es un fallo de cómo empaqueté el zip: `ThemeManager.php:413` busca `config/theme.yml` en la
+> **raíz** del zip, y el nuestro lo tiene dentro de `vt_autosoe_child/`.
+>
+> **Extraerlo a mano es más simple y no necesita el importador.** `ThemeRepository` construye la
+> lista de temas con `glob(themes/*/config/theme.yml)`, así que un tema extraído en su carpeta
+> aparece solo.
+
+**Sube `vt_autosoe_child-EXTRAER-EN-themes.zip` a `public_html/themes/` y extráelo ahí.**
+Tiene que quedar exactamente así:
+
+```
+public_html/themes/vt_autosoe_child/config/theme.yml
+public_html/themes/vt_autosoe_child/assets/css/custom.css
+public_html/themes/vt_autosoe_child/modules/        ← 607 entradas, imprescindible
+```
+
+Si en vez de eso te aparece `public_html/themes/config/` y `themes/templates/` sueltos, es el zip
+equivocado: borra esas carpetas y usa el que dice `EXTRAER-EN-themes`.
+
+Los dos zip del paquete tienen el mismo contenido, cambia solo la estructura:
+
+| Fichero | Estructura | Para qué |
+|---|---|---|
+| `vt_autosoe_child-EXTRAER-EN-themes.zip` | `vt_autosoe_child/…` | **Este.** Extraer en `themes/` |
+| `vt_autosoe_child-SUBIR-POR-PANEL.zip` | `config/…` en la raíz | Solo si prefieres el importador del panel |
+
+### 2.3 Activarlo
 
 ```
 Design  →  Theme & Logo
 ```
 
-Debe aparecer `Importtools (AutoSoe child)` en la lista. Pulsa **"Use this theme"**.
+Debe aparecer `Importtools (AutoSoe child)`. Pulsa **"Use this theme"**.
 
-- Si no aparece: el zip no quedó bien extraído. Debe existir el fichero
-  `themes/vt_autosoe_child/config/theme.yml`.
+- Si no aparece, falta `themes/vt_autosoe_child/config/theme.yml`: revisa dónde quedó la extracción.
 - **No borres ni desactives el tema padre `vt_autosoe`.** El hijo lo necesita: sin él no hay
   plantillas y la tienda se cae.
 
-### 2.3 Mirar la tienda
+### 2.4 Mirar la tienda
 
 Con mantenimiento puesto y tu sesión de admin abierta, entra a la portada.
 
@@ -150,7 +178,7 @@ subir, y el contenido en español llega en la sesión 2, con la base de datos.
 
 Lo que importa en esta sesión es que **cargue sin error 500 y con estilos**. Si se ve así, terminamos.
 
-### 2.4 Si algo se rompe
+### 2.5 Si algo se rompe
 
 Deja el mantenimiento puesto y vuelve al tema anterior en `Design → Theme & Logo`. Nada de esta sesión
 es irreversible: son ficheros, y la base de datos no se ha tocado.
