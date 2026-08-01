@@ -212,3 +212,111 @@ footer img[src*="logo-importtools-white"] {
 @media (prefers-reduced-motion: reduce) {
   .leo-top-menu, .leo-top-menu.collapsing { transition: none !important; }
 }
+
+/* ==========================================================================
+   HOME — maquetacion, 01/08/2026
+   Cuatro problemas distintos, cada uno con su causa:
+     1. las columnas de Elementor no se estiran -> tarjetas de alturas dispares
+     2. margin-top:-118px en c7864ac -> el solapamiento del tema se ve roto
+        cuando las alturas no coinciden, y en movil no tiene sentido
+     3. banner-ancho.jpg / banner-med-a.jpg / banner-med-b.jpg son degradados
+        PROVISIONALES mios (rayas diagonales, muy apagados). Se sustituyen por
+        degradados de marca en CSS: nitidos a cualquier resolucion y con el
+        contraste bajo control.
+     4. el pre-footer usaba un fondo distinto al del pie
+   Todo acotado a .elementor-11 (cuerpo del home) y .elementor-12 (pie), para no
+   tocar cabecera, catalogo ni fichas.
+   Especificidad: se prefija con `body` para ganar a la CSS que genera Elementor
+   —(0,3,0)— sin recurrir a !important.
+   ========================================================================== */
+
+/* --- 1. Alturas iguales: la columna se estira y su contenido la llena ------ */
+body .elementor-11 .elementor-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+body .elementor-11 .elementor-row > .elementor-column { display: flex; }
+body .elementor-11 .elementor-column > .elementor-column-wrap {
+  display: flex;
+  width: 100%;
+}
+body .elementor-11 .elementor-column-wrap > .elementor-widget-wrap { width: 100%; }
+
+/* que la tarjeta empuje su contenido y el boton quede abajo, alineado entre
+   tarjetas hermanas */
+body .elementor-11 .elementor-widget-wrap > .elementor-element:last-child { margin-top: auto; }
+
+/* --- 2. El solapamiento sobre el banner ----------------------------------- */
+/* En escritorio se conserva: es el efecto por capas del tema, y con las alturas
+   ya iguales vuelve a leerse como intencionado. */
+@media (max-width: 991px) {
+  body .elementor-11 .elementor-element.elementor-element-c7864ac { margin-top: 0; }
+}
+
+/* --- 3. Fondos de marca en vez de mis degradados provisionales ------------- */
+/* Banda ancha (categorias destacadas). Azul de marca con barrido rojo en
+   diagonal: el acento de AutoSoe, sin la trama de rayas. */
+body .elementor-11 .elementor-element.elementor-element-17dbbfb > .elementor-background-overlay,
+body .elementor-11 .elementor-element.elementor-element-dff2c7b > .elementor-background-overlay,
+body .elementor-11 .elementor-element.elementor-element-ccce7a0 > .elementor-background-overlay,
+body .elementor-11 .elementor-element.elementor-element-b9df906 > .elementor-background-overlay,
+body .elementor-11 .elementor-element.elementor-element-0712bb7 > .elementor-background-overlay {
+  background-image: none;
+  /* velo oscuro: garantiza el contraste del texto blanco sea cual sea el fondo */
+  background-color: rgba(11, 22, 44, .55);
+  opacity: 1;
+}
+body .elementor-11 .elementor-element.elementor-element-17dbbfb {
+  background-image:
+    linear-gradient(118deg, rgba(226,33,28,.30) 0%, rgba(226,33,28,0) 46%),
+    linear-gradient(180deg, #22406F 0%, #172E52 55%, #101F3A 100%);
+  background-color: #172E52;
+}
+body .elementor-11 .elementor-element.elementor-element-dff2c7b,
+body .elementor-11 .elementor-element.elementor-element-b9df906 {
+  background-image:
+    linear-gradient(122deg, rgba(226,33,28,.26) 0%, rgba(226,33,28,0) 52%),
+    linear-gradient(180deg, #22406F 0%, #162B4E 100%);
+  background-color: #1B3560;
+}
+body .elementor-11 .elementor-element.elementor-element-ccce7a0,
+body .elementor-11 .elementor-element.elementor-element-0712bb7 {
+  background-image:
+    linear-gradient(238deg, rgba(226,33,28,.34) 0%, rgba(226,33,28,0) 55%),
+    linear-gradient(180deg, #1E3A66 0%, #13253F 100%);
+  background-color: #17304F;
+}
+
+/* Contraste: el texto sobre banda va en blanco de verdad, y los titulares
+   llevan la franja roja de acento del tema. */
+body .elementor-11 .elementor-element-17dbbfb .elementor-heading-title,
+body .elementor-11 .elementor-element-17dbbfb .elementor-text-editor,
+body .elementor-11 .elementor-element-17dbbfb .elementor-text-editor p {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+body .elementor-11 .elementor-element-17dbbfb .elementor-heading-title::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 3px;
+  margin: .9rem 0 0;
+  background: #E2211C;
+}
+
+/* --- 4. Pre-footer: mismo fondo que el pie -------------------------------- */
+body .elementor-12 .elementor-element.elementor-element-a0df6a6 {
+  background-image: linear-gradient(180deg, #1B3560 0%, #14274A 100%);
+  background-color: #16294C;
+}
+body .elementor-12 .elementor-element.elementor-element-a0df6a6 > .elementor-background-overlay {
+  background-image: none;
+  background-color: transparent;
+}
+/* el bloque del asesor y el del correo, alineados y con el mismo alto */
+body .elementor-12 .elementor-element-a0df6a6 .elementor-row { align-items: center; }
+body .elementor-12 .elementor-element-a0df6a6 .footer_icon-box .elementor-icon-box-title span,
+body .elementor-12 .elementor-element-a0df6a6 .footer_icon-box .elementor-icon-box-description {
+  color: #fff;
+}
