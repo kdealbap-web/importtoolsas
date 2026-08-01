@@ -54,3 +54,25 @@ UNION ALL SELECT 'contenidos Leo con JSON roto (debe ser 0)', CAST(COUNT(*) AS C
 --    «Importtools S.A.S — Import Tools Latam S.A.S, NIT 901.353.663-6»
 --  con la razon social junto al NIT, que es a quien esta registrado.
 -- ============================================================================
+
+
+-- ============================================================================
+--  AÑADIDO el 01/08 — «quitemos todo lo referente a Latam»
+--  Aplicado con un script PHP (deploy/paquete/08-quitar-latam.php) que hace
+--  str_replace sobre texto plano y valida JSON_VALID antes de guardar.
+--  37 filas cambiadas en cms_lang, leoelements_contents_lang, configuration,
+--  configuration_lang y meta_lang. 0 JSON roto.
+--
+--  Variantes cubiertas: «Import Tools Latam S.A.S», «Importtools Latam S.A.S»,
+--  «ImportTools Latam SAS», «Import Tools Latam SAS», «Importtools Latam SAS».
+--
+--  NO se cambian, y es a proposito — son direcciones reales, no el nombre:
+--      ventas@importtoolslatam.com              el buzon existe en ese dominio
+--      instagram.com/importtoolslatam/          la cuenta es esa
+--  Cambiarlas romperia el correo y el enlace a la red social.
+--
+--  La linea del pie queda: «Importtools S.A.S — NIT 901.353.663-6»
+--  Ojo: el NIT esta registrado a «Import Tools Latam S.A.S». Unificar el nombre
+--  aqui fue decision expresa del cliente; si la razon social no cambio en el
+--  registro, esta linea deberia llevarla.
+-- ============================================================================
