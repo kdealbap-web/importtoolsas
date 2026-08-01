@@ -1,0 +1,292 @@
+/* Cotización — Import Tools Latam
+   Paleta de marca: rojo #E2211C, azul #1F3864. Tipografía y botones siguen
+   el lenguaje de AutoSoe: titular grande y condensado, acento rojo, esquinas
+   apenas redondeadas. */
+
+:root {
+  --itc-rojo: #E2211C;
+  --itc-rojo-osc: #B81A16;
+  --itc-navy: #1F3864;
+  --itc-tinta: #16202E;
+  --itc-gris: #66717F;
+  --itc-linea: #E3E7ED;
+  --itc-fondo: #F4F6F9;
+  --itc-wa: #25D366;
+  --itc-wa-osc: #1DA851;
+}
+
+/* ------------------------------------------------------ botón en la ficha */
+
+.itcot-agregar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  background: var(--itc-navy);
+  color: #fff;
+  font-weight: 600;
+  font-size: .8125rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  padding: .7rem 1rem;
+  border-radius: 3px;
+  transition: background .18s ease, transform .18s ease;
+}
+.itcot-agregar:hover,
+.itcot-agregar:focus-visible { background: var(--itc-rojo); color: #fff; }
+.itcot-agregar--en-lista { background: var(--itc-rojo); }
+.itcot-agregar--hecho { background: #15803D; transform: scale(.97); }
+.itcot-agregar i { font-size: 1.05rem; }
+
+/* ------------------------------------------------------- acceso en cabecera */
+
+.itcot-acceso { position: relative; display: inline-flex; align-items: center; }
+.itcot-contador {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 .3rem;
+  border-radius: 99px;
+  background: var(--itc-rojo);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.itcot-contador--vacio { background: var(--itc-gris); }
+
+/* ------------------------------------------------------------------ aviso */
+
+.itcot-aviso {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translate(-50%, 1.5rem);
+  z-index: 9999;
+  background: var(--itc-tinta);
+  color: #fff;
+  padding: .7rem 1.2rem;
+  border-radius: 4px;
+  font-size: .875rem;
+  box-shadow: 0 10px 30px -8px rgba(0,0,0,.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+}
+.itcot-aviso--visible { opacity: 1; transform: translate(-50%, 0); }
+.itcot-aviso--error { background: var(--itc-rojo-osc); }
+
+/* -------------------------------------------------------- página, cabecera */
+
+.itcot-pagina { padding: 0 0 3rem; }
+
+.itcot-cabecera {
+  background: linear-gradient(115deg, var(--itc-navy) 0%, #14264a 62%, #0F1D3A 100%);
+  color: #fff;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(1.2rem, 4vw, 3rem);
+  border-radius: 4px;
+  margin-bottom: 1.6rem;
+  position: relative;
+  overflow: hidden;
+}
+/* franja roja de acento, como los encabezados del tema */
+.itcot-cabecera::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 96px; height: 4px;
+  background: var(--itc-rojo);
+}
+.itcot-eyebrow {
+  margin: 0 0 .4rem;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #FF6B66;
+}
+.itcot-titulo {
+  margin: 0 0 .5rem;
+  font-size: clamp(1.7rem, 1rem + 2.6vw, 2.6rem);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #fff;
+  text-wrap: balance;
+}
+.itcot-bajada { margin: 0; max-width: 54ch; color: rgba(255,255,255,.82); }
+
+/* ------------------------------------------------------------------ rejilla */
+
+.itcot-grid { display: grid; grid-template-columns: 1fr; gap: 1.4rem; align-items: start; }
+@media (min-width: 992px) {
+  .itcot-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  .itcot-col-form { position: sticky; top: 1.5rem; }
+}
+
+.itcot-panel {
+  background: #fff;
+  border: 1px solid var(--itc-linea);
+  border-radius: 4px;
+}
+.itcot-panel__cab {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--itc-linea);
+}
+.itcot-panel__cab h2 {
+  margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: -.01em;
+  text-transform: uppercase; color: var(--itc-tinta);
+}
+.itcot-chip {
+  background: var(--itc-fondo); color: var(--itc-gris);
+  border-radius: 99px; padding: .2rem .7rem; font-size: .78rem; font-weight: 600;
+}
+.itcot-chip .itcot-contador { background: none; color: var(--itc-tinta); min-width: 0; padding: 0; }
+
+.itcot-panel__pie {
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;
+  padding: .9rem 1.25rem; border-top: 1px solid var(--itc-linea);
+}
+.itcot-link {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  color: var(--itc-navy); font-size: .85rem; font-weight: 600;
+}
+.itcot-link:hover { color: var(--itc-rojo); }
+.itcot-link--sutil { color: var(--itc-gris); font-weight: 500; }
+
+/* ------------------------------------------------------------ líneas */
+
+.itcot-lista { display: flex; flex-direction: column; }
+.itcot-vacio { margin: 0; padding: 2.5rem 1.25rem; text-align: center; color: var(--itc-gris); }
+
+.itcot-linea {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto auto;
+  gap: .9rem;
+  align-items: center;
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid var(--itc-linea);
+}
+.itcot-linea:last-child { border-bottom: 0; }
+.itcot-linea__img { width: 64px; height: 64px; border: 1px solid var(--itc-linea); border-radius: 3px; overflow: hidden; }
+.itcot-linea__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.itcot-sinimg { display: block; width: 100%; height: 100%; background: var(--itc-fondo); }
+.itcot-linea__txt h3 { margin: 0; font-size: .9rem; font-weight: 600; line-height: 1.3; }
+.itcot-linea__txt a { color: var(--itc-tinta); }
+.itcot-linea__txt a:hover { color: var(--itc-rojo); }
+.itcot-ref { margin: .2rem 0 0; font-size: .75rem; color: var(--itc-gris); font-variant-numeric: tabular-nums; }
+
+.itcot-linea__qty { display: inline-flex; align-items: center; border: 1px solid var(--itc-linea); border-radius: 3px; }
+.itcot-qty {
+  width: 30px; height: 32px; border: 0; background: none; cursor: pointer;
+  color: var(--itc-gris); font-size: 1rem; line-height: 1;
+}
+.itcot-qty:hover { color: var(--itc-rojo); }
+.itcot-linea__qty input {
+  width: 46px; height: 32px; border: 0; border-left: 1px solid var(--itc-linea);
+  border-right: 1px solid var(--itc-linea); text-align: center; font-size: .85rem;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield;
+}
+.itcot-linea__qty input::-webkit-outer-spin-button,
+.itcot-linea__qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.itcot-quitar {
+  width: 28px; height: 28px; border: 0; border-radius: 50%;
+  background: var(--itc-fondo); color: var(--itc-gris);
+  cursor: pointer; font-size: 1.1rem; line-height: 1;
+}
+.itcot-quitar:hover { background: var(--itc-rojo); color: #fff; }
+
+@media (max-width: 575px) {
+  .itcot-linea { grid-template-columns: 52px minmax(0,1fr) auto; grid-template-areas: "img txt quitar" "img qty qty"; }
+  .itcot-linea__img { width: 52px; height: 52px; grid-area: img; }
+  .itcot-linea__txt { grid-area: txt; }
+  .itcot-linea__qty { grid-area: qty; justify-self: start; margin-top: .4rem; }
+  .itcot-quitar { grid-area: quitar; }
+}
+
+/* ------------------------------------------------------------- formulario */
+
+.itcot-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1.25rem; }
+@media (max-width: 575px) { .itcot-campos { grid-template-columns: 1fr; } }
+.itcot-campo--ancho { grid-column: 1 / -1; }
+
+.itcot-campo label {
+  display: block; margin-bottom: .3rem;
+  font-size: .78rem; font-weight: 600; letter-spacing: .02em;
+  text-transform: uppercase; color: var(--itc-tinta);
+}
+.itcot-campo label span { color: var(--itc-rojo); }
+.itcot-campo label small { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--itc-gris); }
+
+.itcot-campo input,
+.itcot-campo select,
+.itcot-campo textarea {
+  width: 100%;
+  border: 1px solid var(--itc-linea);
+  border-radius: 3px;
+  padding: .6rem .75rem;
+  font-size: .9rem;
+  color: var(--itc-tinta);
+  background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.itcot-campo input:focus,
+.itcot-campo select:focus,
+.itcot-campo textarea:focus {
+  outline: 0;
+  border-color: var(--itc-navy);
+  box-shadow: 0 0 0 3px rgba(31,56,100,.12);
+}
+.itcot-campo textarea { resize: vertical; min-height: 76px; }
+
+.itcot-campo--mal input,
+.itcot-campo--mal select { border-color: var(--itc-rojo); }
+.itcot-error { display: block; margin-top: .25rem; font-size: .78rem; color: var(--itc-rojo); }
+.itcot-error--global { margin: .6rem 0 0; font-weight: 600; }
+
+/* ---------------------------------------------------------------- enviar */
+
+.itcot-enviar { padding: 0 1.25rem 1.25rem; }
+
+.itcot-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+  width: 100%; border: 0; cursor: pointer;
+  padding: .9rem 1.2rem; border-radius: 3px;
+  font-size: .95rem; font-weight: 700; letter-spacing: .01em;
+  color: #fff; background: var(--itc-wa);
+  transition: background .18s ease, transform .1s ease;
+}
+.itcot-btn:hover { background: var(--itc-wa-osc); }
+.itcot-btn:active { transform: translateY(1px); }
+.itcot-btn:disabled { opacity: .65; cursor: default; }
+.itcot-btn--cargando .itcot-btn__texto::after {
+  content: "…"; display: inline-block; animation: itcot-puntos 1s steps(4) infinite;
+}
+@keyframes itcot-puntos { to { opacity: .3; } }
+
+.itcot-legal { margin: .7rem 0 0; font-size: .75rem; color: var(--itc-gris); line-height: 1.5; }
+
+.itcot-listo { padding: 2rem 1.5rem; text-align: center; }
+.itcot-listo h2 { margin: 0 0 .5rem; font-size: 1.15rem; color: #15803D; }
+
+.itcot-ayuda {
+  margin-top: 1rem; padding: 1rem 1.25rem;
+  background: var(--itc-fondo); border-radius: 4px;
+  display: flex; flex-wrap: wrap; gap: .35rem 1.2rem; align-items: baseline;
+  font-size: .85rem;
+}
+.itcot-ayuda p { margin: 0; color: var(--itc-gris); }
+.itcot-ayuda a { color: var(--itc-navy); font-weight: 600; }
+.itcot-ayuda a:hover { color: var(--itc-rojo); }
+
+@media (prefers-reduced-motion: reduce) {
+  .itcot-agregar, .itcot-btn, .itcot-aviso { transition: none; }
+  .itcot-btn--cargando .itcot-btn__texto::after { animation: none; }
+}
