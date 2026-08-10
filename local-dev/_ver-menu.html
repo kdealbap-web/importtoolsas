@@ -1,0 +1,110 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Menú de cuenta, abierto y con sesión</title>
+<!--
+  Abre el desplegable de la cuenta dentro de un iframe del ancho real, y puede
+  hacerlo CON LA SESIÓN INICIADA.
+
+  Por qué hace falta:
+    · `_interactuar.html` solo hace `.click()`, y el desplegable del tema no
+      siempre responde a un clic sintético (lo abre jQuery de Bootstrap). Aquí,
+      además del clic, se fuerzan las clases `show`/`open`, que es lo que el
+      tema mira para pintarlo.
+    · Chromium headless arranca sin cookies, así que no hay forma de ver el
+      menú del cliente logueado. Como el iframe es del MISMO origen, si antes
+      hacemos el login con `fetch`, la cookie queda en el navegador y el iframe
+      la usa. Eso es lo que hace `u`/`p`.
+
+  Uso:
+    /_ver-menu.html?r=/&w=1440&h=700
+    /_ver-menu.html?r=/&w=390&h=700&u=correo@x.com&p=clave
+-->
+<style>
+  html, body { margin: 0; background: #8a8a8a; }
+  iframe { display: block; border: 0; background: #fff; }
+  #aviso { font: 12px/1.5 monospace; color: #fff; background: #222; padding: 4px 8px; }
+</style>
+<div id="aviso">preparando…</div>
+<script>
+  var q = new URLSearchParams(location.search);
+  var w = parseInt(q.get('w') || '1440', 10);
+  var h = parseInt(q.get('h') || '700', 10);
+  var r = q.get('r') || '/';
+  var u = q.get('u') || '';
+  var p = q.get('p') || '';
+  var aviso = document.getElementById('aviso');
+
+  function entrar() {
+    if (!u) { return Promise.resolve('sin sesión'); }
+    var d = new FormData();
+    d.append('email', u);
+    d.append('password', p);
+    d.append('submitLogin', '1');
+    return fetch('/login', { method: 'POST', body: d, credentials: 'same-origin' })
+      .then(function (res) { return res.text(); })
+      .then(function (t) {
+        return /cerrar sesi|mis pedidos|mis direcciones/i.test(t) ? 'sesión iniciada' : 'NO entró';
+      })
+      .catch(function () { return 'fallo el login'; });
+  }
+
+  entrar().then(function (estado) {
+    aviso.textContent = estado + ' · ' + r + ' @ ' + w + 'px';
+    var f = document.createElement('iframe');
+    f.style.width = w + 'px';
+    f.style.height = h + 'px';
+    f.src = r;
+    f.onload = function () {
+      var d = f.contentDocument;
+      // El tema abre el panel con `.open` EN EL CONTENEDOR:
+      //   .popup-over.leo_block_top.open .popup-content { opacity:1; visibility:visible }
+      // No se hace `.click()`: jQuery de Bootstrap engancha un cierre al hacer
+      // clic fuera y volvía a quitar la clase en el mismo instante. Se pone la
+      // clase y se vuelve a poner un momento después, por si algo la retira.
+      // ⚠️ La página trae VARIOS `.leo_block_top` (escritorio, móvil, barra fija).
+      // `querySelector` devolvía el primero, que está oculto, y la captura salía
+      // sin panel aunque el aviso dijera «abierto». Se abre el que de verdad
+      // ocupa espacio en pantalla.
+      function abrir() {
+        var cajas = d.querySelectorAll('.leo_block_top');
+        var n = 0;
+        for (var i = 0; i < cajas.length; i++) {
+          var r = cajas[i].getBoundingClientRect();
+          if (r.width > 0 && r.height > 0) { cajas[i].classList.add('open'); n++; }
+        }
+        return cajas.length + ' bloques, ' + n + ' visibles';
+      }
+      // Informe de lo que de verdad está pasando con el panel, para no deducirlo
+      // de una captura en la que no se ve nada.
+      function medir() {
+        var out = [];
+        var cajas = d.querySelectorAll('.leo_block_top');
+        for (var i = 0; i < cajas.length; i++) {
+          var c = cajas[i];
+          var rc = c.getBoundingClientRect();
+          var p = c.querySelector('.popup-content');
+          if (!p) { out.push('[' + i + '] sin .popup-content'); continue; }
+          var s = f.contentWindow.getComputedStyle(p);
+          var rp = p.getBoundingClientRect();
+          out.push('[' + i + '] caja ' + Math.round(rc.width) + 'x' + Math.round(rc.height) +
+                   ' x=' + Math.round(rc.left) + ' | panel ' + Math.round(rp.width) + 'x' + Math.round(rp.height) +
+                   ' x=' + Math.round(rp.left) + ' y=' + Math.round(rp.top) +
+                   ' op=' + s.opacity + ' vis=' + s.visibility + ' disp=' + s.display + ' z=' + s.zIndex +
+                   ' open=' + c.classList.contains('open') +
+                   ' clases=[' + c.className + ']' +
+                   ' styleEnLinea=[' + (p.getAttribute('style') || '-') + ']');
+        }
+        return out.join('  ||  ');
+      }
+      // ⚠️ Abrir y medir NO pueden ir en el mismo tick: el panel tiene
+      // `transition: .3s all`, así que volver a poner la clase justo antes de
+      // medir devuelve `opacity: 0` —la transición acaba de arrancar— y parece
+      // que no se abre cuando sí lo hace. Se abre pronto y se mide mucho después.
+      setTimeout(abrir, 800);
+      setTimeout(abrir, 1600);
+      setTimeout(abrir, 2400);
+      setTimeout(function () { aviso.textContent = medir(); }, 5000);
+    };
+    document.body.appendChild(f);
+  });
+</script>

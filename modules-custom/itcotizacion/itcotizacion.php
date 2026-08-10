@@ -39,6 +39,7 @@ class Itcotizacion extends Module
             && $this->crearTabla()
             && $this->registerHook('displayHeader')
             && $this->registerHook('actionFrontControllerSetMedia')
+            && $this->registerHook('actionAdminControllerSetMedia')
             && Configuration::updateValue('ITCOT_WHATSAPP', '573145934962')
             && Configuration::updateValue('ITCOT_ACTIVO', 1);
     }
@@ -100,6 +101,35 @@ class Itcotizacion extends Module
         return $n;
     }
 
+    /**
+     * Arreglo del guardado de LeoSlideshow en el back office (08/08/2026).
+     *
+     * El modulo de Leo pone en el `action` de sus formularios una URL ABSOLUTA
+     * con el dominio de `PS_SHOP_DOMAIN_SSL` (`www.importtoolsas.com`). Cuando
+     * se entra al panel por `importtoolsas.com` —sin www— ese AJAX sale a otro
+     * origen, el navegador lo bloquea, y como el `$.ajax` del modulo no define
+     * `.fail()`, el fallo es MUDO: el boton se queda «en editing» para siempre.
+     *
+     * El JS que se carga aqui pasa esos formularios a ruta relativa (mismo
+     * origen siempre) y hace visibles los errores. Va por hook para no modificar
+     * ni un fichero del modulo de Leo, que se sobreescribe al actualizar el tema.
+     *
+     * Se carga solo en la pagina de configuracion de leoslideshow.
+     */
+    public function hookActionAdminControllerSetMedia()
+    {
+        $configurando = Tools::getValue('configure');
+        $ruta = (string) Tools::getValue('_route') . ' ' . (string) $_SERVER['REQUEST_URI'];
+
+        if ($configurando !== 'leoslideshow' && strpos($ruta, 'leoslideshow') === false) {
+            return;
+        }
+
+        $this->context->controller->addJS(
+            $this->_path . 'views/js/arreglo-leoslideshow.js'
+        );
+    }
+
     public function hookActionFrontControllerSetMedia()
     {
         $this->context->controller->registerStylesheet(
@@ -130,7 +160,64 @@ class Itcotizacion extends Module
                     'verLista'  => $this->trans('Ver mi cotización', [], 'Modules.Itcotizacion.Shop'),
                 ],
             ],
+            'itfav' => [
+                'logueado' => (bool) $this->context->customer->isLogged(),
+                'total'    => $this->contarFavoritos(),
+            ],
         ]);
+    }
+
+    /**
+     * Cuántos productos tiene el cliente en su lista de deseos.
+     *
+     * ⚠️ Esto sale de la BASE DE DATOS, no del navegador: la lista de deseos de
+     * `leofeature` vive en `leofeature_wishlist` / `leofeature_wishlist_product`
+     * y va atada a `id_customer`. Por eso solo cuenta con sesión iniciada; para
+     * un visitante anónimo devuelve 0 y el módulo le pide entrar.
+     *
+     * Hace falta contarlo aquí porque el corazón de la cabecera sale de un widget
+     * LeoGenCode y su marcado es `<span class="ap-total-wishlist"></span>`, vacío:
+     * `leofeature_wishlist.js` solo lo rellena DESPUÉS de añadir o quitar algo,
+     * así que al cargar cualquier página el contador aparecía en blanco aunque el
+     * cliente tuviera productos guardados. Y no se puede resolver metiendo Smarty
+     * en el widget: Leo Elements guarda el HTML ya compilado de cada LeoGenCode en
+     * `modules/leoelements/gencode/`, con lo que el número quedaría congelado en
+     * el primero que se compilara.
+     */
+    private function contarFavoritos()
+    {
+        if (!$this->context->customer->isLogged()) {
+            return 0;
+        }
+
+        $clase = _PS_MODULE_DIR_ . 'leofeature/classes/WishList.php';
+        if (!file_exists($clase)) {
+            return 0;
+        }
+        require_once $clase;
+        if (!class_exists('WishList')) {
+            return 0;
+        }
+
+        $porLista = WishList::getSimpleProductByIdCustomer(
+            (int) $this->context->customer->id,
+            (int) $this->context->shop->id
+        );
+
+        // ⚠️ Devuelve un array INDEXADO POR id_wishlist, y dentro los productos de
+        // cada lista. Un `count()` a secas contaria listas, no productos: con dos
+        // listas y catorce productos habria dicho «2». Un cliente puede tener
+        // varias listas, asi que se suman todas.
+        if (!is_array($porLista)) {
+            return 0;
+        }
+
+        $total = 0;
+        foreach ($porLista as $productos) {
+            $total += is_array($productos) ? count($productos) : 0;
+        }
+
+        return $total;
     }
 
     public function hookDisplayHeader()

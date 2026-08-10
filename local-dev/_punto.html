@@ -1,0 +1,25 @@
+<!doctype html>
+<meta charset="utf-8"><title>Que hay en este punto</title>
+<style>body{font:13px ui-monospace,monospace;margin:10px}iframe{position:absolute;left:-9999px;top:0;border:0}</style>
+<div id="res">midiendo…</div>
+<iframe id="f"></iframe>
+<script>
+  var q=new URLSearchParams(location.search);
+  var w=parseInt(q.get('w')||'1440',10), h=parseInt(q.get('h')||'1400',10);
+  var x=parseInt(q.get('x')||'1405',10), y=parseInt(q.get('y')||'310',10);
+  var f=document.getElementById('f'); f.style.width=w+'px'; f.style.height=h+'px'; f.src=q.get('r')||'/';
+  f.onload=function(){setTimeout(function(){
+    var d=f.contentDocument, W=f.contentWindow, out=[];
+    var el=d.elementFromPoint(x,y);
+    out.push('punto ('+x+','+y+')');
+    while(el && el.tagName!=='HTML'){
+      var cs=W.getComputedStyle(el), r=el.getBoundingClientRect();
+      out.push('  <'+el.tagName.toLowerCase()+(el.id?'#'+el.id:'')+
+        (el.className&&typeof el.className==='string'?'.'+el.className.trim().split(/\s+/).slice(0,5).join('.'):'')+'>');
+      out.push('      x='+Math.round(r.left)+' y='+Math.round(r.top)+' w='+Math.round(r.width)+' h='+Math.round(r.height)+
+        '  display='+cs.display+' bg='+cs.backgroundColor+' anim='+cs.animationName);
+      el=el.parentElement;
+    }
+    document.getElementById('res').textContent=out.join('\n');
+  },3000);};
+</script>

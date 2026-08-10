@@ -1,0 +1,30 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Vista movil con un clic hecho</title>
+<!--
+  Igual que _movil.html (iframe del ancho real, porque Chromium no baja de ~500 px
+  de ventana), pero pulsa un selector antes de la captura. Sirve para ver estados
+  que solo existen tras interactuar: el cajon del menu, el desplegable del buscador.
+  Uso: /_interactuar.html?r=/&w=390&h=900&c=.navbar-toggler
+-->
+<style>
+  html, body { margin: 0; background: #8a8a8a; }
+  iframe { display: block; border: 0; background: #fff; }
+</style>
+<script>
+  var q = new URLSearchParams(location.search);
+  var w = parseInt(q.get('w') || '390', 10);
+  var h = parseInt(q.get('h') || '900', 10);
+  var r = q.get('r') || '/';
+  var c = q.get('c') || '';
+  document.write('<iframe id="f" src="' + r + '" style="width:' + w + 'px;height:' + h + 'px"></iframe>');
+  document.getElementById('f').onload = function () {
+    if (!c) { return; }
+    var d = this.contentDocument;
+    // Se espera a que el JS del tema haya enganchado sus manejadores
+    setTimeout(function () {
+      var el = d.querySelector(c);
+      if (el) { el.click(); }
+    }, 1500);
+  };
+</script>

@@ -1,0 +1,21 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Vista movil real</title>
+<!--
+  Chromium fija un ancho minimo de ventana de 500 px, asi que --window-size=390
+  maqueta a 500 y recorta el PNG: parece que la pagina se desborda cuando no es
+  cierto. Un iframe SI acepta 390 px reales, y la ventana exterior puede ir
+  ancha, que es donde el headless renderiza bien.
+  Uso:  /_movil.html?r=/ruta&w=390&h=4600
+-->
+<style>
+  html, body { margin: 0; background: #8a8a8a; }
+  iframe { display: block; border: 0; background: #fff; }
+</style>
+<script>
+  var q = new URLSearchParams(location.search);
+  var w = parseInt(q.get('w') || '390', 10);
+  var h = parseInt(q.get('h') || '4600', 10);
+  var r = q.get('r') || '/';
+  document.write('<iframe src="' + r + '" style="width:' + w + 'px;height:' + h + 'px"></iframe>');
+</script>

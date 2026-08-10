@@ -1,0 +1,71 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Medida de desbordamiento</title>
+<style>
+  body { font: 13px/1.45 ui-monospace, monospace; margin: 12px; background: #fff; color: #111; }
+  h1 { font: 700 15px system-ui; margin: 0 0 8px; }
+  #res { white-space: pre-wrap; }
+  .mal { color: #C00; }
+  .ok  { color: #070; }
+  iframe { position: absolute; left: -9999px; top: 0; width: 390px; height: 2400px; border: 0; }
+</style>
+<h1>Desbordamiento horizontal a 390 px — <span id="url"></span></h1>
+<div id="res">midiendo…</div>
+<iframe id="f"></iframe>
+<script>
+  var RUTA = new URLSearchParams(location.search).get('r') || '/content/4-quienes-somos';
+  var ANCHO = parseInt(new URLSearchParams(location.search).get('w') || '390', 10);
+  document.getElementById('url').textContent = RUTA + ' @ ' + ANCHO + 'px';
+  var f = document.getElementById('f');
+  f.style.width = ANCHO + 'px';
+  f.src = RUTA;
+
+  f.onload = function () {
+    setTimeout(function () {
+      var d = f.contentDocument, w = f.contentWindow;
+      var vw = w.innerWidth;
+      var sw = d.documentElement.scrollWidth;
+      var out = [];
+      out.push('innerWidth      = ' + vw);
+      out.push('scrollWidth     = ' + sw);
+      out.push(sw > vw ? '>>> LA PAGINA SE DESPLAZA ' + (sw - vw) + ' px' : '>>> sin desplazamiento horizontal');
+      out.push('');
+      out.push('Elementos cuyo borde derecho pasa de ' + vw + ' px:');
+
+      var todos = d.querySelectorAll('body *');
+      var malos = [];
+      for (var i = 0; i < todos.length; i++) {
+        var el = todos[i];
+        var r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        var cs = w.getComputedStyle(el);
+        if (cs.position === 'fixed') continue;          // las barras fijas son otro asunto
+        if (r.right > vw + 1 || r.left < -1) {
+          // solo el mas externo de cada rama
+          malos.push({ el: el, r: r });
+        }
+      }
+      // quedarse con los que no tienen un antepasado ya listado
+      var raiz = malos.filter(function (m) {
+        return !malos.some(function (o) { return o.el !== m.el && o.el.contains(m.el); });
+      });
+
+      if (!raiz.length) { out.push('  (ninguno)'); }
+      raiz.slice(0, 25).forEach(function (m) {
+        var e = m.el;
+        var id = e.tagName.toLowerCase()
+               + (e.id ? '#' + e.id : '')
+               + (e.className && typeof e.className === 'string'
+                  ? '.' + e.className.trim().split(/\s+/).slice(0, 4).join('.') : '');
+        out.push('  ' + id.slice(0, 110));
+        out.push('      left=' + Math.round(m.r.left) + '  right=' + Math.round(m.r.right)
+                 + '  ancho=' + Math.round(m.r.width)
+                 + '  (se sale ' + Math.round(m.r.right - vw) + ' px)');
+      });
+
+      var res = document.getElementById('res');
+      res.textContent = out.join('\n');
+      res.className = sw > vw ? 'mal' : 'ok';
+    }, 1200);
+  };
+</script>

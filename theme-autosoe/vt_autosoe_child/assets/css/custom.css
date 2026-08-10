@@ -89,3 +89,1790 @@ footer img[src*="logo-importtools-white"] {
   list-style: none;
 }
 
+
+/* ==========================================================================
+   Ajustes del 01/08/2026 — pedidos por el cliente
+   ========================================================================== */
+
+/* --- Logo un 25 % mas grande (40 -> 50 px de alto, 230 -> 288 de ancho) ----
+   Se repite la escalera de selectores del bloque de arriba porque
+   headerposition*.css del tema padre se concatena DESPUES de este archivo. */
+.header__logo .header_logo img,
+.header_logo img.logo-second,
+.header_logo img.logo {
+  max-height: 50px;
+  max-width: 288px;
+}
+
+/* --- Iconos del menu principal ------------------------------------------- */
+.leo-megamenu .navbar-nav > li > a .menu-icon-class,
+.leo-megamenu .navbar-nav > li > a .hasicon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: .45rem;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: .9;
+}
+.leo-megamenu .navbar-nav > li > a:hover .hasicon { opacity: 1; }
+/* que el enlace alinee icono y texto en la misma linea base */
+.leo-megamenu .navbar-nav > li > a.nav-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ==========================================================================
+   RESPONSIVE — menu movil (reescrito el 03/08/2026)
+     a) la hamburguesa cae DEBAJO del header, porque el megamenu vive en su
+        propia seccion de Elementor, hermana de la del logo.
+     b) el boton estaba a la derecha y el cajon entraba por la izquierda.
+   ========================================================================== */
+
+@media (max-width: 991px) {
+
+  /* (a) La hamburguesa, a una esquina. position:fixed y no absolute a
+     proposito: `.elementor-section{position:relative}`, asi que TODAS las
+     secciones de Elementor son contexto de posicionamiento y un absolute
+     quedaria anclado a la seccion del megamenu, no a la del logo.
+     Se funde con la barra superior negra (que mide 40 px): al estar arriba del
+     todo se lee como una pestaña de la propia barra, no como un boton flotante. */
+  .ApMegamenu .navbar-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1040;
+    margin: 0;
+    padding: 0;
+  }
+  .ApMegamenu .navbar-header .navbar-toggler {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;               /* 44 px es el minimo comodo para el pulgar */
+    height: 40px;              /* el alto exacto de la barra superior */
+    border: 0;
+    border-radius: 0 0 0 6px;
+    background: #E2211C;
+    color: #fff;
+    line-height: 1;
+    box-shadow: -2px 2px 10px -3px rgba(0,0,0,.45);
+  }
+  /* ⚠️ El tema apaga el caracter ☰ que trae el HTML con `font-size:0` y dibuja
+     su propia hamburguesa con `::before{content:"\f0c9"}`. La regla de julio le
+     devolvia `font-size:1.35rem` y entonces se pintaban LOS DOS glifos, uno
+     encima del otro: es la «hamburguesa doble» que se veia. Se apaga el texto y
+     se dimensiona solo el ::before. */
+  .ApMegamenu .navbar-header .navbar-toggler { font-size: 0; }
+  .ApMegamenu .navbar-header .navbar-toggler::before { font-size: 20px; }
+
+  /* (b) EL CAJON SE ABRE POR EL LADO DEL BOTON.
+     ⚠️ Aqui habia un bloque entero estilando `.leo-top-menu.collapse.show`, que
+     es el panel de Bootstrap. Ese panel NO es el que se usa: este menu tiene
+     `show_cavas = 1`, la <nav> sale con la clase `enable-canvas` y
+     `leobootstrapmenu.js:64` CLONA el `.megamenu` dentro de una seccion nueva
+     `<section class="off-canvas-nav-megamenu"><nav class="offcanvas-mainnav">`
+     que cuelga de <body>. El `.leo-top-menu` original se queda oculto en la
+     cabecera — medido: 0 elementos visibles. Es decir, aquellas reglas nunca
+     pintaron nada, y de ahi que el cliente siguiera viendo el menu como estaba.
+
+     El cajon real: 234 px de ancho, fondo blanco, anclado a `left:0` y con la
+     mainnav aparcada en `left:-234px`; al abrir, el modulo pone `.active` y la
+     seccion se desplaza `translateX(234px)`. Por eso el boton estaba a la
+     derecha y el menu entraba por la izquierda.
+     Se invierte la geometria: el mismo mecanismo, por el otro lado.
+     El velo (`.megamenu-overlay`, inset 0, rgba(0,0,0,.5)) y el cierre al tocar
+     fuera ya los trae el modulo, igual que un boton «Cerrar» ya traducido. */
+  /* ⚠️ El cajon se sigue aparcando por la IZQUIERDA (`left:-300px`), como en el
+     tema. Aparcarlo a la derecha con `right:-300px` parecia mas directo y era un
+     error: un elemento que sobresale por la derecha SI cuenta para el ancho
+     desplazable, y toda la tienda quedaba con 292 px de scroll horizontal en
+     movil incluso con el menu cerrado (medido: scrollWidth 682 con innerWidth
+     390). Un desbordamiento por la izquierda no cuenta.
+     Lo que cambia es a donde se lleva al abrir: `translateX(100vw)` lo deja
+     pegado al borde derecho, del lado del boton. */
+  .off-canvas-nav-megamenu .offcanvas-mainnav {
+    left: -300px;
+    right: auto;
+    width: 300px;
+  }
+  .off-canvas-active > .off-canvas-nav-megamenu.active,
+  [dir] .off-canvas-active > .off-canvas-nav-megamenu.active {
+    left: 0;
+    right: auto;
+    -webkit-transform: translateX(100vw);
+    transform: translateX(100vw);
+  }
+
+  /* El boton «Cerrar» del modulo lleva `font-size:0` y su icono en el <span>;
+     se le da area de toque comoda y se separa de los enlaces. */
+  .off-canvas-nav-megamenu .off-canvas-button-megamenu {
+    margin: .5rem .75rem;
+    padding: .5rem;
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .off-canvas-active > .off-canvas-nav-megamenu.active,
+  .off-canvas-inactive > #page { transition: none !important; }
+}
+
+/* ==========================================================================
+   HOME — maquetacion, 01/08/2026
+   Cuatro problemas distintos, cada uno con su causa:
+     1. las columnas de Elementor no se estiran -> tarjetas de alturas dispares
+     2. margin-top:-118px en c7864ac -> el solapamiento del tema se ve roto
+        cuando las alturas no coinciden, y en movil no tiene sentido
+     3. banner-ancho.jpg / banner-med-a.jpg / banner-med-b.jpg son degradados
+        PROVISIONALES mios (rayas diagonales, muy apagados). Se sustituyen por
+        degradados de marca en CSS: nitidos a cualquier resolucion y con el
+        contraste bajo control.
+     4. el pre-footer usaba un fondo distinto al del pie
+   Todo acotado a .elementor-11 (cuerpo del home) y .elementor-12 (pie), para no
+   tocar cabecera, catalogo ni fichas.
+   Especificidad: se prefija con `body` para ganar a la CSS que genera Elementor
+   —(0,3,0)— sin recurrir a !important.
+   ========================================================================== */
+
+/* --- 1. Alturas iguales: la columna se estira y su contenido la llena ------ */
+body .elementor-11 .elementor-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+body .elementor-11 .elementor-row > .elementor-column { display: flex; }
+body .elementor-11 .elementor-column > .elementor-column-wrap {
+  display: flex;
+  width: 100%;
+}
+body .elementor-11 .elementor-column-wrap > .elementor-widget-wrap { width: 100%; }
+
+/* que la tarjeta empuje su contenido y el boton quede abajo, alineado entre
+   tarjetas hermanas */
+body .elementor-11 .elementor-widget-wrap > .elementor-element:last-child { margin-top: auto; }
+
+/* ⚠️ Corregido el 03/08: lo de arriba igualaba la COLUMNA, pero no la seccion
+   interna que lleva el fondo y el borde redondeado, que es la tarjeta que se ve.
+   Medido a 1440 px: las tres columnas median 360 px y las secciones de dentro
+   300 / 360 / 300, porque `min-height:300px` solo es un minimo y la del medio
+   tiene un titular de tres lineas. El tema ya resuelve el primer tramo con
+   `.full__height>.elementor-column-wrap>.elementor-widget-wrap{height:100%}`;
+   faltaba el ultimo salto. Vale para las tres filas de tarjetas del home. */
+body .elementor-11 .full__height > .elementor-column-wrap > .elementor-widget-wrap > .elementor-inner-section {
+  height: 100%;
+}
+
+/* --- 2. El solapamiento sobre el banner ----------------------------------- */
+/* ⚠️ Corregido el 03/08 (antes solo se anulaba por debajo de 991 px).
+   `c7864ac` es una seccion VACIA que heredamos de la demo con
+   `margin-top:-118px; margin-bottom:90px; z-index:3`: alli vivian las tarjetas.
+   En esta tienda las tarjetas son la seccion hermana `9867cfe`, asi que lo unico
+   que hace ese -118 es tirar de todo hacia arriba. Medido a 1440: el slideshow
+   ocupa 280..805 y la fila de tarjetas arrancaba en 778, o sea 27 px por encima
+   del banner, justo sobre los puntos del carrusel. Con margin-top:0 las tarjetas
+   empiezan en 895 y queda el hueco de 90 px que ya pedia el propio diseno. */
+body .elementor-11 .elementor-element.elementor-element-c7864ac { margin-top: 0; }
+
+/* --- 3. Fondos de marca en vez de mis degradados provisionales ------------- */
+/* Banda ancha (categorias destacadas). Azul de marca con barrido rojo en
+   diagonal: el acento de AutoSoe, sin la trama de rayas. */
+body .elementor-11 .elementor-element.elementor-element-17dbbfb > .elementor-background-overlay,
+body .elementor-11 .elementor-element.elementor-element-dff2c7b > .elementor-background-overlay,
+body .elementor-11 .elementor-element.elementor-element-ccce7a0 > .elementor-background-overlay,
+body .elementor-11 .elementor-element.elementor-element-b9df906 > .elementor-background-overlay,
+body .elementor-11 .elementor-element.elementor-element-0712bb7 > .elementor-background-overlay {
+  background-image: none;
+  /* velo oscuro: garantiza el contraste del texto blanco sea cual sea el fondo */
+  background-color: rgba(11, 22, 44, .55);
+  opacity: 1;
+}
+body .elementor-11 .elementor-element.elementor-element-17dbbfb {
+  background-image:
+    linear-gradient(118deg, rgba(226,33,28,.30) 0%, rgba(226,33,28,0) 46%),
+    linear-gradient(180deg, #22406F 0%, #172E52 55%, #101F3A 100%);
+  background-color: #172E52;
+}
+body .elementor-11 .elementor-element.elementor-element-dff2c7b,
+body .elementor-11 .elementor-element.elementor-element-b9df906 {
+  background-image:
+    linear-gradient(122deg, rgba(226,33,28,.26) 0%, rgba(226,33,28,0) 52%),
+    linear-gradient(180deg, #22406F 0%, #162B4E 100%);
+  background-color: #1B3560;
+}
+body .elementor-11 .elementor-element.elementor-element-ccce7a0,
+body .elementor-11 .elementor-element.elementor-element-0712bb7 {
+  background-image:
+    linear-gradient(238deg, rgba(226,33,28,.34) 0%, rgba(226,33,28,0) 55%),
+    linear-gradient(180deg, #1E3A66 0%, #13253F 100%);
+  background-color: #17304F;
+}
+
+/* Contraste: el texto sobre banda va en blanco de verdad, y los titulares
+   llevan la franja roja de acento del tema. */
+body .elementor-11 .elementor-element-17dbbfb .elementor-heading-title,
+body .elementor-11 .elementor-element-17dbbfb .elementor-text-editor,
+body .elementor-11 .elementor-element-17dbbfb .elementor-text-editor p {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+body .elementor-11 .elementor-element-17dbbfb .elementor-heading-title::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 3px;
+  margin: .9rem 0 0;
+  background: #E2211C;
+}
+
+/* --- 4. Pre-footer: mismo fondo que el pie -------------------------------- */
+body .elementor-12 .elementor-element.elementor-element-a0df6a6 {
+  background-image: linear-gradient(180deg, #1B3560 0%, #14274A 100%);
+  background-color: #16294C;
+}
+body .elementor-12 .elementor-element.elementor-element-a0df6a6 > .elementor-background-overlay {
+  background-image: none;
+  background-color: transparent;
+}
+/* el bloque del asesor y el del correo, alineados y con el mismo alto */
+body .elementor-12 .elementor-element-a0df6a6 .elementor-row { align-items: center; }
+body .elementor-12 .elementor-element-a0df6a6 .footer_icon-box .elementor-icon-box-title span,
+body .elementor-12 .elementor-element-a0df6a6 .footer_icon-box .elementor-icon-box-description {
+  color: #fff;
+}
+
+/* --- Correccion 01/08 (segunda pasada, tras ver capturas reales) -----------
+   El titulo del menu va DENTRO del span del icono:
+     <span class="hasicon menu-icon-class"><i class="fa-light fa-x"></i>
+       <span class="menu-title">…</span></span>
+   asi que un margin-right en .menu-icon-class movia el conjunto, no separaba
+   el icono del texto. Se resuelve con flex + gap en el propio contenedor. */
+.leo-megamenu .navbar-nav > li > a .menu-icon-class,
+.leo-megamenu .navbar-nav > li > a .hasicon {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-right: 0;
+}
+.leo-megamenu .navbar-nav > li > a .menu-icon-class > i { flex: none; font-size: 1rem; opacity: .92; }
+.leo-megamenu .navbar-nav > li > a .menu-icon-class .menu-title { line-height: 1; }
+
+/* --- Correcciones vistas en las capturas del 01/08 ------------------------- */
+
+/* El spinner del buscador quedaba girando siempre, arriba a la derecha. Debe
+   aparecer solo mientras busca: jQuery lo muestra con display inline, que gana
+   a esta regla sin necesidad de !important. */
+.leoproductsearch-loading.cssload-speeding-wheel { display: none; }
+
+/* ⚠️ Aqui habia un `padding-right:62px` sobre .topnav/.bottomnav para que la
+   hamburguesa no tapara la barra superior. Era el «fondo blanco random debajo
+   del icono» del que se quejo el cliente: el fondo negro lo pinta la seccion de
+   Elementor que va DENTRO de .bottomnav, asi que al estrecharla 62 px asomaba el
+   blanco de #header en una franja de 62x157 px justo bajo el boton.
+   Ahora la barra es de una sola linea y se le reserva sitio a la hamburguesa mas
+   abajo (§11), sobre el fondo negro. */
+
+/* Los spinners de Leo son position:absolute con inset:0; si su contenedor no
+   tiene position, se escapan del boton. Se ancla el contenedor. (No se ocultan
+   en bloque: son la senal de «cargando» de anadir a lista y comparar.) */
+.leo-bt-cart, .leo-wishlist-button, .leo-compare-button, .quick-view,
+.leoproductsearch-result { position: relative; }
+
+
+/* ============================================================================
+   8-bis) FICHAS SIN FOTO  (provisional, hasta que lleguen las de producto)
+   ----------------------------------------------------------------------------
+   psjy_image esta a 0 filas: los 3.036 productos usan el marcador del nucleo,
+   /img/p/es-default-large_default.jpg. A ancho completo ocupa ~650 px de alto y
+   ademas se repite abajo como unica miniatura, asi que la ficha se veia medio
+   vacia. Se limita el marcador y se esconde la miniatura cuando esta sola —
+   una sola miniatura bajo una sola portada no aporta nada, tenga foto o no.
+   Al cargar las fotos reales, estas reglas dejan de aplicar por si solas
+   (el selector solo casa con el fichero por defecto).
+   ============================================================================ */
+.product-cover img[src*="-default-large_default"] {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 300px;
+  margin-inline: auto;
+  opacity: .5;
+}
+#thumb-gallery .thumb-container:only-child { display: none; }
+
+/* ============================================================================
+   9) QUIENES SOMOS  —  maqueta del disenador del cliente, construida en HTML
+   ----------------------------------------------------------------------------
+   Se construye con marcado y CSS, no como imagen: asi el texto queda nitido a
+   cualquier zoom, es traducible e indexable. De la maqueta solo salen las seis
+   fotos (recortadas de ella misma, en /img/it/).
+
+   ICONOS: el tema empaqueta Font Awesome 5 **Pro Light** completo
+   (themes/vt_autosoe/assets/fonts/fa-light-300.woff2, 427 KB) y declara la
+   familia "Font Awesome Light", pero NO define la clase `.fal` que la usa —
+   solo `.fa`/`.fas` (Free Solid) y `.far`. Por eso aqui se declara `.it-ico`:
+   toma la familia Light y aprovecha las 1.649 reglas `.fa-*:before{content}`
+   que ya existen. El trazo fino es exactamente el de la maqueta.
+   Comprobado glifo a glifo renderizando los tres pesos en Chromium.
+   ============================================================================ */
+
+.it-ico {
+  font-family: "Font Awesome Light";
+  font-weight: 300;
+  font-style: normal;
+  font-variant: normal;
+  display: inline-block;
+  line-height: 1;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Los iconos de marca (WhatsApp, Facebook, Instagram) NO existen en Light ni en
+   Regular: solo estan en la fuente Brands. Comprobado renderizando los cuatro
+   pesos: en Light salen como caja vacia. */
+.it-ico--marca { font-family: "Font Awesome 5 Brands"; font-weight: 400; }
+
+/* Las dos paginas construidas con este sistema: Quienes somos (4) y Quiero ser
+   cliente (7). Comparten tokens y componentes a proposito, para que se lean como
+   la misma tienda y no como dos plantillas distintas. */
+body.cms-id-4,
+body.cms-id-7 {
+  --itq-negro:  #0A0A0C;
+  --itq-negro2: #141418;
+  --itq-humo:   #F1F2F4;
+  --itq-tinta:  #16202E;
+  --itq-gris:   #5C6672;
+  --itq-linea:  #E3E7ED;
+}
+
+/* El H1 lo pone el hero; el del tema seria un duplicado. */
+body.cms-id-4 #main > .page-header,
+body.cms-id-7 #main > .page-header { display: none; }
+/* Las bandas salen del contenedor con margenes negativos en vw; el sobrante de
+   la barra de desplazamiento se recorta aqui. `clip` y no `hidden`: hidden
+   crearia un contenedor de scroll y romperia cualquier position:sticky. */
+body.cms-id-4 #wrapper,
+body.cms-id-7 #wrapper { overflow-x: hidden; overflow-x: clip; }
+
+/* El contenido 17 de Leo («displayHeaderCategory of Home 1», las dos tarjetas de
+   degradado) es la cabecera de las categorias, y ahi se queda. Pero ademas se
+   cuela por `displayWrapperBottom` —el hook que layout-both-columns.tpl:117 pone
+   justo antes de cerrar #wrapper— y aparece al final de esta pagina, duplicando
+   la franja de llamada a la accion y rompiendo el diseno. Solo pasa en el CMS 4;
+   en el resto de paginas CMS y en la portada no sale. Se oculta solo aqui: es
+   presentacional y no toca el JSON de Leo, que es lo que corrompe los contenidos. */
+body#cms [data-elementor-id="17"] { display: none; }
+
+.itqs { color: var(--itq-tinta); }
+.itqs p { line-height: 1.65; }
+
+/* Banda a sangre + carril interior alineado con el .container del tema */
+.itqs-banda { margin-inline: calc(50% - 50vw); }
+.itqs-rail  { max-width: 1470px; margin-inline: auto; padding-inline: 15px; }
+
+.itqs-eyebrow {
+  margin: 0 0 .6rem;
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--it-red);
+}
+.itqs-display {
+  font-family: var(--font-family-heading), sans-serif;
+  line-height: 1.06;
+  letter-spacing: -.01em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+.itqs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .85rem 1.6rem;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: .9375rem;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+.itqs-btn--rojo  { background: var(--it-red); color: #fff; }
+.itqs-btn--rojo:hover,  .itqs-btn--rojo:focus-visible  { background: #B81A16; color: #fff; }
+.itqs-btn--linea { border-color: rgba(255,255,255,.55); color: #fff; }
+.itqs-btn--linea:hover, .itqs-btn--linea:focus-visible { background: #fff; color: var(--itq-negro); }
+.itqs-btn--negro { background: var(--itq-negro); color: #fff; }
+.itqs-btn--negro:hover, .itqs-btn--negro:focus-visible { background: var(--it-red); color: #fff; }
+.itqs-btn--blanco { background: #fff; color: var(--itq-negro); }
+.itqs-btn--blanco:hover, .itqs-btn--blanco:focus-visible { background: var(--it-red); color: #fff; }
+
+/* --------------------------------------------------------------- 9.1 hero */
+
+.itqs-hero { background: var(--itq-negro); color: #fff; }
+.itqs-hero .itqs-rail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 1.5rem;
+  padding-block: clamp(2.25rem, 4vw, 3.5rem);
+}
+.itqs-hero__h1 {
+  font-size: clamp(2.1rem, 1.1rem + 3.4vw, 4rem);
+  color: #fff;
+}
+.itqs-hero__lede {
+  margin: 1.1rem 0 0;
+  max-width: 46ch;
+  color: rgba(255,255,255,.76);
+  font-size: 1.0625rem;
+}
+.itqs-acciones { display: flex; flex-wrap: wrap; gap: .8rem; margin: 1.6rem 0 0; }
+.itqs-hero__foto { margin: 0; }
+.itqs-hero__foto img { display: block; width: 100%; height: auto; }
+
+@media (min-width: 992px) {
+  .itqs-hero .itqs-rail {
+    grid-template-columns: minmax(0, 42%) minmax(0, 58%);
+    gap: 2rem;
+    padding-block: clamp(2.5rem, 3vw, 4rem);
+  }
+}
+/* La foto se recorto de la maqueta y viene YA sobre negro, del mismo tono que la
+   banda: no hace falta sangrarla ni enmascararla, empalma sola. Y no se sangra a
+   proposito: en un item de rejilla los margenes en % se resuelven contra el area
+   de rejilla, no contra el contenedor, asi que `calc(50% - 50vw)` se pasaba de
+   largo y estiraba la banda a 920 px de alto en vez de los ~610 de la maqueta. */
+
+/* --------------------------------------------------- 9.2 cuatro ventajas */
+
+.itqs-ventajas {
+  background: var(--itq-negro);
+  color: #fff;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+.itqs-ventajas .itqs-rail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.6rem 2rem;
+  padding-block: clamp(1.75rem, 3vw, 2.5rem);
+}
+.itqs-ventaja { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; align-items: center; }
+.itqs-ventaja .it-ico {
+  font-size: 1.75rem;
+  color: var(--it-red);
+  width: 3.1rem; height: 3.1rem;
+  display: grid; place-items: center;
+  border: 1px solid rgba(226,33,28,.55);
+  border-radius: 50%;
+}
+.itqs-ventaja h2 { margin: 0 0 .15rem; font-size: 1.0625rem; font-weight: 700; color: #fff; }
+.itqs-ventaja p  { margin: 0; font-size: .875rem; color: rgba(255,255,255,.62); line-height: 1.45; }
+
+/* ------------------------------------------------------- 9.3 soluciones */
+
+.itqs-soluciones { padding-block: clamp(2.5rem, 5vw, 4.5rem); }
+.itqs-soluciones__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+@media (min-width: 992px) {
+  .itqs-soluciones__grid { grid-template-columns: minmax(0, 34%) minmax(0, 66%); gap: 2.5rem; }
+}
+.itqs-soluciones h2 { font-size: clamp(1.7rem, 1rem + 1.9vw, 2.4rem); }
+.itqs-soluciones__txt p { margin: 1rem 0 0; color: var(--itq-gris); }
+.itqs-soluciones__txt .itqs-btn { margin-top: 1.6rem; }
+
+.itqs-pilares {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1px;                      /* la rejilla hace de linea divisoria */
+  background: var(--itq-linea);
+  border: 1px solid var(--itq-linea);
+}
+.itqs-pilar {
+  background: var(--itq-humo);
+  padding: 1.5rem 1.4rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+}
+.itqs-pilar--destacado { background: var(--it-red); }
+.itqs-pilar__num {
+  font-family: var(--font-family-heading), sans-serif;
+  font-size: 2.5rem;
+  line-height: 1;
+  color: var(--it-red);
+}
+.itqs-pilar .it-ico { font-size: 2rem; color: var(--it-red); }
+.itqs-pilar h3 { margin: 0; font-size: 1rem; font-weight: 600; line-height: 1.35; color: var(--itq-tinta); }
+.itqs-pilar--destacado .itqs-pilar__num,
+.itqs-pilar--destacado .it-ico,
+.itqs-pilar--destacado h3 { color: #fff; }
+
+/* ------------------------------------------------------ 9.4 declaracion */
+
+.itqs-declara { padding-bottom: clamp(2rem, 4vw, 3rem); }
+.itqs-declara h2 { font-size: clamp(1.55rem, .9rem + 1.8vw, 2.2rem); max-width: 30ch; }
+.itqs-declara p  { margin: 1rem 0 0; max-width: 92ch; color: var(--itq-gris); }
+
+/* -------------------------------------------------------- 9.5 categorias */
+
+.itqs-cats { background: var(--itq-negro); }
+.itqs-cats .itqs-rail { padding-block: clamp(2rem, 4vw, 3rem); }
+.itqs-cats__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+@media (min-width: 768px)  { .itqs-cats__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1200px) { .itqs-cats__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+.itqs-cat {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  background: #fff;
+  overflow: hidden;
+}
+.itqs-cat__foto { aspect-ratio: 3 / 4; overflow: hidden; background: #111; }
+.itqs-cat__foto img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  transition: transform .45s ease;
+}
+.itqs-cat:hover .itqs-cat__foto img,
+.itqs-cat:focus-visible .itqs-cat__foto img { transform: scale(1.06); }
+.itqs-cat__pie {
+  background: var(--it-red);
+  color: #fff;
+  padding: .85rem .9rem;
+  min-height: 3.5rem;                       /* misma altura con 1 o 2 lineas */
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  transition: background-color .2s ease;
+}
+.itqs-cat:hover .itqs-cat__pie,
+.itqs-cat:focus-visible .itqs-cat__pie { background: #B81A16; }
+.itqs-cat__pie strong { font-size: .9375rem; font-weight: 700; line-height: 1.25; }
+
+/* -------------------------------------------------------- 9.6 franja CTA */
+
+.itqs-cta { background: var(--itq-negro2); color: #fff; }
+.itqs-cta .itqs-rail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem 2rem;
+  align-items: center;
+  padding-block: clamp(1.75rem, 3vw, 2.5rem);
+}
+@media (min-width: 992px) {
+  .itqs-cta .itqs-rail { grid-template-columns: auto minmax(0, 1fr) auto; }
+}
+.itqs-cta p { margin: 0; color: rgba(255,255,255,.78); }
+.itqs-cta__wa { display: flex; align-items: center; gap: .8rem; text-decoration: none; color: #fff; }
+.itqs-cta__wa .it-ico { font-size: 2rem; color: var(--it-red); }
+.itqs-cta__wa small { display: block; font-size: .78rem; color: rgba(255,255,255,.6); }
+.itqs-cta__wa strong { font-size: 1.0625rem; white-space: nowrap; }
+.itqs-cta__wa:hover strong, .itqs-cta__wa:focus-visible strong { color: var(--it-red); }
+
+/* ---------------------------------------------------------- 9.7 valores */
+
+.itqs-valores { background: var(--itq-negro); color: #fff; }
+.itqs-valores .itqs-rail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  padding-block: clamp(2.5rem, 4vw, 3.5rem);
+}
+@media (min-width: 992px) {
+  .itqs-valores .itqs-rail { grid-template-columns: minmax(0, 32%) minmax(0, 68%); gap: 2.5rem; }
+}
+.itqs-valores h2 { font-size: clamp(1.5rem, .9rem + 1.7vw, 2.1rem); color: #fff; max-width: 22ch; }
+.itqs-valores__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.75rem 1.5rem;
+}
+.itqs-valor .it-ico { font-size: 2.1rem; color: var(--it-red); }
+.itqs-valor h3 { margin: .9rem 0 .35rem; font-size: .9375rem; font-weight: 700; color: #fff; }
+.itqs-valor p  { margin: 0; font-size: .8125rem; line-height: 1.5; color: rgba(255,255,255,.62); }
+
+/* ------------------------------------------------ 9.8 datos, mapa, contacto */
+
+.itqs-info { padding-block: clamp(2.5rem, 4vw, 3.5rem); }
+.itqs-info__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; }
+@media (min-width: 992px) { .itqs-info__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; } }
+.itqs-info h2 { font-size: clamp(1.35rem, .9rem + 1.2vw, 1.75rem); margin-bottom: 1.1rem; }
+
+.itqs-datos { width: 100%; border-collapse: collapse; }
+.itqs-datos th, .itqs-datos td {
+  padding: .7rem .2rem;
+  border-bottom: 1px solid var(--itq-linea);
+  font-size: .9375rem;
+  text-align: left;
+  vertical-align: top;
+}
+.itqs-datos th { width: 34%; font-weight: 700; color: var(--itq-tinta); }
+.itqs-datos td { color: var(--itq-gris); }
+
+.itqs-mapa {
+  border: 1px solid var(--itq-linea);
+  border-radius: 3px;
+  overflow: hidden;
+  line-height: 0;
+}
+.itqs-mapa iframe { width: 100%; height: 340px; border: 0; display: block; }
+.itqs-mapa + p { margin: .7rem 0 0; font-size: .875rem; }
+
+.itqs-contacto { list-style: none; margin: 0; padding: 0; display: grid; gap: .85rem; }
+.itqs-contacto li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .85rem; align-items: start; }
+.itqs-contacto .it-ico { font-size: 1.15rem; color: var(--it-red); margin-top: .2rem; }
+.itqs-contacto small { display: block; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--itq-gris); }
+.itqs-contacto a { color: var(--itq-tinta); font-weight: 600; }
+.itqs-contacto a:hover { color: var(--it-red); }
+
+/* ------------------------------- 9.9 piezas propias de Quiero ser cliente */
+
+/* Los pilares tambien sirven de pasos; ahi si llevan una linea de explicacion.
+   La numeracion 01-04 de Quienes somos es del disenador; aqui 01-03 SI es una
+   secuencia real: es el orden en que ocurre la cotizacion. */
+.itqs-pilar p { margin: 0; font-size: .875rem; line-height: 1.5; color: var(--itq-gris); }
+.itqs-pilar--destacado p { color: rgba(255,255,255,.85); }
+.itqs-pilar h3 + p { margin-top: -.35rem; }
+
+/* Publico al que atiende: mismas fichas que las ventajas, pero sobre blanco */
+.itqs-publico { padding-block: clamp(2.25rem, 4vw, 3.25rem); }
+.itqs-publico h2 { font-size: clamp(1.5rem, .9rem + 1.7vw, 2.1rem); margin-bottom: .6rem; }
+.itqs-publico > p { margin: 0 0 1.8rem; max-width: 70ch; color: var(--itq-gris); }
+.itqs-publico__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--itq-linea);
+  border: 1px solid var(--itq-linea);
+}
+.itqs-publico__item {
+  background: #fff;
+  padding: 1.4rem 1.25rem;
+  display: flex; flex-direction: column; gap: .7rem;
+}
+.itqs-publico__item .it-ico { font-size: 1.9rem; color: var(--it-red); }
+.itqs-publico__item h3 { margin: 0; font-size: .9375rem; font-weight: 700; color: var(--itq-tinta); }
+.itqs-publico__item p  { margin: 0; font-size: .8125rem; line-height: 1.5; color: var(--itq-gris); }
+
+/* Por que el catalogo no lleva precios: se explica, no se disimula */
+.itqs-sinprecio { background: var(--itq-humo); }
+.itqs-sinprecio .itqs-rail { padding-block: clamp(2.25rem, 4vw, 3.25rem); }
+.itqs-sinprecio h2 { font-size: clamp(1.45rem, .9rem + 1.5vw, 1.95rem); margin-bottom: .6rem; }
+.itqs-sinprecio > .itqs-rail > p { margin: 0 0 1.8rem; max-width: 74ch; color: var(--itq-gris); }
+.itqs-razones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+.itqs-razon {
+  background: #fff;
+  border-left: 3px solid var(--it-red);
+  padding: 1.25rem 1.35rem;
+}
+.itqs-razon h3 { margin: 0 0 .35rem; font-size: .9375rem; font-weight: 700; color: var(--itq-tinta); }
+.itqs-razon p  { margin: 0; font-size: .875rem; line-height: 1.55; color: var(--itq-gris); }
+
+/* Pie de pagina de la seccion: enlaces secundarios sin peso visual */
+.itqs-secundario {
+  margin: 1.6rem 0 0;
+  font-size: .9375rem;
+  color: var(--itq-gris);
+}
+.itqs-secundario a { color: var(--itq-navy, #1F3864); font-weight: 600; }
+.itqs-secundario a:hover { color: var(--it-red); }
+
+@media (prefers-reduced-motion: reduce) {
+  .itqs-cat__foto img, .itqs-btn, .itqs-cat__pie { transition: none; }
+}
+
+
+/* ============================================================================
+   10) CABECERA — corazon, cotizacion y cuenta como UNA sola fila de acciones
+   ----------------------------------------------------------------------------
+   El tema define la figura del carrito original en `#_desktop_cart` y la repite
+   igual en `.header__button--wishlist` y en `#leo_block_top`:
+
+       caja del glifo   24x24 px, font-size 22, familia "Font Awesome Light"
+       color            #fff dentro de la cabecera, rojo de marca al pasar
+       contador         circulo de 20x20, rojo, en position:absolute
+                        top:-6px / right:-12px
+
+   El acceso a la cotizacion no tenia NINGUNA de esas reglas. Medido a 1440 px:
+     · `.itcot-acceso` heredaba `color:#000` sobre la cabecera oscura -> el icono
+       solo aparecia al pasar el raton, que si tiene color propio. Eso es el
+       «en desktop se ve oculto».
+     · quedaba en x=1336 y=99 y el corazon en x=1336 y=75: uno DEBAJO del otro,
+       porque los dos son `<div>` de bloque dentro del mismo widget.
+
+   Aqui se le da la misma figura y se ponen en linea. Hace falta subir la
+   especificidad con `body` porque `headerposition*.css` del tema se concatena
+   DESPUES de este archivo (comprobado: byte 1.391.303 frente a 1.293.735).
+   ============================================================================ */
+
+/* Los dos botones del widget, en linea y con sitio para el contador del corazon,
+   que sobresale 12 px por la derecha. */
+body .header__button--wishlist,
+body .header__button--cotizar { display: inline-flex; align-items: center; }
+body .header__button--cotizar { margin-left: 26px; }
+
+/* Misma figura que el carrito original del tema */
+body .header__button--cotizar { position: relative; }
+body .header__button--cotizar .itcot-acceso {
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  color: #000;
+}
+body .header__button--cotizar .itcot-acceso i {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  font-weight: 400;
+  font-family: "Font Awesome Light";
+}
+body .header__button--cotizar .itcot-acceso:hover,
+body .header__button--cotizar .itcot-acceso:focus-visible { color: var(--theme-color-default); }
+
+/* Blanco en la cabecera y negro en la barra fija de movil, igual que el corazon */
+body section:not(.header__fixed--bottom) .header__button--cotizar .itcot-acceso { color: #fff; }
+
+/* El contador, con las medidas exactas de `.ap-total-wishlist` y de
+   `#_desktop_cart .cart-products-count`. Rojo tambien cuando esta a 0: el gris
+   que traia `cotizacion.css` lo hacia parecer desactivado justo al lado del
+   contador rojo del corazon, y el cliente pidio que este ACCESO se viera mas. */
+body .header__button--cotizar .itcot-contador {
+  position: absolute;
+  top: -6px;
+  right: -12px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background-color: var(--theme-color-default);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+body .header__button--cotizar .itcot-contador--vacio { background-color: var(--theme-color-default); }
+
+/* La franja de contacto de la cabecera: los <a> salian en negro sobre fondo
+   oscuro, o sea INVISIBLES — direccion, telefono y el icono de ubicacion.
+   Solo se veia el bloque de horarios, que es un <span> y hereda el color claro. */
+body .header__contacto a { color: rgba(255, 255, 255, .72); }
+body .header__contacto a:hover,
+body .header__contacto a:focus-visible { color: #fff; }
+body .header__contacto a i { color: var(--theme-color-default); }
+
+
+/* ============================================================================
+   11) CABECERA EN MOVIL — dos filas en vez de cinco
+   ----------------------------------------------------------------------------
+   Medido a 390 px antes del cambio:
+       .header-nav        159 px (cuatro lineas de texto apiladas)
+       logo               174..224
+       fila del buscador  224..257
+       .header__contacto  273..335   (direccion + telefono + horario, repetidos)
+       = 335 px de cabecera antes de ver la tienda, y ningun acceso a la
+         cotizacion (el widget venia con elementor-hidden-tablet/phone).
+
+   Se deja una barra de utilidades de una sola linea (telefono y como llegar) y
+   una fila con el logo y las acciones. Horarios, direccion completa y correo se
+   quedan solo en el pie, que ya los trae todos.
+   ============================================================================ */
+
+@media (max-width: 991px) {
+
+  /* --- 11.1 barra superior: una linea, 40 px, con sitio para la hamburguesa -- */
+  body .elementor-9 .elementor-element.elementor-element-0e100af { padding: 0 15px; }
+  body .elementor-9 .elementor-element.elementor-element-0e100af > .elementor-container { min-height: 40px; }
+  body .elementor-9 .elementor-element.elementor-element-0e100af > .elementor-container > .elementor-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 1rem;
+    min-height: 40px;
+    padding-right: 52px;          /* la pestaña de la hamburguesa, sobre fondo negro */
+  }
+  /* ⚠️ `width:auto` es imprescindible. Elementor pone `width:100%` a las columnas
+     por debajo de 767 px; con las dos al 100 % dentro de un flex, la que puede
+     encogerse (esta) caia a w=0 y su texto se salia y se pintaba ENCIMA de la
+     otra columna: se leia «Habla con un asesor» y «Como llegar» superpuestos
+     letra a letra. Medido: e497705 w=0 con su hijo a w=252. */
+  body .elementor-9 .elementor-element.elementor-element-e497705 { flex: 1 1 auto; width: auto; min-width: 0; }
+  body .elementor-9 .elementor-element.elementor-element-4bc9cf6 { flex: 0 0 auto; width: auto; }
+  body .elementor-9 .elementor-element.elementor-element-0e100af .elementor-column > .elementor-column-wrap > .elementor-widget-wrap {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+  /* ⚠️ El tamaño de letra hay que ganarlo con (0,4,1): el CSS que genera Elementor
+     va en un <style> EN LINEA en el <head> —o sea despues de la hoja externa— y
+     ademas usa `... .elementor-icon-box-content .elementor-icon-box-description`,
+     que es (0,4,0). Un selector mas corto no lo mueve. */
+  body .elementor-9 .elementor-element .elementor-icon-box-content .elementor-icon-box-description {
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Para que el recorte con puntos suspensivos funcione de verdad, la cadena de
+     contenedores tiene que poder encogerse por debajo de su contenido. */
+  body .elementor-9 .elementor-element .elementor-icon-box-wrapper,
+  body .elementor-9 .elementor-element .elementor-icon-box-content { min-width: 0; overflow: hidden; }
+  /* Horarios y el aviso de WhatsApp: al pie. El telefono ya ES el de WhatsApp. */
+  body .elementor-9 .elementor-element.elementor-element-d7a7443,
+  body .elementor-9 .elementor-element.elementor-element-f8fac4c { display: none; }
+  /* Iconos por CSS: los cuatro `.elementor-icon-box-icon` del tema vienen vacios
+     (`<span class="elementor-icon"></span>` sin nada dentro), asi que no hay
+     glifo que colorear; se pone delante del texto. */
+  body .elementor-9 .elementor-element.elementor-element-2d98278 .elementor-icon-box-description::before,
+  body .elementor-9 .elementor-element.elementor-element-773a198 .elementor-icon-box-description::before {
+    font-family: "Font Awesome Light";
+    font-weight: 300;
+    font-size: 13px;
+    margin-right: .4rem;
+    color: var(--theme-color-default);
+  }
+  body .elementor-9 .elementor-element.elementor-element-2d98278 .elementor-icon-box-description::before { content: "\f879"; }  /* phone-alt */
+  body .elementor-9 .elementor-element.elementor-element-773a198 .elementor-icon-box-description::before { content: "\f3c5"; }  /* location-dot */
+
+  /* --- 11.2 fila del logo: logo + buscador + corazon + cotizacion ----------- */
+  body .elementor-10 .elementor-element.elementor-element-ca80c6c > .elementor-column-wrap > .elementor-widget-wrap {
+    display: flex;
+    flex-wrap: wrap;                /* si no cabe, las acciones bajan solas */
+    align-items: center;
+    gap: .5rem 1rem;
+  }
+  body .elementor-10 .elementor-element.elementor-element-aef1545 { flex: 0 1 auto; }
+  body .elementor-10 .elementor-element.elementor-element-9cf556f { flex: 1 1 40px; }
+  body .elementor-10 .elementor-element.elementor-element-b89cfe5 { flex: 0 0 auto; }
+
+  /* El corazon y la cotizacion venian marcados como elementor-hidden-tablet y
+     elementor-hidden-phone: en movil no habia NINGUNA forma de llegar a la lista.
+     La regla del nucleo es `.elementor:not(...) .elementor-hidden-phone{display:none}`
+     (0,3,0) y sin !important, asi que basta con un selector mas especifico. */
+  body .elementor-10 .elementor-element.elementor-element-70b2b8f.elementor-hidden-tablet,
+  body .elementor-10 .elementor-element.elementor-element-70b2b8f.elementor-hidden-phone { display: block; }
+
+  /* La cuenta NO se duplica: ya esta en la barra fija de abajo («Cuenta»). */
+
+  /* --- 11.3 la franja de contacto, solo en el pie --------------------------- */
+  body .elementor-10 .elementor-element.elementor-element-e23515a { display: none; }
+
+  /* En movil el logo baja a 34 px de alto para que quepan las acciones al lado.
+     Se repite la escalera de selectores del §1 porque headerposition*.css se
+     concatena despues de este archivo. */
+  .header__logo .header_logo img,
+  .header_logo img.logo-second,
+  .header_logo img.logo {
+    max-height: 34px;
+    max-width: 190px;
+  }
+}
+
+/* --- 11.4 telefono, en el movil, sin la etiqueta ---------------------------- */
+/* A 390 px no caben «Habla con un asesor +57 314 593 4962» (252 px), «Como
+   llegar» (95 px) y el hueco de la hamburguesa (52 px) en los 360 disponibles.
+   La etiqueta va en un nodo de texto suelto dentro del <p>, no en un elemento
+   propio, asi que no hay nada que ocultar con display:none. Se apaga el tamaño
+   de letra del parrafo y se devuelve en el <span> del numero — el mismo recurso
+   que usa el tema para dejar solo iconos. El icono ::before lleva su propio
+   font-size, asi que no le afecta. */
+@media (max-width: 575px) {
+  body .elementor-9 .elementor-element.elementor-element-2d98278 .elementor-icon-box-content .elementor-icon-box-description { font-size: 0; }
+  body .elementor-9 .elementor-element.elementor-element-2d98278 .elementor-icon-box-content .elementor-icon-box-description .color-primary { font-size: 12px; }
+
+  /* Logo mas corto: asi el buscador, el corazon y la cotizacion caben en la
+     misma linea en vez de bajar a una segunda fila pegados a la izquierda. */
+  .header__logo .header_logo img,
+  .header_logo img.logo-second,
+  .header_logo img.logo {
+    max-height: 30px;
+    max-width: 150px;
+  }
+  body .elementor-10 .elementor-element.elementor-element-ca80c6c > .elementor-column-wrap > .elementor-widget-wrap { gap: .4rem .6rem; }
+  /* Si aun asi tuviera que bajar, que baje pegado a la derecha y no a la izquierda */
+  body .elementor-10 .elementor-element.elementor-element-b89cfe5 { margin-left: auto; }
+}
+
+
+/* ============================================================================
+   12) BUSCADOR EN MOVIL — se abre bajo la lupa, no en lo alto de la pantalla
+   ----------------------------------------------------------------------------
+   `.box__search` es la seccion `1e86a1a` y el tema la deja
+   `position:fixed; top:0; left:0; width:100%`, asi que al pulsar la lupa el
+   campo aparecia en la esquina superior de la pantalla, tapando la barra de
+   utilidades: lejos del icono que lo abrio.
+   Solo pasa por debajo de 576 px, que es donde `custom.js` del tema quita el id
+   `#leo_search_block_top` de la cabecera y aparece la lupa
+   (`$(window).width() < 576`).
+   Se ancla a `.header-top`, que aqui se hace contexto de posicionamiento: con
+   `top:100%` el desplegable cae pegado al borde inferior de la cabecera, justo
+   debajo del icono.
+   ============================================================================ */
+
+@media (max-width: 575px) {
+  .header-top { position: relative; }
+
+  body .box__search {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    width: auto;
+    padding: 34px 15px 14px;          /* la fila de arriba es para la X */
+    background: #14274A;
+    box-shadow: 0 16px 32px -14px rgba(0, 0, 0, .55);
+    transform: translateY(-10px);
+    z-index: 1050;
+  }
+  body .box__search.active { transform: none; }
+
+  /* La X de cerrar quedaba en el flujo, sin alto y sobre fondo oscuro: invisible.
+     Se lleva a la esquina, que es donde se busca. */
+  body .box__search .search__col--close {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    z-index: 2;
+  }
+  body .box__search .search__col--close i {
+    display: block;
+    padding: 6px;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  body .box__search #leo_search_block_top .cssload-speeding-wheel { display: none; }
+}
+
+
+/* ============================================================================
+   13) MARCAS — las cuatro se ven en movil
+   ----------------------------------------------------------------------------
+   El carrusel es el widget LeoBlockCarousel `5ba7d7d`, con
+   `slides_to_show_mobile: 2`. Solo hay 4 marcas con logotipo (Nikato, Dragon
+   Tools, Proweld y Ventum; Proto, Irwin y Grainger no tienen), asi que en el
+   telefono se veian exactamente 2 y el resto habia que adivinarlas.
+   Con cuatro elementos un carrusel no aporta nada: en movil se convierte en una
+   rejilla de 2x2 y se ven todas de una vez, sin arrastrar.
+   Se hace por CSS y no destruyendo slick por JS para no depender del momento en
+   que se inicializa. `width` y `transform` de `.slick-track` y `.slick-slide`
+   son estilos EN LINEA que pone slick, y contra un estilo en linea la unica
+   forma de ganar es !important.
+   `infinite:1` hace que slick duplique diapositivas: sin ocultar `.slick-cloned`
+   la rejilla mostraria marcas repetidas.
+   ============================================================================ */
+
+@media (max-width: 767px) {
+  body .box__truck .slick-list { overflow: visible; }
+  body .box__truck .slick-track {
+    width: auto !important;
+    transform: none !important;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  /* ⚠️ Flex y no `display:grid`. Con rejilla quedaba la primera celda VACIA y las
+     cuatro marcas corridas un sitio (medido: Nikato en la columna 2 de la fila 1
+     y Ventum solo en una tercera fila): algo entre los diez hijos del track
+     ocupaba celda sin ser una diapositiva visible. Con flex, lo que esta a
+     `display:none` simplemente no existe y las cuatro caen 2 y 2. */
+  body .box__truck .slick-slide {
+    width: auto !important;
+    flex: 0 0 50%;
+    max-width: 50%;
+    float: none;
+    height: auto;
+    padding-bottom: 20px;      /* separacion entre las dos filas */
+  }
+  body .box__truck .slick-cloned { display: none; }
+}
+
+/* Los logotipos del cliente son rectangulos opacos de proporciones distintas
+   (Nikato apaisado sobre negro, Dragon Tools casi cuadrado sobre amarillo...).
+   El tema esperaba logos sueltos sobre un circulo blanco de 120 px
+   (`.box__truck .item-image::before`) que aqui no se ve nunca porque el propio
+   JPG lo tapa, y cada tarjeta quedaba con el logo a una altura distinta.
+   Se les da una placa blanca comun y se recorta el hueco que reservaba el circulo. */
+body .box__truck .item-image::before { display: none; }
+body .box__truck .item-image {
+  margin-bottom: 22px;
+  display: grid;
+  place-items: center;
+  height: 88px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 6px;
+}
+body .box__truck .item-image img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+body .box__truck .block-carousel-container { padding: 26px 15px 28px; }
+
+
+/* ============================================================================
+   14) PIE — foto del cliente y medios de pago reales (03/08/2026)
+   ----------------------------------------------------------------------------
+   ⚠️ ESPECIFICIDAD. El CSS que genera Elementor va en un `<style>` EN LINEA en el
+   <head>, o sea DESPUES de la hoja externa donde vive este archivo, y usa
+       .elementor-12 .elementor-element.elementor-element-a0df6a6:not(.elementor-motion-effects-element-type-background)
+   que es (0,4,0). Con `body .elementor-12 .elementor-element.elementor-element-X`
+   solo se llega a (0,3,1) y se pierde: es exactamente por eso que la regla del
+   01/08 que ponia el degradado del pie en esta banda NUNCA se vio — la banda
+   seguia sirviendo banner-med-a.jpg. Hay que repetir el `:not()` para llegar
+   a (0,4,1).
+   ============================================================================ */
+
+/* La banda de suscripcion pasa a llevar la foto del asesor en el local del
+   cliente. El fichero lo cambia `deploy/paquete/12-imagenes-del-cliente.php` en
+   el JSON de Leo; aqui solo se corrige como encaja: el tema la traia con
+   `background-position:bottom right`, `no-repeat` y `background-size:0px auto`,
+   asi que aparecia como un recorte pegado a una esquina. */
+body .elementor-12 .elementor-element.elementor-element-a0df6a6:not(.elementor-motion-effects-element-type-background) {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: #08090C;
+}
+
+/* El velo. Sin el, el texto blanco cae encima de la cara del asesor y no se lee.
+   Se apaga la imagen del velo (era la MISMA foto, y superpuesta a media opacidad
+   la ensuciaba) y se deja solo el oscurecido. */
+body .elementor-12 .elementor-element.elementor-element-a0df6a6 > .elementor-background-overlay {
+  background-image: none;
+  background-color: rgba(8, 12, 22, .66);
+  background-size: auto;
+  opacity: 1;
+}
+
+/* Medios de pago: la tira de los tres bancos. El widget es el mismo `image` del
+   tema; solo cambia el fichero (482x80). Se limita el alto para que en el pie se
+   lea igual que el sprite anterior y no dispare la altura de la barra. */
+body .elementor-12 .elementor-element.elementor-element-c4b1de6 img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 42px;
+}
+
+@media (max-width: 767px) {
+  body .elementor-12 .elementor-element.elementor-element-c4b1de6 img { max-height: 34px; }
+}
+
+
+/* ============================================================================
+   15) EL BLOQUE DE BLOG VACIO NO SE ENSEÑA
+   ----------------------------------------------------------------------------
+   La seccion «Consejos de uso y mantenimiento» monta un widget LeoBlog sin
+   ninguna entrada publicada, y el modulo pinta su estado vacio:
+       <p class="alert alert-info">No blog at this time.</p>
+   Es decir: en la portada de una tienda en español salia un aviso en INGLES
+   debajo de un titular sin contenido.
+
+   Se oculta la seccion COMPLETA mientras el blog este vacio, con `:has()`. Asi
+   vuelve a aparecer sola el dia que el cliente publique la primera entrada: no
+   hay que acordarse de deshacer nada. `display:none` a secas habria dejado la
+   seccion enterrada para siempre.
+   El segundo selector es el respaldo para navegadores sin `:has()`: al menos el
+   texto en ingles no se ve.
+   ============================================================================ */
+body .elementor-11 .elementor-element.elementor-element-a2a2f03:has(.LeoBlog .alert) { display: none; }
+body .LeoBlog > .block_content > .alert { display: none; }
+
+
+/* ============================================================================
+   16) CORRECCIONES PEDIDAS POR EL CLIENTE — 08/08/2026
+   ----------------------------------------------------------------------------
+   Documento «MejorasImportools_docv2.docx». Lo marcado en rojo son iconos que
+   faltan; lo marcado en azul, la franja de contacto que sobra bajo el menu.
+   ============================================================================ */
+
+/* --- 16.1 la franja de contacto bajo el menu, fuera ------------------------- */
+/* Repetia direccion, telefono y horario que YA estan en la barra de arriba y en
+   el pie, y el cliente la tacho en azul («quitarlo, eso no va alli»). Estaba
+   oculta solo por debajo de 991 px (§11.3); ahora en todos los anchos.
+   Se oculta la seccion entera `e23515a`, no solo el widget: la seccion no
+   contiene mas que esa columna, asi que no queda una banda vacia con su padding.
+   `.elementor-12` es el pie: alli el mismo bloque SI se queda. */
+body .elementor-10 .elementor-element.elementor-element-e23515a { display: none; }
+
+/* --- 16.2 iconos de la barra de utilidades, en rojo ------------------------- */
+/* Los cuatro `.elementor-icon-box-icon` de esta barra vienen VACIOS: medido,
+   `.elementor-icon` sale w=0 h=0 y 0 visibles, o sea no hay glifo que colorear.
+   Por eso se pinta con `::before` sobre el texto, igual que ya se hacia en movil
+   (§11.1) — aquella regla vivia dentro de `@media (max-width:991px)` y en
+   escritorio no llegaba a aplicarse nunca; esta la sustituye en todos los anchos.
+
+   Rojo de marca sobre la barra negra, que es justo lo que pidio el cliente:
+   «iconos como el de menu ya que esa zona esta en negro, y debe verse en rojo».
+
+   ⚠️ WhatsApp es icono de MARCA: no existe en Font Awesome Light ni en Regular,
+   solo en Brands. Por eso ese lleva su propia familia (ver §7, `.it-ico--marca`);
+   con la Light saldria una caja vacia. */
+body .elementor-9 .elementor-element.elementor-element-2d98278 .elementor-icon-box-description::before,
+body .elementor-9 .elementor-element.elementor-element-d7a7443 .elementor-icon-box-description::before,
+body .elementor-9 .elementor-element.elementor-element-f8fac4c .elementor-icon-box-description::before,
+body .elementor-9 .elementor-element.elementor-element-773a198 .elementor-icon-box-description::before {
+  font-family: "Font Awesome Light";
+  font-weight: 300;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 1;
+  margin-right: .45rem;
+  color: var(--it-red);
+  -webkit-font-smoothing: antialiased;
+}
+body .elementor-9 .elementor-element.elementor-element-2d98278 .elementor-icon-box-description::before { content: "\f879"; }  /* phone-alt  */
+body .elementor-9 .elementor-element.elementor-element-d7a7443 .elementor-icon-box-description::before { content: "\f017"; }  /* clock      */
+body .elementor-9 .elementor-element.elementor-element-773a198 .elementor-icon-box-description::before { content: "\f3c5"; }  /* location-dot */
+body .elementor-9 .elementor-element.elementor-element-f8fac4c .elementor-icon-box-description::before {
+  font-family: "Font Awesome 5 Brands";
+  font-weight: 400;
+  content: "\f232";                                                              /* whatsapp */
+  font-size: 15px;
+}
+
+/* --- 16.3 los circulos rojos del asesor, con su icono dentro ---------------- */
+/* Medido en el pie: `.elementor-icon-box-icon` es un circulo de 48x48 con
+   `background-color:rgb(236,35,36)` y `border-radius:50%`, y el `.elementor-icon`
+   de dentro esta a 0x0 — de ahi el circulo rojo vacio del que se quejo el
+   cliente. Los PNG que envio YA traen el circulo rojo y el glifo en blanco, asi
+   que se ponen de fondo cubriendo el circulo entero en vez de meterlos dentro.
+   Al ir de fondo, el tono del PNG tapa el del tema y no hay dos rojos peleando.
+   Esto vive en el pie (contenido 12), o sea que sale en TODAS las paginas: es el
+   mismo bloque que el cliente señalo en el home y en Quienes somos. */
+body .elementor-12 .elementor-element.elementor-element-df24f21 .elementor-icon-box-icon,
+body .elementor-12 .elementor-element.elementor-element-ff2cd24 .elementor-icon-box-icon {
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+}
+body .elementor-12 .elementor-element.elementor-element-df24f21 .elementor-icon-box-icon {
+  background-image: url("/img/it/ico-asesor.png");
+}
+body .elementor-12 .elementor-element.elementor-element-ff2cd24 .elementor-icon-box-icon {
+  background-image: url("/img/it/ico-correo.png");
+}
+
+/* --- 16.4 el telefono del pie, en blanco ----------------------------------- */
+/* Pedido del cliente: «en el footer el numero debe ir en blanco para que se vea».
+   Medido en el espejo, el bloque de contacto del pie (widget 0fd8453) ya computa
+   `rgb(255,255,255)` con `opacity:1`; se deja escrito de todos modos porque en
+   produccion el CSS puede ir por detras y asi el resultado no depende de eso.
+   Se cubren los dos sitios donde sale el numero: la columna de la empresa y la
+   banda del asesor. Los iconos se quedan en rojo de marca, que es lo que separa
+   visualmente cada dato. */
+body .elementor-12 .elementor-element.elementor-element-0fd8453,
+body .elementor-12 .elementor-element.elementor-element-0fd8453 a,
+body .elementor-12 .elementor-element.elementor-element-df24f21 .elementor-icon-box-description,
+body .elementor-12 .elementor-element.elementor-element-ff2cd24 .elementor-icon-box-description {
+  color: #fff;
+}
+body .elementor-12 .elementor-element.elementor-element-0fd8453 a:hover,
+body .elementor-12 .elementor-element.elementor-element-0fd8453 a:focus-visible {
+  color: var(--it-red);
+}
+body .elementor-12 .elementor-element.elementor-element-0fd8453 i { color: var(--it-red); }
+
+
+/* --- 16.5 formulario del paso 02 de «Quiero ser cliente» ------------------- */
+/* El cliente pidio un boton en el paso 2 que despliegue el formulario ahi mismo.
+   El formulario reutiliza las clases `.itcot-*` del modulo de cotizacion, que ya
+   trae el modulo cargado en todas las paginas del front; aqui solo se resuelve
+   el desplegable y como encaja dentro de la seccion de pasos. */
+.itqs-btn--paso { margin-top: 1rem; font-size: .8125rem; padding: .55rem 1rem; }
+.itqs-btn--paso .it-ico { transition: transform .18s ease; }
+.itqs-btn--paso[aria-expanded="true"] .it-ico { transform: rotate(180deg); }
+
+.itqs-datos {
+  margin-top: 2rem;
+  background: #fff;
+  border: 1px solid var(--itc-linea, #E3E7ED);
+  border-radius: 6px;
+  padding: 1.75rem;
+}
+.itqs-datos[hidden] { display: none; }         /* explicito: algun reset pone display a los div */
+
+.itqs-datos__estado {
+  margin: 0 0 1.25rem;
+  padding: .7rem .9rem;
+  border-radius: 4px;
+  background: #F4F6F9;
+  font-size: .875rem;
+  font-weight: 600;
+  color: #16202E;
+}
+/* Lista vacia: el aviso manda al catalogo, porque el servidor rechaza el envio
+   sin productos y no tiene sentido dejar rellenar ocho campos para nada. */
+.itqs-datos__estado--vacia {
+  background: #FDECEC;
+  color: #8E1512;
+  font-weight: 500;
+}
+.itqs-datos__estado--vacia a { color: var(--it-red); text-decoration: underline; }
+
+.itqs-datos__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1.25rem;
+  margin-top: 1.25rem;
+}
+.itqs-datos__pie .itqs-secundario { margin: 0; }
+.itqs-datos__form button[disabled] { opacity: .55; cursor: not-allowed; }
+
+@media (max-width: 575px) {
+  .itqs-datos { padding: 1.15rem; }
+}
+
+
+/* --- 16.6 banda «Sé nuestro cliente» en Quiénes somos ---------------------- */
+/* Maquetada a partir del documento del cliente. La foto es la MISMA que abre
+   «Quiero ser cliente»: eso es lo que pidio con «unificalas». Va de fondo, no
+   como <img>, porque es decorativa; el contenido es el texto que lleva encima.
+   La foto ya viene con el degradado a negro por la izquierda —asi la envio el
+   cliente—, asi que el texto se lee sin necesidad de velo. Se anade un velo
+   suave de todos modos para los anchos en los que la foto se recorta y la parte
+   oscura deja de caer bajo el texto. */
+.itqs-sernuestro {
+  position: relative;
+  background-color: #0B0D11;
+  background-image: url("/img/it/hero-cliente.jpg");
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  color: #fff;
+}
+.itqs-sernuestro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(8, 10, 14, .92) 0%, rgba(8, 10, 14, .72) 38%, rgba(8, 10, 14, 0) 68%);
+}
+.itqs-sernuestro > .itqs-rail { position: relative; }   /* por encima del velo */
+
+.itqs-sernuestro__txt { max-width: 34rem; padding: 3.5rem 0; }
+.itqs-sernuestro__txt .itqs-display { color: #fff; margin: .2rem 0 .9rem; }
+.itqs-sernuestro__txt > p { color: rgba(255, 255, 255, .88); }
+.itqs-sernuestro .itqs-eyebrow { color: var(--it-red); }
+
+.itqs-sernuestro__botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1.5rem;
+}
+
+/* Por debajo de 768 px la parte oscura de la foto ya no cae bajo el texto: el
+   velo pasa a ser vertical y cubre de arriba abajo. */
+@media (max-width: 767px) {
+  .itqs-sernuestro { background-position: center center; }
+  .itqs-sernuestro::before {
+    background: linear-gradient(180deg, rgba(8, 10, 14, .88) 0%, rgba(8, 10, 14, .78) 100%);
+  }
+  .itqs-sernuestro__txt { max-width: none; padding: 2.5rem 0; }
+}
+
+
+/* ============================================================================
+   17) PANEL DE LA CUENTA (el icono de la persona) — 08/08/2026
+   ----------------------------------------------------------------------------
+   ⚠️ FALLO DEL TEMA, no nuestro. La regla que ABRE el panel al pulsar vive
+   dentro de un media query de móvil:
+
+       @media (max-width:991px){
+         .popup-over.leo_block_top.open .popup-content{opacity:1;visibility:visible}
+       }
+
+   En escritorio la única regla que queda es
+   `.popup-over.leo_block_top:hover .popup-content{transform:none}`, que quita el
+   desplazamiento pero NO la `opacity:0` ni la `visibility:hidden` del bloque de
+   arriba. Resultado, medido con la clase `open` puesta a mano y esperando a que
+   acabe la transición: `op=0 vis=hidden`.
+
+   Lo que eso significa en la práctica:
+     · con el ratón se abre de milagro, por una regla genérica `.popup-over:hover`
+       que empata en especificidad (0,3,0) y gana por ir después en el fichero;
+     · **con el teclado no se abre nunca** (no hay `:focus-within`);
+     · **en una tablet grande (>991 px) tampoco**: no hay hover y el clic no
+       hace nada, así que el menú de la cuenta es inalcanzable.
+
+   Se repite la regla FUERA del media query y se añade `:focus-within`.
+   ============================================================================ */
+body .popup-over.leo_block_top.open .popup-content,
+body .popup-over.leo_block_top:focus-within .popup-content {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- 17.1 la caja --------------------------------------------------------- */
+/* El tema la deja en 180 px, que para seis entradas con icono y contador obliga
+   a partir los textos. 300 px caben de sobra bajo el icono sin salirse del
+   contenedor (el icono está a x≈1399 en 1440). */
+body .popup-over.leo_block_top .popup-content.itcuenta {
+  width: 300px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(6, 9, 14, .28), 0 2px 6px rgba(6, 9, 14, .14);
+  color: var(--itc-tinta, #16202E);
+}
+
+/* --- 17.2 cabecera de identidad ------------------------------------------- */
+/* Negra, para que sea continuación de la cabecera de la tienda y no un bloque
+   suelto. Es la única zona oscura del panel: separa «quién eres» de «qué haces». */
+.itcuenta__cab {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: 1rem;
+  background: #0B0D11;
+  color: #fff;
+}
+
+/* La pieza que identifica el panel. Cuadrada y en el rojo de marca, con la letra
+   en la tipografía condensada del tema: es la misma familia de los titulares, y
+   remite a la etiqueta troquelada de una herramienta. Un círculo habría sido el
+   recurso de siempre. */
+.itcuenta__inicial {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 3px;
+  background: var(--it-red);
+  color: #fff;
+  font-family: var(--heading-font-family, inherit);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.itcuenta__cab--anonimo .itcuenta__inicial {
+  background: rgba(255, 255, 255, .1);
+  color: rgba(255, 255, 255, .85);
+  font-size: 17px;
+}
+
+.itcuenta__quien { min-width: 0; }              /* para que el recorte funcione */
+.itcuenta__nombre {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.itcuenta__correo {
+  display: block;
+  margin-top: .1rem;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, .62);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- 17.3 las acciones ---------------------------------------------------- */
+body .popup-over.leo_block_top .popup-content .itcuenta__lista {
+  margin: 0;
+  padding: .35rem 0;
+  list-style: none;
+}
+body .popup-over.leo_block_top .popup-content .itcuenta__lista > li { padding: 0; }
+
+body .popup-over.leo_block_top .popup-content a.itcuenta__item {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .55rem 1rem;
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: var(--itc-tinta, #16202E);
+  transition: background .15s ease, color .15s ease;
+}
+body .popup-over.leo_block_top .popup-content a.itcuenta__item > span:first-of-type { flex: 1 1 auto; }
+
+.itcuenta__item .it-ico {
+  flex: none;
+  width: 18px;
+  font-size: 15px;
+  text-align: center;
+  color: var(--it-red);
+}
+
+body .popup-over.leo_block_top .popup-content a.itcuenta__item:hover,
+body .popup-over.leo_block_top .popup-content a.itcuenta__item:focus-visible {
+  background: #F4F6F9;
+  color: #000;
+}
+
+/* Cerrar sesión: en rojo, porque es la única acción que cambia de estado. */
+body .popup-over.leo_block_top .popup-content a.itcuenta__item--salir { color: var(--it-red); }
+body .popup-over.leo_block_top .popup-content a.itcuenta__item--salir .it-ico { color: inherit; }
+body .popup-over.leo_block_top .popup-content a.itcuenta__item--salir:hover { background: #FDECEC; color: #8E1512; }
+
+.itcuenta__sep {
+  height: 1px;
+  margin: .35rem 0;
+  background: #E9ECF1;
+}
+
+/* El contador va a la derecha, alineado, y solo se ve si trae número: un «(0)»
+   colgando de cada línea era ruido. `:empty` lo resuelve sin JavaScript. */
+.itcuenta__num {
+  flex: none;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #EEF1F5;
+  color: #46505F;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+/* Vacío = sin dato todavía (el JS aún no escribió). Se oculta.
+   `--vacio` = el JS ya escribió y la lista está a cero: también se oculta, que
+   un «0» en cada línea no aporta nada. La clase la pone `cotizacion.js`, así que
+   el contador de la cotización se alimenta solo, sin JavaScript nuevo. */
+/* `--cero` la pone `custom.js`: es la única forma de tratar igual los tres
+   contadores, porque unos scripts dejan el hueco vacío y otros escriben «0». */
+.itcuenta__num:empty,
+.itcuenta__num--cero,
+.itcuenta__num.itcot-contador--vacio { display: none; }
+
+/* El contador de la cotización lleva la clase `itcot-contador`, que en la
+   cabecera es un globo rojo. Dentro del panel manda el estilo de la lista: aquí
+   el rojo está reservado a los iconos y a «Cerrar sesión». */
+body .popup-over.leo_block_top .popup-content .itcuenta__num.itcot-contador {
+  position: static;
+  background: #EEF1F5;
+  color: #46505F;
+  font-size: 11px;
+}
+/* El tema envuelve el número en paréntesis con ::before/::after. Aquí sobra. */
+body .popup-over.leo_block_top .popup-content .itcuenta__num.ap-total::before,
+body .popup-over.leo_block_top .popup-content .itcuenta__num.ap-total::after { content: none; }
+
+/* --- 17.4 sin sesión ------------------------------------------------------ */
+.itcuenta__acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+  padding: .9rem 1rem .35rem;
+}
+body .popup-over.leo_block_top .popup-content a.itcuenta__btn {
+  display: block;
+  padding: .55rem .5rem;
+  border-radius: 3px;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+body .popup-over.leo_block_top .popup-content a.itcuenta__btn--rojo {
+  background: var(--it-red);
+  color: #fff;
+}
+body .popup-over.leo_block_top .popup-content a.itcuenta__btn--rojo:hover { background: #B81A16; color: #fff; }
+body .popup-over.leo_block_top .popup-content a.itcuenta__btn--linea {
+  background: #fff;
+  color: #16202E;
+  border: 1px solid #D5DAE2;
+}
+body .popup-over.leo_block_top .popup-content a.itcuenta__btn--linea:hover { border-color: #16202E; color: #000; }
+
+/* ⚠️ Hay que repetir la escalera entera de selectores. El tema trae
+       .popup-over.leo_block_top .popup-content p{font-weight:700;font-size:11px;text-transform:uppercase}
+   que es (0,3,1); con `.itcuenta__nota` a secas —(0,1,0)— la nota salía en
+   MAYÚSCULAS y en negrita, gritando justo lo que debe leerse como un apunte. */
+body .popup-over.leo_block_top .popup-content p.itcuenta__nota {
+  margin: 0;
+  padding: .1rem 1rem 1rem;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #66717F;
+  text-transform: none;
+  font-weight: 400;
+}
+
+/* --- 17.5 móvil ----------------------------------------------------------- */
+/* Por debajo de 576 px un panel de 300 px anclado a la derecha se sale de la
+   pantalla en cuanto el icono está cerca del borde. Se ancla a los dos lados y
+   se limita el alto: con favoritos, cotización y comparar, la lista puede pasar
+   de lo que se ve sin desplazar. */
+@media (max-width: 575px) {
+  body .popup-over.leo_block_top .popup-content.itcuenta {
+    position: fixed;
+    top: auto;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+  .itcuenta__cab { padding: .9rem; }
+  body .popup-over.leo_block_top .popup-content a.itcuenta__item { padding: .7rem 1rem; }  /* dedo, no ratón */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body .popup-over.leo_block_top .popup-content.itcuenta,
+  body .popup-over.leo_block_top .popup-content a.itcuenta__item { transition: none; }
+}
+
+
+/* --- 17.6 alias de los nombres de Font Awesome 6 --------------------------- */
+/* El tema empaqueta Font Awesome **5**. Los contenidos de Leo que se escribieron
+   con nombres de FA6 aplican la clase y NO PINTAN NADA, sin dar ningún error.
+   Se detectó así: en el pie, la dirección era la única línea de las cuatro que
+   salía sin icono, mientras teléfono, correo y horario sí lo tenían.
+
+   El glifo existe —`location-dot` de FA6 y `map-marker-alt` de FA5 son el MISMO
+   código `\f3c5`—; lo que no existe es el nombre de clase. Así que basta con
+   declararlo, y de paso queda cubierto cualquier contenido futuro que el cliente
+   escriba con nomenclatura de FA6.
+   Se resuelve aquí y no editando el JSON de Leo a propósito: tocar ese JSON por
+   SQL es justo lo que corrompe los contenidos (ver Fase 3). */
+.fa-location-dot::before      { content: "\f3c5"; }   /* = map-marker-alt   */
+.fa-circle-info::before       { content: "\f05a"; }   /* = info-circle      */
+.fa-arrow-right-from-bracket::before { content: "\f2f5"; }  /* = sign-out-alt */
+.fa-magnifying-glass::before  { content: "\f002"; }   /* = search           */
+.fa-xmark::before             { content: "\f00d"; }   /* = times            */
+
+
+/* ============================================================================
+   18) REJILLA DE PRODUCTO — legibilidad (auditoría del home, 08/08/2026)
+   ============================================================================ */
+
+/* --- 18.1 los nombres largos no rompen la rejilla -------------------------- */
+/* Medido sobre el catálogo real: el nombre medio son 42 caracteres y el más
+   largo 128 («JGO DE LLAVES HEXAGONALES LARGAS PUNTA REDONDA MÉTRICAS 9 PZAS
+   1.5…»). En una rejilla de cuatro columnas eso son cuatro y cinco líneas, y las
+   tarjetas de una misma fila quedan de alturas distintas.
+   Se recorta a dos líneas. El nombre completo sigue estando en el HTML —lo leen
+   el buscador y los lectores de pantalla— y aparece entero en la ficha. */
+.product-miniature .product-title,
+.product-miniature .product-title a {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* Reservar el alto de las dos líneas: si no, una tarjeta de un nombre corto sube
+   su botón y el de al lado queda desalineado. */
+.product-miniature .product-title { min-height: 2.6em; }
+
+/* --- 18.2 la etiqueta «Nuevo» pesa menos ---------------------------------- */
+/* ⚠️ Hoy la llevan LOS 3.036 productos, porque el catálogo se importó de una vez
+   (27/07/2026) y `PS_NB_DAYS_NEW_PRODUCT` son 20 días. Una etiqueta que está en
+   todo no distingue nada: solo mete un punto verde en cada tarjeta que compite
+   con el nombre y con el botón.
+   Se deja discreta en vez de quitarla, porque el 15/08 caduca sola y entonces sí
+   volverá a significar «esto acaba de entrar». */
+.product-miniature .product-flag.new {
+  background: #EEF1F5;
+  color: #46505F;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+
+/* --- 18.3 la sección de novedades, oculta si se queda vacía ---------------- */
+/* El 15/08/2026 los 3.036 dejan de ser novedad a la vez y este bloque se queda
+   sin nada que enseñar. Mismo recurso que con el blog vacío (§15): se oculta
+   solo mientras no haya productos, y vuelve solo el día que entre uno nuevo.
+   Así no hay que acordarse de nada. */
+.elementor-widget-LeoProductCarousel:has(.block_content > .alert),
+.elementor-widget-LeoProductCarousel:has(.products:empty) { display: none; }
+
+
+/* ============================================================================
+   19) PRODUCTOS CON Y SIN FOTO — la tarjeta se adapta a lo que tiene
+   ----------------------------------------------------------------------------
+   Hoy `psjy_image` está a 0 filas: los 3.036 productos usan el marcador del
+   núcleo, así que en una pantalla del home salían DIECISÉIS «Imagen no
+   disponible». Repetir esa frase no informa de nada y es lo primero que ve un
+   mayorista.
+
+   Estrategia (decidida con el cliente el 08/08):
+     · SIN foto → no se pinta zona de imagen. La tarjeta enseña la REFERENCIA,
+       que es lo que un ferretero usa de verdad para pedir, y la marca.
+     · CON foto → la rejilla de siempre, con la imagen entera y sin recortes.
+
+   Lo importante es que **no hay que hacer nada el día que lleguen las fotos**:
+   la plantilla marca cada producto según tenga `cover` o no, así que cada uno
+   pasa al modo con imagen en cuanto el cliente le sube una desde el panel. La
+   transición es producto a producto, sin despliegue y sin configurar nada.
+   ============================================================================ */
+
+/* --- 19.1 sin foto: ficha de referencia ----------------------------------- */
+.product-miniature--sin-foto .thumbnail-container .product-image { background: transparent; }
+
+/* ⚠️ El cuadro va con la MISMA proporción que la foto (1:1). Sin esto la rejilla
+   queda escalonada: medido, la tarjeta con foto ocupa ~330 px de alto y la de
+   referencia 132, así que al convivir las dos —que es justo lo que va a pasar
+   mientras el cliente sube fotos— las filas se rompen y parece un error de
+   maquetación. Con la misma caja, la rejilla es uniforme desde el primer día y
+   se mantiene uniforme el día que todas tengan foto. */
+.product-miniature--sin-foto a.thumbnail.itsf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  aspect-ratio: 1 / 1;
+  max-height: 330px;
+  padding: 1.1rem .75rem;
+  background: linear-gradient(180deg, #F7F8FA 0%, #EDF0F5 100%);
+  border-bottom: 2px solid var(--it-red);
+  text-align: center;
+  transition: background .18s ease;
+}
+.product-miniature--sin-foto a.thumbnail.itsf:hover { background: #E7EBF2; }
+
+/* La referencia, en la condensada de los titulares: es el dato que se copia al
+   pedir, así que se trata como una matrícula, no como texto corrido. */
+/* Un rótulo pequeño sobre la referencia: dice qué es el número que hay debajo.
+   Sin él, un código suelto en medio de un cuadro gris no se entiende. */
+.itsf::before {
+  content: "Referencia";
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #93A0B0;
+}
+.itsf__ref {
+  font-family: var(--heading-font-family, inherit);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: .04em;
+  color: #16202E;
+  word-break: break-word;
+}
+.itsf__marca {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--it-red);
+}
+
+/* Sin foto no hay nada que ampliar ni sobre lo que pasar el ratón: la vista
+   rápida y los botones flotantes sobran y solo tapan la referencia. */
+.product-miniature--sin-foto .functional-buttons .quickview { display: none; }
+
+/* --- 19.2 con foto: que se vea entera ------------------------------------- */
+/* El tema recorta con `object-fit: cover`, que en catálogo de herramienta corta
+   justo las puntas y los mangos, que es por donde se reconoce la pieza.
+   `contain` la muestra completa aunque sobre fondo a los lados. */
+.product-miniature:not(.product-miniature--sin-foto) .product-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+  mix-blend-mode: normal;
+}
+/* Alto estable para que la rejilla no baile mientras cargan las imágenes ni
+   cuando conviven productos con foto y sin ella. */
+/* ⚠️ `aspect-ratio: 1/1` a secas se dispara en las secciones de columna ancha.
+   Medido en la portada: en la rejilla normal la caja queda en 322x322 —bien—,
+   pero «Los Más Vendidos» va a DOS columnas, así que cada una mide ~660 px y la
+   caja se convertía en un cuadrado gigante con la referencia perdida en medio.
+   El tope la deja en una proporción razonable en cualquier ancho de columna. */
+.product-miniature .product-image .product-thumbnail {
+  display: block;
+  aspect-ratio: 1 / 1;
+  max-height: 330px;
+  overflow: hidden;
+}
+
+/* --- 19.3 la rejilla, pareja en todos los anchos --------------------------- */
+/* Con tarjetas de dos tipos conviviendo, hay que igualar alturas o la fila queda
+   escalonada. El contenedor de Leo ya es flex; solo falta que la tarjeta ocupe
+   todo su alto y empuje el pie hacia abajo. */
+.products .product-miniature,
+.products .js-product { height: 100%; }
+.product-miniature .thumbnail-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.product-miniature .product-meta { flex: 1 1 auto; display: flex; flex-direction: column; }
+.product-miniature .product-description { flex: 1 1 auto; }
+
+/* --- 19.4 móvil ----------------------------------------------------------- */
+@media (max-width: 767px) {
+  .product-miniature--sin-foto a.thumbnail.itsf { padding: .85rem .5rem; }
+  .itsf__ref { font-size: 15px; }
+  .itsf__marca { font-size: 9.5px; }
+  .itsf::before { font-size: 8.5px; letter-spacing: .1em; }
+}
+
+
+/* ============================================================================
+   20) HERO EN MOVIL — que no quede media banda en blanco
+   ----------------------------------------------------------------------------
+   El slideshow del home NO es responsive por CSS: LeoSlideshow decide EN EL
+   SERVIDOR, mirando el user-agent, si sirve el grupo de escritorio (3, de
+   1920x700) o el de movil (5, de 460x460), y solo renderiza uno.
+
+   Medido con user-agent de telefono: el contenedor movil sale de 390x390
+   —cuadrado, correcto— pero las imagenes de banner son apaisadas
+   (`/img/it/slide-1.jpg` es de proporcion 1920x700). En un contenedor cuadrado
+   la foto cubre solo la banda de arriba y **el resto del hero queda en BLANCO**,
+   con el boton flotando sobre la nada. Se lee como si la imagen no hubiera
+   cargado.
+
+   Se le da al contenedor el mismo tono oscuro de los banners, asi lo que antes
+   parecia un hueco pasa a leerse como un unico panel oscuro con su titular y su
+   boton. `.iview` es el contenedor que crea el propio modulo por JavaScript
+   (viene vacio en el HTML), asi que se estila por su clase.
+
+   👉 Lo definitivo esta en manos del cliente, y ahora puede hacerlo: subir las
+      imagenes del grupo «Slide Mobile» en formato CUADRADO (460x460) desde
+      Diseño → Leo Slideshow Configuration. Mientras tanto, esto lo deja limpio.
+   ============================================================================ */
+@media (max-width: 767px) {
+  .iview {
+    background-color: #0B0D11;
+    background-size: cover;
+    background-position: center center;
+  }
+}

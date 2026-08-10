@@ -581,3 +581,151 @@ $(document).ready(function () {
 });
 
 
+
+/* ==========================================================================
+   Panel de la cuenta: los contadores a cero no se enseñan — 08/08/2026
+   Los tres números del panel (cotización, favoritos, comparar) los escriben tres
+   scripts distintos: `cotizacion.js` los dos primeros y `leofeature` el tercero.
+   Unos dejan el hueco vacío y otros escriben «0», así que con CSS solo se podía
+   ocultar la mitad (`:empty`). Aquí se marcan todos con la misma clase y el CSS
+   los esconde de una vez: un «0» repetido en cada línea es ruido, y la línea sin
+   número ya dice lo mismo.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  function ajustar() {
+    var nums = document.querySelectorAll(".itcuenta__num");
+    for (var i = 0; i < nums.length; i++) {
+      var t = (nums[i].textContent || "").trim();
+      nums[i].classList.toggle("itcuenta__num--cero", t === "" || t === "0");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    ajustar();
+    // Los contadores se escriben después de cargar (ajax de favoritos, cambios
+    // en la lista de cotización), así que hay que volver a mirar cuando cambien.
+    document.addEventListener("itcot:cambio", ajustar);
+    var panel = document.querySelector(".itcuenta");
+    if (panel && window.MutationObserver) {
+      new MutationObserver(ajustar).observe(panel, {
+        childList: true, subtree: true, characterData: true
+      });
+    }
+  });
+})();
+
+
+/* ==========================================================================
+   Placeholder animado del buscador — Importtools, 01/08/2026
+   Recupera el efecto de escritura que traia la demo de AutoSoe, con textos en
+   español y sacados del catalogo real, no genericos.
+   Se detiene en cuanto el usuario toca el campo y respeta prefers-reduced-motion.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  /* Cada palabra empieza en mayuscula, como pidio el cliente el 08/08/2026. Las
+     particulas cortas van en minuscula siguiendo su propio ejemplo, que escribio
+     «Guantes y Seguridad Industrial» — la conjuncion en minuscula. */
+  var FRASES = [
+    "Busca por Referencia: NIK-10402",
+    "Tornillería Grado 8",
+    "Discos de Corte para Metal",
+    "Herramienta Eléctrica",
+    "Guantes y Seguridad Industrial",
+    "Llaves y Dados Milimétricos"
+  ];
+
+  var ESCRIBIR = 55;      // ms por letra al escribir
+  var BORRAR   = 28;      // ms por letra al borrar
+  var PAUSA    = 1700;    // ms con la frase completa
+  var ARRANQUE = 700;
+
+  function iniciar(input) {
+    if (!input || input.dataset.itTyped === "1") { return; }
+    input.dataset.itTyped = "1";
+
+    var reducido = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var original = input.getAttribute("placeholder") || "Buscar";
+
+    // Sin animacion: al menos que el texto sea util y en español
+    if (reducido) {
+      input.setAttribute("placeholder", "Buscar en el catálogo");
+      return;
+    }
+
+    var i = 0, pos = 0, borrando = false, timer = null, parado = false;
+
+    function parar() {
+      if (parado) { return; }
+      parado = true;
+      clearTimeout(timer);
+      input.setAttribute("placeholder", original);
+    }
+
+    // El usuario manda: al enfocar o escribir, se detiene y no vuelve.
+    input.addEventListener("focus", parar);
+    input.addEventListener("input", parar);
+
+    function paso() {
+      if (parado) { return; }
+      var frase = FRASES[i];
+
+      if (!borrando) {
+        pos++;
+        input.setAttribute("placeholder", frase.slice(0, pos) + "\u2502");
+        if (pos === frase.length) {
+          borrando = true;
+          timer = setTimeout(paso, PAUSA);
+          return;
+        }
+        timer = setTimeout(paso, ESCRIBIR);
+      } else {
+        pos--;
+        input.setAttribute("placeholder", frase.slice(0, pos) + "\u2502");
+        if (pos === 0) {
+          borrando = false;
+          i = (i + 1) % FRASES.length;
+        }
+        timer = setTimeout(paso, BORRAR);
+      }
+    }
+
+    timer = setTimeout(paso, ARRANQUE);
+  }
+
+  function arrancar() {
+    // Los dos buscadores del tema: el de cabecera y el desplegable del movil
+    ["#leo_search_query_top", "#leo_search_query_block"].forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(iniciar);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", arrancar);
+  } else {
+    arrancar();
+  }
+})();
+
+
+
+/* ==========================================================================
+   Menú móvil — cerrar con Escape, Importtools 03/08/2026
+   --------------------------------------------------------------------------
+   El cajón lateral lo construye `leobootstrapmenu.js`, que ya trae velo
+   (`.megamenu-overlay`), cierre al tocar fuera y un botón «Cerrar» traducido.
+   Lo único que le falta es el teclado, que es lo que usa quien navega sin ratón.
+   Se dispara el propio botón del módulo en vez de quitar clases a mano, para
+   que su contabilidad interna (`off-canvas-active` / `off-canvas-inactive`)
+   quede consistente.
+   ========================================================================== */
+document.addEventListener("keydown", function (ev) {
+  if (ev.key !== "Escape") { return; }
+  if (!document.body.classList.contains("off-canvas-active")) { return; }
+  var cerrar = document.querySelector(".off-canvas-nav-megamenu.active .off-canvas-button-megamenu")
+            || document.querySelector(".off-canvas-nav-megamenu .off-canvas-button-megamenu");
+  if (cerrar) { cerrar.click(); }
+});

@@ -21,9 +21,27 @@
  * @license   https://opensource.org/licenses/AFL-3.0 Academic Free License 3.0 (AFL-3.0)
  * International Registered Trademark & Property of PrestaShop SA
  *}
+{**
+ * MINIATURA DE PRODUCTO — Import Tools Latam · 08/08/2026
+ *
+ * Estrategia para el catálogo sin fotos, que hoy son casi todos los productos
+ * (`psjy_image` = 0 filas):
+ *
+ *   · Producto SIN foto  → NO se pinta la zona de imagen. En su lugar la tarjeta
+ *     enseña la REFERENCIA, que es justo lo que un ferretero usa para pedir
+ *     («mándame 10 NIK-AC2540»), y la marca. Una carencia convertida en el dato
+ *     más útil, en vez de repetir «Imagen no disponible» veinte veces por pantalla.
+ *   · Producto CON foto  → la rejilla de siempre, con la imagen a tamaño completo.
+ *
+ * Lo importante: **no hay que tocar nada el día que lleguen las fotos**. Cada
+ * producto pasa al modo con imagen en cuanto tiene una, uno a uno, sin desplegar
+ * ni configurar. El cliente sube la foto desde el panel y ya está.
+ *
+ * La clase `product-miniature--sin-foto` en el <article> es la que gobierna el CSS.
+ *}
 {block name='product_miniature_item'}
 <div class="js-product product{if !empty($productClasses)} {$productClasses}{/if}">
-	<article class="product-miniature js-product-miniature" data-id-product="{$product.id_product}" data-id-product-attribute="{$product.id_product_attribute}">
+	<article class="product-miniature js-product-miniature{if !$product.cover} product-miniature--sin-foto{/if}" data-id-product="{$product.id_product}" data-id-product-attribute="{$product.id_product_attribute}">
 		<div class="thumbnail-container">
              <div class="product-image thumbnail-top">
 				{block name='product_thumbnail'}
@@ -49,22 +67,16 @@
 					</picture>
 						</a>
 					{else}
-						<a href="{$product.url}" class="thumbnail product-thumbnail">
-              <picture>
-                {if !empty($urls.no_picture_image.bySize.home_default.sources.avif)}<source srcset="{$urls.no_picture_image.bySize.home_default.sources.avif}" type="image/avif">{/if}
-                {if !empty($urls.no_picture_image.bySize.home_default.sources.webp)}<source srcset="{$urls.no_picture_image.bySize.home_default.sources.webp}" type="image/webp">{/if}
-					            <img
-					                src="{$urls.no_picture_image.bySize.home_default.url}"
-					                loading="lazy"
-					                width="{$urls.no_picture_image.bySize.home_default.width}"
-					                height="{$urls.no_picture_image.bySize.home_default.height}"
-					              />
-						    {if isset($cfg_product_one_img) && $cfg_product_one_img}
-						    	<span class="product-additional" data-idproduct="{$product.id_product}"></span>
-						    {/if}
-		</picture>
-					        </a>
-					{/if}	
+						{* Sin foto: en lugar del marcador «Imagen no disponible» del núcleo, la
+						   ficha de referencia. Es un enlace, igual que la miniatura, para que
+						   toda la zona superior siga siendo pulsable. *}
+						<a href="{$product.url}" class="thumbnail product-thumbnail itsf">
+							<span class="itsf__ref">{if $product.reference}{$product.reference}{else}{l s='Consultar' d='Shop.Theme.Catalog'}{/if}</span>
+							{if !empty($product.manufacturer_name)}
+								<span class="itsf__marca">{$product.manufacturer_name}</span>
+							{/if}
+						</a>
+					{/if}
 				{/block}
 			
 				{include file='catalog/_partials/product-flags.tpl'}

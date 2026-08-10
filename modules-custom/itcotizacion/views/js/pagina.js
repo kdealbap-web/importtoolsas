@@ -158,3 +158,152 @@
       });
   }
 })();
+
+
+/* ============================================================================
+   Formulario del paso 02 de «Quiero ser cliente» — 08/08/2026
+   ----------------------------------------------------------------------------
+   El cliente pidio un boton en el paso 2 que despliegue ahi mismo el formulario
+   de datos, sin salir de la pagina.
+
+   Se apoya en lo que ya existe: mismos nombres de campo y mismo destino
+   (`itcot.urlEnvio`) que el formulario de la pagina de cotizacion. Asi el
+   servidor valida y guarda por un unico camino.
+
+   ⚠️ El controlador `enviar` EXIGE que haya productos: con la lista vacia
+   responde `{ok:false, errores:{productos:...}}`. Por eso, antes de dejar
+   enviar, el formulario dice cuantos productos hay y, si no hay ninguno, lleva
+   al catalogo en vez de dejar que el visitante rellene ocho campos para nada.
+   ============================================================================ */
+(function () {
+  "use strict";
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var boton = document.getElementById("itqs-abrir-datos");
+    var caja  = document.getElementById("itqs-datos");
+    var form  = document.getElementById("itqs-datos-form");
+    if (!boton || !caja || !form) { return; }   // no estamos en esa pagina
+
+    var API = window.ITCotizacion;
+    var estado = document.getElementById("itqs-datos-estado");
+    var btn = document.getElementById("itqs-datos-btn");
+
+    form.action = (window.itcot && window.itcot.urlEnvio) || form.action;
+
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    }
+
+    function lista() {
+      return (API && API.lista) ? API.lista() : [];
+    }
+
+    /* Cuenta lo que hay en la lista y decide si se puede enviar. */
+    function refrescarEstado() {
+      var n = lista().length;
+      if (n === 0) {
+        estado.className = "itqs-datos__estado itqs-datos__estado--vacia";
+        estado.innerHTML = 'Tu lista está vacía. Primero elige los productos que quieres cotizar: ' +
+                           '<a href="/2-catalogo">ir al catálogo</a>.';
+        btn.disabled = true;
+      } else {
+        estado.className = "itqs-datos__estado";
+        estado.textContent = n === 1
+          ? "Vas a cotizar 1 producto."
+          : "Vas a cotizar " + n + " productos.";
+        btn.disabled = false;
+      }
+    }
+
+    boton.addEventListener("click", function () {
+      var abierto = caja.hasAttribute("hidden") === false;
+      if (abierto) {
+        caja.setAttribute("hidden", "");
+        boton.setAttribute("aria-expanded", "false");
+        return;
+      }
+      caja.removeAttribute("hidden");
+      boton.setAttribute("aria-expanded", "true");
+      refrescarEstado();
+      caja.scrollIntoView({ behavior: "smooth", block: "start" });
+      var primero = form.querySelector("input, select");
+      if (primero) { primero.focus({ preventScroll: true }); }
+    });
+
+    // Si el visitante agrega o quita productos en otra pestaña, el aviso se pone al dia.
+    document.addEventListener("itcot:cambio", function () {
+      if (!caja.hasAttribute("hidden")) { refrescarEstado(); }
+    });
+
+    function limpiarErrores() {
+      form.querySelectorAll(".itcot-error").forEach(function (e) { e.textContent = ""; });
+      form.querySelectorAll(".itcot-campo--mal").forEach(function (e) {
+        e.classList.remove("itcot-campo--mal");
+      });
+    }
+
+    function pintarErrores(errores) {
+      Object.keys(errores).forEach(function (campo) {
+        var el = form.querySelector('.itcot-error[data-para="' + campo + '"]');
+        if (!el) { el = form.querySelector('.itcot-error[data-para="global"]'); }
+        if (!el) { return; }
+        el.textContent = errores[campo];
+        var c = el.closest(".itcot-campo");
+        if (c) { c.classList.add("itcot-campo--mal"); }
+      });
+      var primero = form.querySelector(".itcot-campo--mal, .itcot-error--global");
+      if (primero) { primero.scrollIntoView({ behavior: "smooth", block: "center" }); }
+    }
+
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      limpiarErrores();
+
+      var productos = lista();
+      if (!productos.length) {
+        refrescarEstado();
+        return;
+      }
+
+      var datos = new FormData(form);
+      datos.append("productos", JSON.stringify(productos.map(function (p) {
+        return { id: p.id, qty: p.qty };
+      })));
+
+      btn.disabled = true;
+      btn.classList.add("itcot-btn--cargando");
+
+      // La pestaña se abre antes del fetch: abrirla en la respuesta la bloquea
+      // el navegador, por no venir de un gesto del usuario.
+      var pestana = window.open("", "_blank");
+
+      fetch(form.action, { method: "POST", body: datos, credentials: "same-origin" })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res.ok) {
+            if (pestana) { pestana.close(); }
+            pintarErrores(res.errores || { global: "No se pudo enviar. Inténtalo de nuevo." });
+            return;
+          }
+          if (API && API.vaciar) { API.vaciar(); }
+          if (pestana) { pestana.location = res.whatsapp; } else { window.location = res.whatsapp; }
+          caja.innerHTML =
+            '<div class="itcot-listo">' +
+              "<h2>¡Listo! Tu solicitud quedó registrada</h2>" +
+              "<p>Referencia <strong>" + esc(res.referencia) + "</strong>. " +
+              'Si WhatsApp no se abrió, <a href="' + esc(res.whatsapp) + '" target="_blank" rel="noopener">ábrelo aquí</a>.</p>' +
+            "</div>";
+        })
+        .catch(function () {
+          if (pestana) { pestana.close(); }
+          pintarErrores({ global: "No pudimos conectar. Revisa tu conexión e inténtalo de nuevo." });
+        })
+        .finally(function () {
+          btn.disabled = false;
+          btn.classList.remove("itcot-btn--cargando");
+        });
+    });
+  });
+})();

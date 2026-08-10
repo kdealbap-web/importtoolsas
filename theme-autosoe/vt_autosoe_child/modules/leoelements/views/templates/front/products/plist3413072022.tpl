@@ -1,11 +1,32 @@
-{* 
+{*
 * @Module Name: Leo Elements
 * @Website: leotheme.com - prestashop template provider
 * @author Leotheme <leotheme@gmail.com>
 * @copyright Leotheme
 * @description: Leo Elements is module help you can build content for your shop
 *}
-<article class="product-miniature js-product-miniature" data-id-product="{$product.id_product}" data-id-product-attribute="{$product.id_product_attribute}">
+{**
+ * ────────────────────────────────────────────────────────────────────────────
+ * MODIFICADO — Import Tools Latam · 08/08/2026
+ *
+ * ESTA es la plantilla que pinta el listado de categoría, el buscador y los
+ * carruseles del home: «Product style 01» = `plist3413072022`, elegida por el
+ * cliente. No es `catalog/_partials/miniatures/product.tpl` del núcleo, que en
+ * esta tienda **no se usa** (comprobado: 0 apariciones de sus clases en el HTML).
+ *
+ * Cambio: cuando el producto NO tiene foto, en vez del marcador «Imagen no
+ * disponible» —que hoy sale en casi todas las tarjetas y llegó a repetirse
+ * DIECISÉIS veces en una sola pantalla del home— se muestra la REFERENCIA, que
+ * es el dato con el que un ferretero pide («mándame 10 NIK-AC2540»), y la marca.
+ *
+ * Y no hay que hacer NADA el día que lleguen las fotos: cada producto pasa al
+ * modo con imagen en cuanto el cliente le sube una desde el panel, uno a uno.
+ *
+ * ⚠️ Al actualizar el tema padre se recopia `themes/vt_autosoe/modules/` sobre el
+ *    hijo (ver CLAUDE.md, Fase 3). Hay que volver a aplicar este cambio.
+ * ────────────────────────────────────────────────────────────────────────────
+ *}
+<article class="product-miniature js-product-miniature{if !$product.cover} product-miniature--sin-foto{/if}" data-id-product="{$product.id_product}" data-id-product-attribute="{$product.id_product_attribute}">
   <div class="thumbnail-container">
     <div class="product-image">
 {block name='product_thumbnail'}
@@ -52,8 +73,11 @@
 			</div>
 		{/if}
 	{else}
-	  <a href="{$product.url}" class="thumbnail product-thumbnail leo-noimage">
-	 <img class="img-fluid" src= "{$urls.no_picture_image.bySize.home_default.url}" loading="lazy" >
+	  {* Sin foto: ficha de referencia en lugar del marcador del núcleo. Sigue
+	     siendo un enlace, así que toda la zona superior de la tarjeta es pulsable. *}
+	  <a href="{$product.url}" class="thumbnail product-thumbnail leo-noimage itsf">
+	    <span class="itsf__ref">{if $product.reference}{$product.reference}{else}{l s='Ver ficha'}{/if}</span>
+	    {if !empty($product.manufacturer_name)}<span class="itsf__marca">{$product.manufacturer_name}</span>{/if}
 	  </a>
 	{/if}
 {/block}

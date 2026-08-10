@@ -1,0 +1,233 @@
+<div class="itqs">
+
+<section class="itqs-banda itqs-hero">
+  <div class="itqs-rail">
+    <div class="itqs-hero__txt">
+      <p class="itqs-eyebrow">Ventas al por mayor</p>
+      <h1 class="itqs-display itqs-hero__h1">Compra para tu ferretería, taller u obra.</h1>
+      <p class="itqs-hero__lede">Arma tu lista en el catálogo, déjanos tus datos y un asesor te responde por WhatsApp con precios, disponibilidad y tiempo de entrega. Sin registro y sin compromiso.</p>
+      <p class="itqs-acciones">
+        <a class="itqs-btn itqs-btn--rojo" href="/2-catalogo">Armar mi cotización</a>
+        <a class="itqs-btn itqs-btn--linea" href="https://wa.me/573145934962" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+      </p>
+    </div>
+    <figure class="itqs-hero__foto">
+      <img src="/img/it/hero-cliente.jpg" alt="Un asesor de Importtools atiende con una tableta a un cliente en el mostrador de la ferretería" width="1600" height="506" fetchpriority="high">
+    </figure>
+  </div>
+</section>
+
+<section class="itqs-banda itqs-ventajas">
+  <div class="itqs-rail">
+    <div class="itqs-ventaja">
+      <i class="it-ico fa-box-open" aria-hidden="true"></i>
+      <div><h2>Más de 3.000 referencias</h2><p>Quince líneas y siete marcas en un solo proveedor.</p></div>
+    </div>
+    <div class="itqs-ventaja">
+      <i class="it-ico fa-headset" aria-hidden="true"></i>
+      <div><h2>Un asesor asignado</h2><p>Te acompaña en la selección y en el pedido.</p></div>
+    </div>
+    <div class="itqs-ventaja">
+      <i class="it-ico fa-tags" aria-hidden="true"></i>
+      <div><h2>Precio según tu volumen</h2><p>Cotizamos sobre la cantidad que necesitas.</p></div>
+    </div>
+    <div class="itqs-ventaja">
+      <i class="it-ico fa-shipping-fast" aria-hidden="true"></i>
+      <div><h2>Despachos a toda Colombia</h2><p>Desde Galapa, Atlántico.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="itqs-publico">
+  <h2 class="itqs-display">A quién atendemos</h2>
+  <p>Importtools S.A.S es un proveedor mayorista de herramienta y seguridad industrial. Trabajamos con quien compra para revender y con quien compra para trabajar.</p>
+  <div class="itqs-publico__grid">
+    <div class="itqs-publico__item">
+      <i class="it-ico fa-store" aria-hidden="true"></i>
+      <h3>Ferreterías</h3>
+      <p>Surtido de mostrador y reposición de inventario.</p>
+    </div>
+    <div class="itqs-publico__item">
+      <i class="it-ico fa-truck-loading" aria-hidden="true"></i>
+      <h3>Distribuidores</h3>
+      <p>Volumen y continuidad de referencias.</p>
+    </div>
+    <div class="itqs-publico__item">
+      <i class="it-ico fa-tools" aria-hidden="true"></i>
+      <h3>Talleres</h3>
+      <p>Herramienta mecánica, de corte y neumática.</p>
+    </div>
+    <div class="itqs-publico__item">
+      <i class="it-ico fa-hard-hat" aria-hidden="true"></i>
+      <h3>Constructoras</h3>
+      <p>Dotación de obra y seguridad industrial.</p>
+    </div>
+    <div class="itqs-publico__item">
+      <i class="it-ico fa-industry" aria-hidden="true"></i>
+      <h3>Mantenimiento</h3>
+      <p>Consumo recurrente para planta e industria.</p>
+    </div>
+  </div>
+</section>
+
+<section class="itqs-soluciones">
+  <div class="itqs-soluciones__grid">
+    <div class="itqs-soluciones__txt">
+      <h2 class="itqs-display">Cómo se pide.</h2>
+      <p>Son tres pasos y no hace falta crear una cuenta. Tu lista se guarda en este navegador mientras la armas.</p>
+      <a class="itqs-btn itqs-btn--negro" href="/2-catalogo">Ir al catálogo <i class="it-ico fa-arrow-right" aria-hidden="true"></i></a>
+      <p class="itqs-secundario">¿Ya armaste tu lista? <a href="/module/itcotizacion/cotizacion">Ver mi cotización</a></p>
+    </div>
+
+    <div class="itqs-pilares">
+      <div class="itqs-pilar itqs-pilar--destacado">
+        <span class="itqs-pilar__num">01</span>
+        <i class="it-ico fa-clipboard-list" aria-hidden="true"></i>
+        <h3>Arma tu lista</h3>
+        <p>En cada producto pulsa «Agregar a mi cotización» e indica la cantidad.</p>
+      </div>
+      <div class="itqs-pilar">
+        <span class="itqs-pilar__num">02</span>
+        <i class="it-ico fa-user-edit" aria-hidden="true"></i>
+        <h3>Déjanos tus datos</h3>
+        <p>Nombre, documento, teléfono y correo. Nada más.</p>
+        <button type="button" class="itqs-btn itqs-btn--negro itqs-btn--paso" id="itqs-abrir-datos"
+                aria-expanded="false" aria-controls="itqs-datos">
+          Dejar mis datos <i class="it-ico fa-chevron-down" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="itqs-pilar">
+        <span class="itqs-pilar__num">03</span>
+        <i class="it-ico it-ico--marca fa-whatsapp" aria-hidden="true"></i>
+        <h3>Te respondemos por WhatsApp</h3>
+        <p>Con precio, disponibilidad y tiempo de entrega.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario del paso 02. Se despliega justo debajo de los tres pasos, sin
+       salir de la pagina. Usa los MISMOS nombres de campo y el MISMO destino que
+       el formulario de /module/itcotizacion/cotizacion, asi que el servidor lo
+       valida y lo guarda igual: no hay una segunda via de entrada que mantener.
+       Empieza con `hidden`; el JS lo abre y lo cierra. -->
+  <div class="itqs-datos" id="itqs-datos" hidden>
+    <form class="itqs-datos__form" id="itqs-datos-form" method="post" novalidate>
+      <p class="itqs-datos__estado" id="itqs-datos-estado" role="status"></p>
+
+      <div class="itcot-campos">
+        <div class="itcot-campo itcot-campo--ancho">
+          <label for="itqs-nombre">Nombre completo</label>
+          <input type="text" id="itqs-nombre" name="nombre" autocomplete="name" required>
+          <span class="itcot-error" data-para="nombre"></span>
+        </div>
+        <div class="itcot-campo">
+          <label for="itqs-tipo-doc">Tipo de documento</label>
+          <select id="itqs-tipo-doc" name="tipo_doc" required>
+            <option value="CC">Cédula de ciudadanía</option>
+            <option value="NIT">NIT</option>
+            <option value="CE">Cédula de extranjería</option>
+            <option value="PP">Pasaporte</option>
+            <option value="TI">Tarjeta de identidad</option>
+          </select>
+          <span class="itcot-error" data-para="tipo_doc"></span>
+        </div>
+        <div class="itcot-campo">
+          <label for="itqs-documento">Número de documento</label>
+          <input type="text" id="itqs-documento" name="documento" inputmode="numeric" required>
+          <span class="itcot-error" data-para="documento"></span>
+        </div>
+        <div class="itcot-campo">
+          <label for="itqs-telefono">Teléfono / WhatsApp</label>
+          <input type="tel" id="itqs-telefono" name="telefono" inputmode="tel" autocomplete="tel" required>
+          <span class="itcot-error" data-para="telefono"></span>
+        </div>
+        <div class="itcot-campo">
+          <label for="itqs-email">Correo electrónico</label>
+          <input type="email" id="itqs-email" name="email" autocomplete="email" required>
+          <span class="itcot-error" data-para="email"></span>
+        </div>
+        <div class="itcot-campo">
+          <label for="itqs-empresa">Empresa <small>(opcional)</small></label>
+          <input type="text" id="itqs-empresa" name="empresa" autocomplete="organization">
+        </div>
+        <div class="itcot-campo">
+          <label for="itqs-ciudad">Ciudad <small>(opcional)</small></label>
+          <input type="text" id="itqs-ciudad" name="ciudad" autocomplete="address-level2">
+        </div>
+        <div class="itcot-campo itcot-campo--ancho">
+          <label for="itqs-nota">¿Algo que debamos saber? <small>(opcional)</small></label>
+          <textarea id="itqs-nota" name="nota" rows="3"></textarea>
+        </div>
+      </div>
+
+      <span class="itcot-error itcot-error--global" data-para="global"></span>
+
+      <div class="itqs-datos__pie">
+        <button type="submit" class="itqs-btn itqs-btn--rojo" id="itqs-datos-btn">
+          Enviar y hablar por WhatsApp <i class="it-ico it-ico--marca fa-whatsapp" aria-hidden="true"></i>
+        </button>
+        <p class="itqs-secundario">Un asesor te responde con precio, disponibilidad y tiempo de entrega.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="itqs-banda itqs-sinprecio">
+  <div class="itqs-rail">
+    <h2 class="itqs-display">Por qué el catálogo no muestra precios</h2>
+    <p>El catálogo está para que consultes referencias, marcas y fichas. El precio te lo damos por WhatsApp, y no es por ocultarlo:</p>
+    <div class="itqs-razones">
+      <div class="itqs-razon">
+        <h3>Depende de la cantidad</h3>
+        <p>No cuesta lo mismo una unidad que una caja. Cotizamos sobre lo que realmente vas a pedir.</p>
+      </div>
+      <div class="itqs-razon">
+        <h3>Somos importadores</h3>
+        <p>Un precio publicado se queda viejo. Te damos el que está vigente el día que compras.</p>
+      </div>
+      <div class="itqs-razon">
+        <h3>Cada cliente es distinto</h3>
+        <p>Una ferretería que repone cada mes y una obra puntual no tienen las mismas condiciones.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="itqs-banda itqs-cta">
+  <div class="itqs-rail">
+    <a class="itqs-btn itqs-btn--blanco" href="/2-catalogo">Ver catálogo completo</a>
+    <p>¿Prefieres que te llamemos? Escríbenos y te asignamos un asesor comercial.</p>
+    <a class="itqs-cta__wa" href="https://wa.me/573145934962" target="_blank" rel="noopener">
+      <i class="it-ico it-ico--marca fa-whatsapp" aria-hidden="true"></i>
+      <span><small>Llámanos o escríbenos por WhatsApp</small><strong>+57 314 593 4962</strong></span>
+    </a>
+  </div>
+</section>
+
+<section class="itqs-info">
+  <div class="itqs-info__grid">
+    <div>
+      <h2>Otras formas de contactarnos</h2>
+      <ul class="itqs-contacto">
+        <li><i class="it-ico fa-phone-alt" aria-hidden="true"></i><span><small>Teléfono y WhatsApp</small><a href="https://wa.me/573145934962" target="_blank" rel="noopener">+57 314 593 4962</a></span></li>
+        <li><i class="it-ico fa-envelope" aria-hidden="true"></i><span><small>Correo</small><a href="mailto:ventas@importtoolslatam.com">ventas@importtoolslatam.com</a></span></li>
+        <li><i class="it-ico fa-comments" aria-hidden="true"></i><span><small>Formulario</small><a href="/contact-us">Página de contacto</a></span></li>
+        <li><i class="it-ico fa-map-marker-alt" aria-hidden="true"></i><span><small>Dirección</small>Carrera Cordialidad Km 2.5 #66, Galapa (Atlántico)</span></li>
+        <li><i class="it-ico fa-clock" aria-hidden="true"></i><span><small>Horario</small>Lunes a viernes 8:00 a. m. – 5:00 p. m. · Sábados 8:00 a. m. – 12:00 m.</span></li>
+      </ul>
+      <p class="itqs-secundario">Si prefieres tener tu historial en la tienda, puedes <a href="/login?create_account=1">crear una cuenta</a>. No es necesario para cotizar.</p>
+    </div>
+
+    <div>
+      <h2>Antes de escribirnos</h2>
+      <ul class="itqs-contacto">
+        <li><i class="it-ico fa-search" aria-hidden="true"></i><span><small>Busca por código</small>El buscador acepta el código de la referencia, no solo el nombre.</span></li>
+        <li><i class="it-ico fa-filter" aria-hidden="true"></i><span><small>Filtra por línea</small>En cada categoría puedes acotar por marca, línea y sublínea.</span></li>
+        <li><i class="it-ico fa-question-circle" aria-hidden="true"></i><span><small>Dudas frecuentes</small><a href="/content/6-preguntas-frecuentes">Preguntas frecuentes</a></span></li>
+        <li><i class="it-ico fa-building" aria-hidden="true"></i><span><small>Quiénes somos</small><a href="/content/4-quienes-somos">Conoce la empresa</a></span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</div>

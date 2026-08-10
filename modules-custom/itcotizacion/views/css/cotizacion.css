@@ -13,6 +13,18 @@
   --itc-fondo: #F4F6F9;
   --itc-wa: #25D366;
   --itc-wa-osc: #1DA851;
+
+  /* Color del boton «Agregar a mi cotizacion». El cliente lo pidio negro el
+     08/08/2026 (venia en el azul de marca y se le perdia). Va como variable y no
+     como valor suelto porque el criterio acordado es de CONTRASTE, no de color
+     fijo: el boton tiene que resaltar sobre el fondo que lo rodea. Hoy cae
+     siempre sobre blanco —comprobado en la ficha, en el listado de categoria y
+     en los carruseles del home, que pintan la miniatura sobre #fff—, asi que
+     negro es lo correcto en los tres. Si algun dia se coloca dentro de una
+     seccion oscura, se redefinen estas dos variables en ese contenedor y el
+     boton se invierte solo, sin tocar ninguna regla. */
+  --itc-boton: #14171C;
+  --itc-boton-texto: #fff;
 }
 
 /* ------------------------------------------------------ botón en la ficha */
@@ -25,8 +37,8 @@
   width: 100%;
   border: 0;
   cursor: pointer;
-  background: var(--itc-navy);
-  color: #fff;
+  background: var(--itc-boton);
+  color: var(--itc-boton-texto);
   font-weight: 600;
   font-size: .8125rem;
   letter-spacing: .02em;
@@ -40,6 +52,51 @@
 .itcot-agregar--en-lista { background: var(--itc-rojo); }
 .itcot-agregar--hecho { background: #15803D; transform: scale(.97); }
 .itcot-agregar i { font-size: 1.05rem; }
+
+/* --------------------------------------------- bloque de compra en la ficha */
+
+/* Sustituye al bloque de carrito del tema, que en modo catálogo no se pinta. */
+.itcot-ficha { margin-top: 1rem; }
+.itcot-ficha .control-label {
+  display: block;
+  margin-bottom: .45rem;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--itc-tinta);
+}
+.itcot-ficha__fila { display: flex; flex-wrap: wrap; gap: .75rem; align-items: stretch; }
+.itcot-ficha__qty {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--itc-linea);
+  border-radius: 3px;
+  flex: none;
+}
+.itcot-ficha__qty .itcot-qty { width: 38px; height: auto; }
+.itcot-ficha__qty input {
+  width: 58px;
+  border: 0;
+  border-left: 1px solid var(--itc-linea);
+  border-right: 1px solid var(--itc-linea);
+  text-align: center;
+  font-size: .95rem;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.itcot-ficha__qty input::-webkit-outer-spin-button,
+.itcot-ficha__qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.itcot-ficha .itcot-agregar { width: auto; flex: 1 1 260px; padding-inline: 1.5rem; }
+.itcot-ficha__nota {
+  margin: .8rem 0 0;
+  font-size: .8125rem;
+  line-height: 1.5;
+  color: var(--itc-gris);
+  max-width: 52ch;
+}
+.itcot-ficha__stock { margin: .4rem 0 0; font-size: .85rem; color: var(--itc-tinta); }
 
 /* ------------------------------------------------------- acceso en cabecera */
 
@@ -285,6 +342,41 @@
 .itcot-ayuda p { margin: 0; color: var(--itc-gris); }
 .itcot-ayuda a { color: var(--itc-navy); font-weight: 600; }
 .itcot-ayuda a:hover { color: var(--itc-rojo); }
+
+/* --------------------------------------------------- pagos autorizados */
+/* Solo los tres bancos con los que trabaja el cliente. El sprite de la
+   plantilla traia American Express, Bitcoin, Apple Pay, Discover, Diners, VISA y
+   JCB: ninguno se puede usar aqui, porque la tienda no cobra en linea. */
+
+.itcot-pagos {
+  margin-top: 1rem;
+  padding: 1.1rem 1.25rem 1.25rem;
+  border: 1px solid var(--itc-linea);
+  border-radius: 4px;
+}
+.itcot-pagos h2 {
+  margin: 0 0 .3rem;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--itc-tinta);
+}
+.itcot-pagos p { margin: 0 0 .9rem; font-size: .8125rem; line-height: 1.5; color: var(--itc-gris); }
+.itcot-pagos__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+}
+.itcot-pagos__lista img {
+  display: block;
+  width: auto;
+  height: 34px;               /* misma altura para los tres, distinta anchura no */
+  border-radius: 4px;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .itcot-agregar, .itcot-btn, .itcot-aviso { transition: none; }

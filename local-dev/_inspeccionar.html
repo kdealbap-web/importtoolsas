@@ -1,0 +1,99 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Inspector de cajas y estilos</title>
+<!--
+  Mide de verdad, en vez de deducirlo de una captura.
+  Uso:  /_inspeccionar.html?r=/&w=390&s=.header__search|.navbar-toggler|#leo_block_top
+  - r: ruta a cargar en el iframe
+  - w: ancho del iframe (Chromium no baja de ~500 px de VENTANA, pero un iframe si)
+  - s: selectores separados por | (si falta, usa la lista de abajo)
+  - p: propiedades calculadas extra, separadas por coma
+-->
+<style>
+  body { font: 12px/1.4 ui-monospace, monospace; margin: 10px; background: #fff; color: #111; }
+  h1 { font: 700 14px system-ui; margin: 0 0 6px; }
+  #res { white-space: pre-wrap; }
+  iframe { position: absolute; left: -9999px; top: 0; border: 0; }
+</style>
+<h1>Inspector — <span id="url"></span></h1>
+<div id="res">midiendo…</div>
+<iframe id="f"></iframe>
+<script>
+  var q = new URLSearchParams(location.search);
+  var RUTA  = q.get('r') || '/';
+  var ANCHO = parseInt(q.get('w') || '390', 10);
+  var ALTO  = parseInt(q.get('h') || '2600', 10);
+  var PROPS = (q.get('p') || '').split(',').filter(Boolean);
+
+  var SEL_POR_DEFECTO = [
+    '.header-nav', '.header-nav .topnav', '.header-nav .bottomnav',
+    '.header-top', '.header__logo', '.header__search',
+    '.header__search .title_block', '.header__search form',
+    '#leo_search_block_top', '.box__search',
+    '.header__button--wishlist', '.header__button--cotizar', '.itcot-acceso',
+    '#leo_block_top', '.header__contacto', '.header__contacto-col',
+    '.ApMegamenu', '.ApMegamenu .navbar-header', '.navbar-toggler',
+    '.leo-top-menu', '.header__fixed--bottom'
+  ];
+  var SELS = q.get('s') ? q.get('s').split('|') : SEL_POR_DEFECTO;
+
+  document.getElementById('url').textContent = RUTA + ' @ ' + ANCHO + 'px';
+  var f = document.getElementById('f');
+  f.style.width = ANCHO + 'px';
+  f.style.height = ALTO + 'px';
+  f.src = RUTA;
+
+  var CLIC = q.get('c') || '';
+
+  f.onload = function () {
+    // Con c=<selector> se pulsa antes de medir: hay estados (cajon del menu,
+    // desplegable del buscador) que no existen hasta que alguien interactua.
+    if (CLIC) {
+      setTimeout(function () {
+        var el = f.contentDocument.querySelector(CLIC);
+        if (el) { el.click(); }
+      }, 1200);
+    }
+    setTimeout(function () {
+      var d = f.contentDocument, w = f.contentWindow;
+      var out = ['innerWidth = ' + w.innerWidth + '   scrollWidth = ' + d.documentElement.scrollWidth, ''];
+
+      SELS.forEach(function (sel) {
+        var els;
+        try { els = d.querySelectorAll(sel); } catch (e) { out.push(sel + '  << selector invalido'); return; }
+        if (!els.length) { out.push(sel + '  ->  0 elementos'); return; }
+        // Se clasifican todos y se muestran primero los visibles: con 200 spinners
+        // ocultos, un «primeros 4» no ensena nada.
+        var fichas = Array.prototype.map.call(els, function (el) {
+          var r = el.getBoundingClientRect();
+          var cs = w.getComputedStyle(el);
+          var vis = (cs.display === 'none') ? 'display:none'
+                  : (cs.visibility === 'hidden') ? 'visibility:hidden'
+                  : (parseFloat(cs.opacity) === 0) ? 'opacity:0'
+                  : (r.width === 0 || r.height === 0) ? 'caja 0'
+                  : 'VISIBLE';
+          return { el: el, r: r, cs: cs, vis: vis };
+        });
+        var nVis = fichas.filter(function (f) { return f.vis === 'VISIBLE'; }).length;
+        out.push(sel + '  ->  ' + els.length + ' elementos, ' + nVis + ' visibles');
+        fichas.sort(function (a, b) { return (a.vis === 'VISIBLE' ? 0 : 1) - (b.vis === 'VISIBLE' ? 0 : 1); });
+        fichas.slice(0, 4).forEach(function (f, n) {
+          var el = f.el, r = f.r, cs = f.cs, vis = f.vis;
+          var txt = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 46);
+          out.push('   [' + n + '] ' + vis
+            + '  x=' + Math.round(r.left) + ' y=' + Math.round(r.top)
+            + ' w=' + Math.round(r.width) + ' h=' + Math.round(r.height)
+            + '  pos=' + cs.position + ' z=' + cs.zIndex
+            + ' fs=' + cs.fontSize
+            + (txt ? '  txt="' + txt + '"' : ''));
+          if (PROPS.length) {
+            out.push('        ' + PROPS.map(function (p) { return p + '=' + cs.getPropertyValue(p); }).join('  '));
+          }
+        });
+      });
+
+      var res = document.getElementById('res');
+      res.textContent = out.join('\n');
+    }, 4000);
+  };
+</script>

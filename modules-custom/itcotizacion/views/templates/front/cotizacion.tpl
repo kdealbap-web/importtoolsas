@@ -123,6 +123,19 @@
         <a href="tel:{$itcot_tel|replace:' ':''}">{$itcot_tel}</a>
         <a href="mailto:{$itcot_email}">{$itcot_email}</a>
       </aside>
+
+      {* Medios de pago autorizados. La tienda no cobra en linea: el asesor
+         confirma el total y el pago se hace por estos tres bancos. Decirlo aqui
+         evita la pregunta y da confianza justo antes de enviar la solicitud. *}
+      <aside class="itcot-pagos">
+        <h2>{l s='Pagos autorizados' d='Modules.Itcotizacion.Shop'}</h2>
+        <p>{l s='El asesor te confirma el total y coordinas el pago por transferencia o consignación en:' d='Modules.Itcotizacion.Shop'}</p>
+        <ul class="itcot-pagos__lista">
+          <li><img src="/img/it/banco-bancolombia.png" width="150" height="80" alt="Bancolombia" loading="lazy"></li>
+          <li><img src="/img/it/banco-bogota.png" width="150" height="80" alt="Banco de Bogotá" loading="lazy"></li>
+          <li><img src="/img/it/banco-davivienda.png" width="150" height="80" alt="Davivienda" loading="lazy"></li>
+        </ul>
+      </aside>
     </div>
 
   </div>
