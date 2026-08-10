@@ -1,9 +1,37 @@
-# Importtools Latam — puesta en producción
+# Importtools S.A.S — puesta en producción
 
-**Único documento que necesitas.** Los demás ficheros de esta carpeta son material de
-referencia; aquí está lo que hay que hacer y en qué orden.
+**Punto de entrada.** Aquí está el contexto y el resumen de qué se despliega.
 
-Estado: **30/07/2026** · Producción verificada, vía libre para importar.
+Estado: **09/08/2026** · Despliegue nº 3 (ronda del 08/08) preparado, y el estado de
+producción **medido contra la tienda en línea**, no supuesto.
+
+> ### 📌 Para ejecutar el despliegue de HOY, usa `23-PASO-A-PASO-20260809.md`
+>
+> Es el operativo vigente. Sustituye al `historico/18-PASO-A-PASO-20260808.md`, que se escribió
+> mirando el espejo local: al contrastarlo con la tienda real aparecieron **tres pasos
+> que ya no hacen falta** (los scripts de depuración del docroot ya no existen, el hero
+> ya no usa la imagen de la demo y su primera diapositiva no está vacía) y **uno que
+> era peligroso** —desactivaba por id una diapositiva que en producción sí funciona—.
+>
+> Los despliegues nº 1 y nº 2 (`14-…` y `18-…`) se conservan como historial.
+
+> ### 📎 Historial: el despliegue nº 2 se ejecutó con `historico/14-PASO-A-PASO-SUBIDA.md`
+>
+> Ese documento es el operativo de esta ronda: los once pasos con los comandos, la
+> salida esperada de cada uno, las 29 comprobaciones y la marcha atrás. Incluye dos
+> cosas que este documento no tenía:
+>
+> - **Paso 8 — confirmar que lo nuevo se sirve de verdad.** Con centinelas en el CSS
+>   y el JS servidos. Es la única forma de descartar la trampa de `compile_check`,
+>   que deja subir el tema entero sin que cambie un píxel y sin ningún error.
+> - **Paso 9 — optimización.** Cachés de PrestaShop, LiteSpeed y PHP, separando lo
+>   que está probado de lo que no.
+>
+> Lo de aquí abajo (§3 y §4) sigue siendo correcto y es la versión resumida del mismo
+> procedimiento. Si las dos discrepan en algún número, **manda el 14**: es el que se
+> revisó contra el paquete actual.
+>
+> Y el **qué cambió en esta ronda y por qué**, en `historico/13-PLAN-SUBIDA-20260803.md`.
 
 > **Cómo leer los indicadores de este documento.** Cada afirmación lleva su origen, porque no
 > todas valen lo mismo:
@@ -25,347 +53,243 @@ Estado: **30/07/2026** · Producción verificada, vía libre para importar.
 
 ### Dónde estamos
 
-La tienda está **construida y verificada en un entorno espejo local** (copia exacta de
-producción: PrestaShop 9.1.4, PHP 8.5, mismo prefijo de tablas). Falta trasladarla al servidor.
+El **despliegue nº 1 se hizo el 31/07** y producción tiene el catálogo real, el español y el
+tema. Desde entonces el espejo acumula **tres rondas de trabajo sin trasladar**. Este documento
+las despliega todas de una vez.
 
-En producción hoy hay una instalación de PrestaShop con **19 productos de ejemplo, en inglés**.
+### La decisión que ordena todo
 
-### Qué se entrega
+**El catálogo no lleva precios. No es provisional.** La tienda es un catálogo consultable:
+el visitante arma una lista, deja sus datos y **un asesor le responde por WhatsApp** con precio,
+disponibilidad y tiempo de entrega. Sin carrito y sin pasarela de pago.
 
-Todo lo de esta tabla está **✅ verificado en el espejo**, con el número que lo respalda:
+Esto cambia dos cosas respecto al plan anterior:
+
+- Los **transportistas dejan de bloquear**. Antes impedían vender; ahora solo harían falta si
+  algún día se abre el carrito.
+- Los **precios reales dejan de bloquear** la salida a producción.
+
+### Qué se despliega en esta ronda
+
+Todo **✅ verificado en el espejo**, con la evidencia al lado:
 
 | | | Evidencia |
 |---|---|---|
-| **Catálogo** | 3.036 productos en 15 categorías, 7 marcas (4 con logotipo) | los 3.036 en la categoría raíz y con stock; `/2-catalogo` dice «Hay 3036 productos» |
-| **Filtros** | Marca, Línea, Sublínea, Precio, Disponibilidad | 88 líneas y 128 sublíneas, 6.072 filas en `feature_product` |
-| **Idioma** | Español (es-CO) | barrido insensible a mayúsculas sobre 15 páginas → 0 apariciones de inglés; en el tema hijo, 858 llamadas `{l …}` y 0 intraducibles |
-| **Fiscal** | Peso colombiano sin decimales, IVA 19 / 5 / 0 % | carrito real: 84.300 sin IVA → 100.317 con el 19 % |
-| **Contenido** | Datos reales de la empresa, 7 páginas, mapa | las 7 páginas CMS en español |
-| **Diseño** | Tema hijo `vt_autosoe_child`, un solo perfil | 34 contenidos Leo con JSON válido 34/34, 1 perfil, 54 ítems de menú |
-| **Panel del cliente** | Permisos acotados | 302 permisos de pestaña + 48 de módulo, validados con sesión HTTP real: 403 en Tema, Módulos, Empleados, Rendimiento, SQL, Transportistas e Impuestos |
-| **Volcado** | Restaurado en base limpia | 30 comprobaciones en verde |
+| **Cotización por WhatsApp** | Módulo propio `itcotizacion`: lista, formulario de prospecto, guardado para el CRM y salto a WhatsApp | Recorrido completo en navegador real: lista vacía → aviso; documento inválido → rechazado; datos válidos → referencia, fila en base, enlace con las 2 referencias, lista vaciada y contador a 0 |
+| **Modo catálogo sin precios** | `PS_CATALOG_MODE=1`, `..._WITH_PRICES=0` | 0 marcado de precio en portada, catálogo, categoría y ficha (`class="price"`, `itemprop="price"`, `current-price` → 0) |
+| **Botón en la ficha de producto** | Cantidad + «Agregar a mi cotización» | Corregido un hueco vacío: el tema mete todo el bloque de compra en `{if !$configuration.is_catalog}` |
+| **Quiénes somos** | Rehecha desde la maqueta del cliente, en HTML/CSS | Capturas a 1440 px y a 390 px reales; `scrollWidth == innerWidth` |
+| **Quiero ser cliente** | Rehecha: puerta de entrada al flujo de cotización | Ídem |
+| **Iconos** | Font Awesome 5 Pro **Light** que ya venía en el tema y nadie usaba | Los 1.649 glifos comprobados renderizando los cuatro pesos |
+| **Fotos** | Seis, recortadas de la propia maqueta del cliente | `deploy/img/it/` |
+| **Fichas sin foto** | El marcador ya no ocupa media pantalla | La ficha es 450 px más corta |
+| **Volcado limpio** | 0 pedidos, 0 carritos, 0 visitas, 0 prospectos de prueba | Barrido del `.sql`: 0 apariciones de los correos y referencias de prueba |
 
 ### Qué NO está listo, y de quién depende
 
 | Pendiente | Depende de | Impacto |
 |---|---|---|
-| **Precios reales** | El cliente los enviará | Hoy se muestran precios generados. Mecanismo de carga ya probado (`06`) |
-| **Transportistas y fletes** | Definir con el cliente cobertura y tarifas | **Hoy nadie puede completar un pedido**: los transportistas son los de ejemplo y no cubren Colombia. Se resuelve con el modo catálogo hasta tener datos (`07`) |
-| **Fotos de producto** | El cliente | Los 3.036 productos salen sin imagen |
-
-### Estado real, frente por frente
-
-| Frente | Estado | Origen del dato |
-|---|---|---|
-| Construcción de la tienda en el espejo | ✅ terminada | 30 comprobaciones sobre el volcado restaurado |
-| Comprobación previa de producción | ✅ hecha | tus resultados: 19 productos, sin actividad posterior al 24/07 |
-| Imágenes subidas a producción | 📋 reportado | me lo dijiste; no verificado |
-| Tema subido a producción | 📋 reportado | me lo dijiste; no verificado |
-| **Tema activado en producción** | ⏳ **el paso siguiente** | — |
-| Traducciones (`es.php`) subidas | ⏳ pendiente | son 2 ficheros pequeños |
-| Base de datos importada | ⏳ sesión 2 | — |
-| Precios reales | ⏳ los envía el cliente | mecanismo probado (`06`) |
-| Transportistas | ⏳ definir con el cliente | **bloquea vender** (§5) |
-| Fotos de producto | ⏳ las envía el cliente | `psjy_image` = 0 filas |
-
-### Riesgo del traslado
-
-Uno solo, y está cubierto: el volcado **sustituye la base de datos completa**. Se comprobó que
-producción no tiene actividad real (19 productos de ejemplo, ningún pedido ni cliente posterior
-al 24/07), y el respaldo de JetBackup es la marcha atrás.
+| **Fotos de producto** | El cliente | `psjy_image` = 0 filas: los 3.036 salen sin imagen. Mitigado, no resuelto |
+| **Requisitos y condiciones comerciales** | El cliente | *Quiero ser cliente* funciona sin ellos; se añade la sección cuando lleguen. **No los invento**: son compromisos legales |
+| **Precios reales** | El cliente | Ya **no** bloquean: no se muestran. Mecanismo probado en `06` |
+| **Transportistas** | Definir con el cliente | En pausa mientras no haya carrito |
 
 ---
 
-## 2. SESIÓN 1 — subir el tema y verlo funcionando
+## 2. Antes de empezar
 
-**📋 Reportado por ti:** imágenes subidas y extraídas, y el tema subido. No lo he verificado —
-se confirmará solo cuando actives el tema y cargue.
+### Lo que hay que tener a mano
 
-Faltan dos cosas: poner mantenimiento y activar el tema.
+Actualizado el **03/08/2026**. Los tamaños y recuentos son los del paquete de hoy.
 
-**Tiempo real de esta sesión:** son 4 clics en el panel y mirar la portada. Lo único que puede
-tardar es la primera carga tras activar el tema, porque PrestaShop reconstruye la caché
-(**57 s medidos** en el espejo — ver el aviso del paso 2.4).
+| Fichero | Para qué |
+|---|---|
+| `backups/importtools-FASE2-20260803-1345.sql.gz` | **El volcado.** 638 KB comprimido, 374 tablas |
+| `vt_autosoe_child-EXTRAER-EN-themes.zip` | Tema hijo, 473 ficheros, 8,8 MB |
+| `img-importtools.zip` | 346 imágenes: `img/it/` (147), `img/m/` y los logotipos |
+| `itcotizacion-EXTRAER-EN-modules.zip` | El módulo de cotización, 17 ficheros |
+| `modulos-traducciones-EXTRAER-EN-modules.zip` | Los `es.php` de `leoelements`, `leoproductsearch`, `leoquicklogin` y **`leofeature`** (nuevo) |
+| `traducciones-EXTRAER-EN-translations.zip` | Los 169 XLIFF de `es-CO` — **solo si faltan**, ver 3.2 |
+| `14a-caches-off-al-empezar.sql` | Cerrar la tienda y apagar las cachés de Smarty |
+| `02-ajustes-tras-importar.sql` | Obligatorio justo después del volcado |
+| `14b-caches-on-al-terminar.sql` | Devolver las cachés a valores de producción |
+| `14c-abrir-la-tienda.sql` | Abrir la tienda. Una línea, en fichero aparte a propósito |
 
-> Tu back office está **en inglés** ahora mismo (`PS_LANG_DEFAULT = 1`, solo `en-US`).
-> Los menús de abajo van en inglés por eso. Tras el import quedará en español.
+### No necesitas poner tu IP
 
-### 2.1 Activar el mantenimiento
+`PS_MAINTENANCE_ALLOW_ADMINS` está en **1**: mientras tengas sesión abierta en el back office
+sigues viendo la tienda normal y los visitantes ven el aviso.
 
-**Por el panel** — la dirección exacta, con la barra final:
-
-```
-https://www.importtoolsas.com/panel-4h5o/
-```
-
-> Es `panel-4h5o`. Si te sale **404**, es el nombre de la carpeta: cualquier otra variante da 404
-> porque la carpeta del back office se renombró por seguridad. Comprobado en los ficheros de
-> producción: las carpetas que existen son `panel-4h5o/`, `admin-api/` (no es el panel, es la API)
-> y `admin_dev/` (vacía).
-
-Una vez dentro, ve a:
-
-```
-Configure  →  Shop Parameters  →  General  →  pestaña "Maintenance"
-```
-
-Ahí: **Enable Shop → NO**. Y deja **Enable Shop for Employees → YES** (ya está así).
-
-**No necesitas poner tu IP.** `PS_MAINTENANCE_ALLOW_ADMINS` ya está activado, así que mientras
-estés logueado en el panel sigues viendo la tienda normal. Los visitantes ven el aviso.
-
-**Si no encuentras el menú**, en phpMyAdmin (pestaña SQL) esto hace lo mismo:
-
-```sql
-UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SHOP_ENABLE';
-```
-
-Comprobación: abre la tienda en una **ventana de incógnito** (sin sesión de admin). Debes ver el
-aviso de mantenimiento. En tu ventana normal la sigues viendo bien.
-
-### 2.2 Subir el tema — **extraer a mano, no usar el importador**
-
-> ⚠️ **El importador del panel («Add new theme») falla con «Missing configuration file».**
-> Es un fallo de cómo empaqueté el zip: `ThemeManager.php:413` busca `config/theme.yml` en la
-> **raíz** del zip, y el nuestro lo tiene dentro de `vt_autosoe_child/`.
->
-> **Extraerlo a mano es más simple y no necesita el importador.** `ThemeRepository` construye la
-> lista de temas con `glob(themes/*/config/theme.yml)`, así que un tema extraído en su carpeta
-> aparece solo.
-
-**Sube `vt_autosoe_child-EXTRAER-EN-themes.zip` a `public_html/themes/` y extráelo ahí.**
-Tiene que quedar exactamente así:
-
-```
-public_html/themes/vt_autosoe_child/config/theme.yml
-public_html/themes/vt_autosoe_child/assets/css/custom.css
-public_html/themes/vt_autosoe_child/modules/        ← 607 entradas, imprescindible
-```
-
-Si en vez de eso te aparece `public_html/themes/config/` y `themes/templates/` sueltos, es el zip
-equivocado: borra esas carpetas y usa el que dice `EXTRAER-EN-themes`.
-
-> ⚠️ **Borra el zip de `themes/` en cuanto termines de extraer.** El `.htaccess` de esa carpeta
-> bloquea casi todo, pero **permite `.zip` explícitamente** (está en su lista de extensiones junto
-> a `css`, `js` e imágenes). Comprobado: descargué un zip de 9,25 MB desde `themes/` con
-> **HTTP 200**. Mientras siga ahí, cualquiera que escriba la dirección se lleva el tema completo,
-> incluida la plantilla comercial AutoSoe.
->
-> ```
-> public_html/themes/vt_autosoe_child.zip     ← borrar
-> ```
-
-Los dos zip del paquete tienen el mismo contenido, cambia solo la estructura:
-
-| Fichero | Estructura | Para qué |
-|---|---|---|
-| `vt_autosoe_child-EXTRAER-EN-themes.zip` | `vt_autosoe_child/…` | **Este.** Extraer en `themes/` |
-| `vt_autosoe_child-SUBIR-POR-PANEL.zip` | `config/…` en la raíz | Solo si prefieres el importador del panel |
-
-### 2.3 Activarlo
-
-```
-Design  →  Theme & Logo
-```
-
-Debe aparecer `Importtools (AutoSoe child)`. Pulsa **"Use this theme"**.
-
-- Si no aparece, falta `themes/vt_autosoe_child/config/theme.yml`: revisa dónde quedó la extracción.
-- **No borres ni desactives el tema padre `vt_autosoe`.** El hijo lo necesita: sin él no hay
-  plantillas y la tienda se cae.
-
-### 2.4 Mirar la tienda
-
-Con mantenimiento puesto y tu sesión de admin abierta, entra a la portada.
-
-> ⏱️ **La primera carga tarda alrededor de un minuto y parece colgada. Es normal, no recargues.**
-> Medido en el espejo: **57,3 s** la primera petición tras activar el tema (PrestaShop reconstruye
-> el contenedor de Symfony), y **0,3–0,5 s** todas las siguientes. Ocurre **una sola vez**.
-
-Verás **el diseño del tema hijo con el contenido de ejemplo en inglés** (19 productos, textos
-demo). **Eso es lo correcto en este punto**: el diseño viene de los ficheros que acabas de
-subir, y el contenido en español llega en la sesión 2, con la base de datos.
-
-Lo que importa en esta sesión es que **cargue sin error 500 y con estilos**. Si se ve así, terminamos.
-
-### 2.5 Si algo se rompe
-
-Deja el mantenimiento puesto y vuelve al tema anterior en `Design → Theme & Logo`. Nada de esta sesión
-es irreversible: son ficheros, y la base de datos no se ha tocado.
+⚠️ Y la fila `PS_MAINTENANCE_IP` **no existe** en esta base — comprobado, 0 filas. Un `UPDATE`
+sobre ella no haría nada **y no avisaría**. Si algún día quieres permitir una IP concreta, hay
+que **insertarla**; el `INSERT` correcto está comentado en el paso 0 de `02-ajustes`.
 
 ---
 
-## 3. SESIÓN 2 — la base de datos
+## 3. El despliegue, paso a paso
 
-Orden exacto. Los pasos 3.2 y 3.3 van **seguidos, en la misma sesión de phpMyAdmin**.
+> **Ventana con el sitio cerrado:** el respaldo, más unos 3 minutos de trabajo, más la primera
+> carga. Los tiempos con «medidos» están cronometrados en el espejo.
 
-| # | Qué | Con qué | Cuánto tarda |
-|---|---|---|---|
-| 3.1 | **Respaldo JetBackup** (archivos + base). Esperar a que termine | cPanel → JetBackup | depende del hosting |
-| 3.2 | Importar el volcado | `backups/importtools-FINAL-20260729-1726.sql.gz` | **16 s medidos** (373 tablas, 7,58 MB) |
-| 3.3 | Ejecutar los ajustes obligatorios | `02-ajustes-tras-importar.sql` | **< 1 s** (6 sentencias) |
-| 3.4 | Vaciar cachés | ver 3.4 abajo | el borrado es inmediato; **la primera página después tarda ~57 s** |
-| 3.5 | Comprobar | ver §4 | lo que tardes en mirar 7 páginas |
+### 3.0 Respaldo y mantenimiento
 
-> Los tiempos con «medidos» son reales, cronometrados en el espejo el 29/07. Los 16 s son por
-> línea de comandos; phpMyAdmin añade su propia sobrecarga, pero el volcado es pequeño (7,58 MB)
-> y no debería agotar el tiempo de espera.
->
-> **Ventana total con el sitio en mantenimiento: el respaldo, más unos 2 minutos.** No es la hora
-> que decía este plan antes.
+1. **JetBackup**: respaldo de archivos + base. Esperar a que termine.
+2. Mantenimiento ON, en `panel-4h5o` → *Configurar → Parámetros de la tienda → General →
+   Mantenimiento* → **Activar tienda: NO**. O por SQL:
+   ```sql
+   UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SHOP_ENABLE';
+   ```
+3. Comprobar en una **ventana de incógnito** que sale el aviso de mantenimiento.
 
-### ⚠️ Lo único que puede dejarte fuera
+### 3.1 Apagar la caché de Smarty — **antes de subir nada**
 
-El volcado trae el dominio del entorno local. **Entre el 3.2 y el 3.3 la tienda y el back office
-redirigen a `localhost:8080`** y no podrás entrar por el panel a arreglarlo.
-
-**Ten el `02-ajustes-tras-importar.sql` abierto y listo para pegar antes de lanzar la
-importación.** Si te pasa, se sale ejecutando ese mismo fichero desde phpMyAdmin, que sigue
-siendo accesible desde cPanel.
-
-### 3.3-bis ⚠️ Dos cosas sin las que NADA de lo que subas se aplica
-
-Descubiertas en el despliegue real del 31/07, después de perder un buen rato:
-
-**a) Los catálogos de traducción son ficheros, no filas de la base.** Producción estaba en
-inglés, así que `translations/es-CO/` no existía. El volcado trae el idioma español, pero sin
-esos 169 XLIFF **todo el núcleo cae al inglés**: «There are 3036 products», «Sort by»,
-«Subcategories», «Back to top», «Quick view»…
-
-```
-Sube y extrae en la raíz:  translations-es-CO.zip   (169 ficheros + sf-es-CO.zip)
-Debe quedar:               public_html/translations/es-CO/
-```
-
-**b) Smarty no recompila las plantillas.** El volcado trae la configuración optimizada para
-producción, `PS_SMARTY_FORCE_COMPILE = 0`, y el núcleo hace:
+⚠️ **Sin esto, nada de lo que subas se aplica.** Producción tiene
+`PS_SMARTY_FORCE_COMPILE = 0`, y el núcleo hace:
 
 ```php
 $smarty->compile_check = (PS_SMARTY_FORCE_COMPILE >= _PS_SMARTY_CHECK_COMPILE_)
                         ? COMPILECHECK_ON : COMPILECHECK_OFF;
 ```
 
-Con `compile_check` apagado, **Smarty ni mira si la plantilla cambió**: sigue usando lo
-compilado del install anterior. Por eso puedes subir tema, traducciones y widgets y no cambiar
-nada en pantalla. Apágalo mientras despliegas:
+Con `compile_check` apagado **Smarty ni mira si la plantilla cambió**. Puedes subir tema,
+traducciones y widgets y no cambiar nada en pantalla. Costó un buen rato descubrirlo el 31/07.
 
 ```sql
 UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_SMARTY_FORCE_COMPILE';
 UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SMARTY_CACHE';
 ```
 
-Y **devuélvelo al terminar**, que es lo que hace la tienda rápida:
+### 3.2 Subir ficheros
+
+| Zip | Dónde subirlo y extraerlo | Debe quedar |
+|---|---|---|
+| `vt_autosoe_child-EXTRAER-EN-themes.zip` | `public_html/themes/` | `themes/vt_autosoe_child/config/theme.yml` |
+| `img-importtools.zip` | `public_html/` | `img/it/` (142 ficheros) y `img/m/` |
+| `itcotizacion-EXTRAER-EN-modules.zip` | `public_html/modules/` | `modules/itcotizacion/itcotizacion.php` |
+| `modulos-traducciones-EXTRAER-EN-modules.zip` | `public_html/modules/` | `modules/leoproductsearch/translations/es.php` y `modules/leoelements/translations/es.php` |
+
+⚠️ **En `leoproductsearch` ya existe un `es.php` del fabricante.** Renómbralo a `es.php.bak`
+antes de extraer, o el zip lo sobrescribe sin avisar (que es lo que queremos, pero mejor con
+copia).
+
+**Comprobar los 169 XLIFF.** Si `public_html/translations/es-CO/` no existe o tiene menos de
+169 ficheros, sube y extrae `traducciones-EXTRAER-EN-RAIZ.zip` en la raíz. Sin ellos **todo el
+núcleo cae al inglés**: «There are 3036 products», «Sort by», «Back to top»…
+
+> ⚠️ **Borra los zip de `public_html/themes/` en cuanto extraigas.** El `.htaccess` de esa
+> carpeta **permite `.zip`**: comprobado, descargué uno de 9,25 MB con HTTP 200. Mientras siga
+> ahí, cualquiera se lleva el tema comercial completo. **Del despliegue anterior quedó uno:
+> bórralo también.**
+
+### 3.3 Importar el volcado y ajustar — **seguidos**
+
+| # | Qué | Cuánto |
+|---|---|---|
+| a | Importar `importtools-FASE2-20260801-2315.sql.gz` en phpMyAdmin | **~16 s medidos** |
+| b | Ejecutar `02-ajustes-tras-importar.sql` | **< 1 s** |
+
+⚠️ **Entre (a) y (b) la tienda y el back office redirigen a `localhost:8080`** y no podrás
+entrar por el panel. **Ten el `02-ajustes` abierto y listo para pegar antes de lanzar la
+importación.** phpMyAdmin sigue accesible desde cPanel, que es la salida.
+
+⚠️ **Y el volcado te quita el mantenimiento.** Trae `PS_SHOP_ENABLE = 1` del espejo: al
+importar, la tienda queda abierta al público con los ficheros a medio aplicar. Por eso el
+**paso 0 de `02-ajustes` vuelve a cerrarla** — es lo primero que hace el script.
+
+### 3.4 Vaciar cachés
+
+Desde el Administrador de archivos de cPanel, **con tu usuario** (no como root):
+
+```
+var/cache/prod/smarty/compile/          ← la que de verdad importa
+var/cache/                              (todo)
+themes/vt_autosoe_child/assets/cache/   (todo, la carpeta se queda)
+modules/leoelements/gencode/LeoGenCode_*.html
+```
+
+Y purga LiteSpeed si está activo (cPanel → LiteSpeed Web Cache Manager).
+
+> ⏱️ **La primera página después tarda ~57 s** (medido: 57,3 s; las siguientes, 0,3–0,5 s).
+> No es un error y ocurre una sola vez. **No vacíes la caché justo antes de enseñarle la tienda
+> al cliente** — cárgala tú una vez primero.
+>
+> Si aparecen HTTP 500 intermitentes, es caché escrita por un usuario distinto al del servidor
+> web: borra `var/cache/` otra vez y deja que la reconstruya la primera visita.
+
+### 3.5 Restaurar la caché de Smarty
+
+Cuando ya hayas comprobado (§4). Es lo que hace la tienda rápida:
 
 ```sql
 UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SMARTY_FORCE_COMPILE';
 UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_SMARTY_CACHE';
 ```
 
-> **Lo que NO es el problema, aunque lo parezca:** `modules/leoelements/gencode/`. Ese
-> directorio solo se lee en el editor del back office — `LeoGenCode.php` hace
-> `if (!Leo_Helper::is_admin()) return $html;` —; en la tienda se escribe como subproducto de
-> cada render. Borrarlo no cambia nada en el front. El fichero que sí manda es
-> `modules/leoelements/views/templates/front/LeoGenCode_<id>.tpl`, que se reescribe en cada
-> visita con el HTML de la base… y que Smarty ignora si `compile_check` está apagado.
+### 3.6 Abrir la tienda
 
-### 3.4 Cachés (después del 3.3)
+Solo cuando §4 esté en verde:
 
-Desde el Administrador de archivos de cPanel, **con tu usuario** (no como root), borra el
-contenido de:
-
+```sql
+UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_SHOP_ENABLE';
 ```
-var/cache/prod/smarty/compile/   ← la que de verdad importa
-var/cache/                       (todo)
-modules/leoelements/gencode/LeoGenCode_*.html
-themes/vt_autosoe_child/assets/cache/       (todo, la carpeta se queda)
-```
-
-Y si el hosting tiene LiteSpeed Cache, púrgalo (cPanel → LiteSpeed Web Cache Manager).
-
-> ⏱️ **Tras vaciar la caché, la primera página tarda ~57 s** (medido). No es un error: espera.
-> Y **no vacíes la caché justo antes de mostrarle la tienda al cliente** — cárgala tú una vez.
-
-> Si aparecen HTTP 500 intermitentes después, es esto: caché escrita por un usuario distinto al
-> del servidor web. Se arregla borrando `var/cache/` otra vez y dejando que la reconstruya la
-> primera visita. Me pasó a mí en el espejo hoy mismo por ejecutar scripts como root.
-
-### Scripts: cuáles se ejecutan y cuáles NO
-
-| Fichero | ¿Ejecutar? |
-|---|---|
-| `02-ajustes-tras-importar.sql` | **SÍ, obligatorio**, justo después del volcado |
-| `02b-limpieza-datos-demo.sql` | **No.** Ya viene aplicado dentro del volcado |
-| `02c-textos-en-ingles-en-datos.sql` | **No.** Ya viene aplicado dentro del volcado |
-| `03-opcional-precios-prueba.sql` | **No.** Se decidió dejar los precios generados visibles |
-| `06-cargar-precios-reales.sql` | Más adelante, cuando el cliente envíe los precios |
-| `07-transportistas-colombia.sql` | Antes de quitar el mantenimiento — ver §5 |
 
 ---
 
-## 4. Comprobar (tras el 3.4)
-
-Con esto basta para saber si salió bien:
+## 4. Comprobar
 
 | # | Dónde | Qué debes ver |
 |---|---|---|
-| 1 | Portada | Carga con estilos, menú `INICIO · CATEGORIAS · MARCAS · CATALOGO · QUIERO SER CLIENTE · QUIENES SOMOS · CONTACTO` |
-| 2 | `/2-catalogo` | «Hay 3036 productos» |
-| 3 | `/17-herramientas-electricas` | Filtros: Disponibilidad · Línea · Marca · Precio · Sublínea |
-| 4 | Pasar el ratón por una ficha | **«Vista rápida»**, no «Quick view» |
-| 5 | `/login?create_account=1` | **«Sr.»/«Sra.»** y «Acepto los términos…» en español |
-| 6 | `/esto-no-existe` | Página 404 en español |
-| 7 | Panel, con `cliente@importtoolslatam.com` | Entra y ve Productos, Categorías, Páginas, Pedidos |
+| 1 | Portada | Carga con estilos y el menú `INICIO · CATEGORIAS · MARCAS · CATALOGO · QUIERO SER CLIENTE · QUIENES SOMOS · CONTACTO`, **cada uno con su icono** |
+| 2 | `/2-catalogo` | «Hay 3036 productos» y **ningún precio** |
+| 3 | `/17-herramientas-electricas` | Filtros: Disponibilidad · Línea · Marca · Sublínea. **Sin filtro de precio ni «ordenar por precio»** |
+| 4 | Abrir un producto | **«Cantidad» + botón «Agregar a mi cotización»**. Ningún precio |
+| 5 | Pulsar el botón y luego el icono de cotización de la cabecera | La lista muestra el producto; el contador sube |
+| 6 | Enviar el formulario con un documento inválido | Se queda en la página y marca el campo |
+| 7 | Enviarlo bien | Abre WhatsApp con el mensaje escrito y aparece la referencia `COT-…` |
+| 8 | `/content/4-quienes-somos` | Diseño nuevo: hero negro, 4 ventajas, 01-04, 5 categorías con foto, valores, datos y mapa |
+| 9 | `/content/7-quiero-ser-cliente` | Diseño nuevo, con los 3 pasos y «Por qué el catálogo no muestra precios» |
+| 10 | Buscador de la cabecera | El texto de ayuda en **español**, no «Search here…» |
+| 11 | Pasar el ratón por una ficha | **«Vista rápida»**, no «Quick view» |
+| 12 | Móvil (o ventana estrecha) | Hamburguesa **en la esquina**, no debajo del header |
+| 13 | Panel, con la cuenta del cliente | Entra y ve Productos, Categorías, Páginas, Pedidos |
 
-Si algo de esto falla, no toques nada más: pásame lo de §6 y lo miro.
+Si algo falla, no toques nada más: pásame lo de §6.
 
 ---
 
-## 5. Antes de quitar el mantenimiento — una decisión
+## 5. Scripts: cuáles se ejecutan y cuáles NO
 
-**Hoy nadie en Colombia puede completar un pedido.** El carrito funciona, pero el paso «Método de
-envío» sale vacío: los transportistas son los de ejemplo y solo cubren Europa y Norteamérica.
-
-Mi recomendación mientras los precios sean los generados: **modo catálogo con precios**, que son
-dos filas y se revierte igual de rápido.
-
-```sql
-UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_CATALOG_MODE';
-UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_CATALOG_MODE_WITH_PRICES';
-```
-
-Deja los 3.036 productos navegables **con sus precios**, los filtros y el registro de clientes
-intactos, y quita el carrito. Así la tienda no promete algo que no puede cumplir.
-
-⚠️ Son **las dos** filas: solo con la primera, PrestaShop **también oculta los precios**.
-
-Para volver a tienda completa, cuando haya precios reales **y** transportista:
-
-```sql
-UPDATE psjy_configuration SET value = '0'
- WHERE name IN ('PS_CATALOG_MODE', 'PS_CATALOG_MODE_WITH_PRICES');
-```
-
-Detalle y la alternativa (crear un transportista real) en `07-transportistas-colombia.sql`.
+| Fichero | ¿Ejecutar? |
+|---|---|
+| `14a-caches-off-al-empezar.sql` | **SÍ**, antes de subir nada |
+| `02-ajustes-tras-importar.sql` | **SÍ, obligatorio**, justo después del volcado |
+| `14b-caches-on-al-terminar.sql` | **SÍ**, cuando las comprobaciones hayan pasado |
+| `14c-abrir-la-tienda.sql` | **SÍ**, al final y a conciencia |
+| `02b-limpieza-datos-demo.sql` | **No.** Ya viene aplicado dentro del volcado |
+| `02c-textos-en-ingles-en-datos.sql` | **No.** Ya viene aplicado dentro del volcado |
+| `03-opcional-precios-prueba.sql` | **No.** El catálogo no muestra precios |
+| `06-cargar-precios-reales.sql` | Solo si algún día se abre la tienda con precios. **Preguntar antes al cliente si sus precios llevan IVA** |
+| `07-transportistas-colombia.sql` | En pausa: sin carrito no hacen falta |
+| `08`, `09`, `10` (PHP) | **No.** Ya aplicados y dentro del volcado |
+| `12-imagenes-del-cliente.php` | **No**, si importas el volcado: ya viene aplicado. **Sí**, solo si decides *no* reimportar la base — ver §4.2 del `historico/14-PASO-A-PASO-SUBIDA.md` |
 
 ---
 
 ## 6. Qué dejarme para que yo lo revise
 
-Crea la carpeta **`deploy/entrada/`** en el repositorio y deja ahí estos cuatro ficheros. Con eso
-puedo auditar el resultado sin tocar producción:
+Deja estos ficheros en **`deploy/entrada/`**:
 
 | Fichero | Cómo se obtiene |
 |---|---|
-| `01-dump-produccion.sql.gz` | phpMyAdmin → base de datos → **Exportar** → SQL, compresión gzip |
-| `02-log-errores.txt` | Administrador de archivos → `var/logs/` → abre `prod-2026-07-XX.log` y copia las últimas ~100 líneas |
-| `03-portada.html` | Abre la tienda, **clic derecho → Ver código fuente**, y guarda todo en este fichero |
-| `04-notas.txt` | Dos líneas: qué hiciste y qué viste raro |
+| `01-dump-produccion.sql.gz` | phpMyAdmin → Exportar → SQL, compresión gzip |
+| `02-log-errores.txt` | `var/logs/` → últimas ~100 líneas de `prod-2026-08-XX.log` |
+| `03-portada.html` | Abre la tienda → clic derecho → **Ver código fuente** → guardar |
+| `04-ficha.html` | Lo mismo, pero abriendo un producto cualquiera |
+| `05-notas.txt` | Dos líneas: qué hiciste y qué viste raro |
 
-El más útil es el **`03-portada.html`**: leer el HTML que sirve el servidor es la única forma
-fiable de detectar problemas reales — así encontré los 140 «Quick view» en inglés que una
-auditoría de ficheros de traducción no vio.
-
-Si prefieres no exportar la base entera, el `03` y el `04` ya me sirven para casi todo.
+El más útil sigue siendo el **HTML servido**: es la única forma fiable de detectar problemas
+reales — así encontré los 140 «Quick view» en inglés que una auditoría de ficheros de
+traducción no vio.
 
 ---
 
@@ -373,47 +297,66 @@ Si prefieres no exportar la base entera, el `03` y el `04` ya me sirven para cas
 
 ```
 deploy/paquete/
-├── EMPEZAR-AQUI.md                     ← este fichero, lo único que hay que leer
-├── 00-comprobacion-antes-de-importar.sql   ✅ ejecutado (19 productos, vía libre)
-├── 00-RESULTADOS-produccion-20260729.txt   ✅ tus resultados, guardados como evidencia
-├── 02-ajustes-tras-importar.sql        ★ el único obligatorio tras el volcado
-├── 02b-limpieza-datos-demo.sql             ya aplicado al volcado
-├── 02c-textos-en-ingles-en-datos.sql       ya aplicado al volcado
-├── 03-opcional-precios-prueba.sql          no se ejecuta (decidido)
-├── 06-cargar-precios-reales.sql            para cuando lleguen los precios
-├── 07-transportistas-colombia.sql      ★ decisión antes de abrir al público
-├── 04-PLAN-IMPORTACION.md                  detalle largo y diagnóstico de fallos
-├── 05-CREDENCIALES.md                      accesos (no se versiona)
-├── 00-PROGRESO-CLIENTE.md                  documento para el cliente
-├── vt_autosoe_child.zip                📋 subido según tu reporte, sin verificar
-├── img-importtools.zip                 📋 subido y extraído según tu reporte, sin verificar
-└── modules/                            los dos es.php + el de leoquicklogin (⏳ pendientes de subir)
+├── EMPEZAR-AQUI.md                              ← este fichero
+├── 11-PLAN-FASE-II.md                           estado y pendientes al día
+├── 02-ajustes-tras-importar.sql             ★   el único obligatorio
+├── 02b / 02c                                    ya aplicados al volcado
+├── 03 / 06 / 07                                 no se ejecutan (ver §5)
+├── 08 / 09 / 10 (php)                           ya aplicados al volcado
+├── 04-PLAN-IMPORTACION.md                       detalle largo del despliegue nº 1
+├── 05-CREDENCIALES.md                           accesos (no se versiona)
+├── 00-PROGRESO-CLIENTE.md                       documento para el cliente
+├── contenido/                                   los HTML de las 2 páginas rehechas
+│   ├── quienes-somos.html
+│   └── quiero-ser-cliente.html
+├── vt_autosoe_child-EXTRAER-EN-themes.zip       tema, 475 ficheros
+├── vt_autosoe_child-SUBIR-POR-PANEL.zip         el mismo, para el importador del panel
+├── img-importtools.zip                          337 imágenes
+├── itcotizacion-EXTRAER-EN-modules.zip      ★   el módulo de cotización
+├── modulos-traducciones-EXTRAER-EN-modules.zip ★ los dos es.php
+└── traducciones-EXTRAER-EN-RAIZ.zip             169 XLIFF, solo si faltan
 
-backups/importtools-FINAL-20260729-1726.sql.gz   ← el volcado a importar
+backups/importtools-FASE2-20260801-2315.sql.gz   ← el volcado a importar
 deploy/entrada/                                  ← lo que me dejas para revisar (§6)
 ```
 
+Los dos zip del tema tienen el mismo contenido, cambia solo la estructura:
+
+| Fichero | Estructura | Para qué |
+|---|---|---|
+| `…-EXTRAER-EN-themes.zip` | `vt_autosoe_child/…` | **Este.** Extraer en `themes/` |
+| `…-SUBIR-POR-PANEL.zip` | `config/…` en la raíz | Solo si prefieres el importador del panel |
+
+> El importador del panel exige `config/theme.yml` en la **raíz** del zip
+> (`ThemeManager.php:413`); extraer a mano no lo necesita, porque `ThemeRepository` lista los
+> temas con `glob(themes/*/config/theme.yml)`.
+
 ---
 
-## Resumen en cinco líneas
+## Resumen en seis líneas
 
-1. **Sesión 1:** mantenimiento ON → activar el tema hijo → confirmar que carga. 4 clics, nada
-   irreversible. Aguanta el minuto de la primera carga.
-2. **Sesión 2:** JetBackup → importar volcado (16 s) → `02-ajustes` **seguido** (< 1 s) → vaciar
-   cachés (+57 s la primera página).
-3. **Comprobar** las 7 cosas de §4.
-4. **Decidir** el modo catálogo antes de quitar el mantenimiento (§5).
-5. **Dejarme** los ficheros de §6 y lo reviso.
+1. **JetBackup** y mantenimiento ON.
+2. **Apagar la caché de Smarty** (3.1) — sin esto no se aplica nada de lo que subas.
+3. **Subir** los 4 zip; comprobar los 169 XLIFF; **borrar los zip de `themes/`**.
+4. **Importar** el volcado y **seguido** el `02-ajustes` (vuelve a cerrar la tienda).
+5. **Vaciar cachés** y aguantar los ~57 s de la primera página.
+6. **Comprobar** las 13 cosas de §4 → restaurar Smarty → abrir la tienda.
 
 ---
 
 ## Registro de correcciones a este documento
 
-Para que se sepa qué cambió y por qué:
-
 | Fecha | Corrección |
 |---|---|
-| 29/07 | **Los tiempos del plan estaban inventados** («50–70 minutos», «Fase 1 — 15 min»). Sustituidos por los medidos: 16 s el volcado, 57,3 s la primera página tras vaciar caché, 0,3–0,5 s el resto. Lo que no se puede medir (subida, JetBackup) se declara como tal |
-| 29/07 | **El paso «añadir tu IP a las permitidas» sobraba.** `PS_MAINTENANCE_ALLOW_ADMINS` ya está en 1 y la fila `PS_MAINTENANCE_IP` no existe: basta estar logueado |
-| 29/07 | Los menús del panel se dieron **en inglés**, porque producción tiene `PS_LANG_DEFAULT = 1` y solo `en-US`. Antes se daban en español, que es lo que se verá **después** del import |
-| 29/07 | Indicadores separados por origen: **✅ verificado** por mí / **📋 reportado** por ti / **⏳ pendiente**. Antes había «✓ ya subido» sobre cosas que no comprobé |
+| 29/07 | **Los tiempos del plan estaban inventados** («50–70 minutos»). Sustituidos por los medidos: 16 s el volcado, 57,3 s la primera página tras vaciar caché, 0,3–0,5 s el resto |
+| 29/07 | El paso «añadir tu IP» sobraba entonces: `PS_MAINTENANCE_ALLOW_ADMINS` estaba en 1 y `PS_MAINTENANCE_IP` no existía |
+| 29/07 | Indicadores separados por origen: **✅ verificado** / **📋 reportado** / **⏳ pendiente** |
+| 31/07 | Añadidas las dos trampas del despliegue real: los XLIFF son **ficheros en disco**, y `compile_check` congela las plantillas |
+| 31/07 | **Culpé por error a `modules/leoelements/gencode/`.** No era: `LeoGenCode.php` hace `if (!Leo_Helper::is_admin()) return $html;`, así que en la tienda no se lee. La causa real era `compile_check` |
+| 01/08 | **§5 recomendaba «modo catálogo CON precios». Revocado**: el catálogo no lleva precios, y no es provisional |
+| 01/08 | **El volcado quita el mantenimiento** (`PS_SHOP_ENABLE = 1`). No estaba dicho en ningún sitio. Ahora lo vuelve a cerrar el paso 0 de `02-ajustes` |
+| 01/08 | Escribí un paso «pon tu IP en `PS_MAINTENANCE_IP`» y **habría sido un `UPDATE` sobre una fila que no existe**: 0 filas, sin aviso. Retirado; basta la sesión de admin |
+| 01/08 | El script traía un `UPDATE` de `PS_SSL_ENABLED_EVERYWHERE`: **esa opción no existe en PrestaShop 9**, ni la fila ni la constante. Otro no-op silencioso, retirado |
+| 01/08 | Probé el camino completo —volcado + `02-ajustes`— **en una base limpia** antes de darlo por bueno: 374 tablas, 3.036 productos, tienda cerrada, dominio corregido |
+| 01/08 | Los dos `es.php` iban sueltos como «copia manual» y **se olvidaron en el despliegue nº 1**. Ahora van en su propio zip |
+| 01/08 | Reescrito para el despliegue nº 2: las sesiones 1 y 2 ya ocurrieron el 31/07 |

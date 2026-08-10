@@ -9,6 +9,27 @@
 --
 --  Prefijo de tablas: psjy_
 -- ============================================================================
+--
+--  ⛔ NO EJECUTAR SOBRE LA PRODUCCION ACTUAL (aviso del 10/08/2026).
+--
+--  Este fichero es SOLO para preparar un volcado nuevo. Desde el 31/07 la tienda
+--  esta viva y el cliente ha metido datos propios. Ejecutarlo hoy borraria, entre
+--  otras cosas:
+--
+--    · pedidos, carritos y su historico          (DELETE FROM psjy_orders, psjy_cart…)
+--    · clientes reales que hubiera dado de alta  (psjy_customer id 2, psjy_guest)
+--    · mensajes de atencion al cliente           (psjy_customer_thread, psjy_message)
+--    · proveedores que el cliente haya creado    (psjy_supplier, psjy_product_supplier)
+--    · todas las visitas y estadisticas          (psjy_connections…)
+--
+--  Y el paso 1) de aqui abajo REESCRIBE psjy_cms_lang, o sea las paginas CMS que el
+--  cliente puede haber editado desde el panel.
+--
+--  Comprobado el 10/08/2026: en produccion hay 13 productos con 77 fotos subidas por
+--  el cliente, 18 productos nuevos creados por el, y 107 productos fuera de la
+--  categoria Catalogo. Nada de eso esta en el volcado del 29/07. Ver
+--  `23-PASO-A-PASO-20260809.md` §12.
+-- ============================================================================
 
 -- ---------------------------------------------------------------------------
 -- 1) OBLIGATORIO — enlaces absolutos al entorno local dentro de paginas CMS
