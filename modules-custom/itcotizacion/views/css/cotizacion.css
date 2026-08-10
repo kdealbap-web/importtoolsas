@@ -1,29 +1,39 @@
 /* Cotización — Import Tools Latam
-   Paleta de marca: rojo #E2211C, azul #1F3864. Tipografía y botones siguen
-   el lenguaje de AutoSoe: titular grande y condensado, acento rojo, esquinas
-   apenas redondeadas. */
+   Paleta: rojo de marca #E2211C y el NEGRO DEL TEMA (#000). Tipografía y botones
+   siguen el lenguaje de AutoSoe: titular grande y condensado, acento rojo,
+   esquinas apenas redondeadas.
+
+   ⚠️ 10/08/2026 — fuera el azul marino. El cliente pidió que el botón «Agregar a
+   mi cotización» y los títulos e iconos que iban en el azul (#1F3864) pasaran al
+   negro original del tema. Ese negro no es inventado: es el valor que AutoSoe
+   declara en `--headings-color`, `--link-color` y `--product-name-color`, todos
+   `#000`. Se cambia en las variables de aquí abajo, no regla por regla, así que
+   las 8 declaraciones que usaban la tinta azulada y las 3 que usaban el azul
+   quedan en negro de una vez. */
 
 :root {
   --itc-rojo: #E2211C;
   --itc-rojo-osc: #B81A16;
-  --itc-navy: #1F3864;
-  --itc-tinta: #16202E;
+  --itc-navy: #000;     /* era #1F3864 — enlaces y bordes de foco */
+  --itc-tinta: #000;    /* era #16202E — títulos, etiquetas y texto */
   --itc-gris: #66717F;
   --itc-linea: #E3E7ED;
   --itc-fondo: #F4F6F9;
   --itc-wa: #25D366;
   --itc-wa-osc: #1DA851;
 
-  /* Color del boton «Agregar a mi cotizacion». El cliente lo pidio negro el
-     08/08/2026 (venia en el azul de marca y se le perdia). Va como variable y no
-     como valor suelto porque el criterio acordado es de CONTRASTE, no de color
-     fijo: el boton tiene que resaltar sobre el fondo que lo rodea. Hoy cae
-     siempre sobre blanco —comprobado en la ficha, en el listado de categoria y
-     en los carruseles del home, que pintan la miniatura sobre #fff—, asi que
-     negro es lo correcto en los tres. Si algun dia se coloca dentro de una
-     seccion oscura, se redefinen estas dos variables en ese contenedor y el
-     boton se invierte solo, sin tocar ninguna regla. */
-  --itc-boton: #14171C;
+  /* Color del boton «Agregar a mi cotizacion». Lo que hay HOY en produccion es
+     `background: var(--itc-navy)`, o sea el azul #1F3864: es exactamente el azul
+     oscuro que el cliente pide cambiar. Va como variable y no como valor suelto
+     porque el criterio acordado es de CONTRASTE, no de color fijo: el boton tiene
+     que resaltar sobre el fondo que lo rodea. Hoy cae siempre sobre blanco
+     —comprobado en la ficha, en el listado de categoria y en los carruseles del
+     home, que pintan la miniatura sobre #fff—, asi que negro es lo correcto en
+     los tres. Si algun dia se coloca dentro de una seccion oscura, se redefinen
+     estas dos variables en ese contenedor y el boton se invierte solo, sin tocar
+     ninguna regla.
+     10/08/2026: pasa de #14171C (un negro con tinte azul) al #000 del tema. */
+  --itc-boton: #000;
   --itc-boton-texto: #fff;
 }
 
@@ -142,7 +152,11 @@
 .itcot-pagina { padding: 0 0 3rem; }
 
 .itcot-cabecera {
-  background: linear-gradient(115deg, var(--itc-navy) 0%, #14264a 62%, #0F1D3A 100%);
+  /* Era un degradado del azul marino (#1F3864 → #14264a → #0F1D3A). Al pasar los
+     titulos y el boton al negro del tema, dejar aqui la unica banda azul de la
+     pagina la habria convertido en lo primero que canta. Mismo degradado, en los
+     negros del tema: #1a1a1a es el `--block-heading-color` de AutoSoe. */
+  background: linear-gradient(115deg, #1a1a1a 0%, #0d0d0d 62%, #000 100%);
   color: #fff;
   padding: clamp(2rem, 5vw, 3.5rem) clamp(1.2rem, 4vw, 3rem);
   border-radius: 4px;

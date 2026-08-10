@@ -7,9 +7,18 @@
    ============================================================================ */
 
 :root {
-  --it-red:  #E2211C;   /* rojo de marca (muestreado del logo) */
-  --it-navy: #1F3864;   /* azul marino de marca */
+  --it-red:   #E2211C;  /* rojo de marca (muestreado del logo) */
+  --it-negro: #000;     /* el negro DEL TEMA, no uno inventado: es el valor de
+                           --headings-color, --link-color y --product-name-color
+                           que declara AutoSoe. Decidido con el cliente el
+                           10/08/2026: titulos, iconos y botones en este negro. */
 }
+
+/* ⚠️ El azul marino de marca (#1F3864) queda FUERA de la interfaz por decision del
+   cliente (10/08/2026): el boton de cotizacion, los titulos y los iconos que lo
+   llevaban pasan a `--it-negro`. Se retira el token `--it-navy` para que nadie lo
+   vuelva a usar sin querer; el azul sigue siendo de la marca, pero no se pinta.
+   Si algun dia se recupera, va aqui y se documenta donde se aplica. */
 
 /* ----------------------------------------------------------------------------
    1) LOGO
@@ -440,7 +449,7 @@ body.cms-id-7 {
   --itq-negro:  #0A0A0C;
   --itq-negro2: #141418;
   --itq-humo:   #F1F2F4;
-  --itq-tinta:  #16202E;
+  --itq-tinta:  #000;      /* era #16202E, un negro azulado. Negro del tema (10/08/2026) */
   --itq-gris:   #5C6672;
   --itq-linea:  #E3E7ED;
 }
@@ -788,7 +797,7 @@ body#cms [data-elementor-id="17"] { display: none; }
   font-size: .9375rem;
   color: var(--itq-gris);
 }
-.itqs-secundario a { color: var(--itq-navy, #1F3864); font-weight: 600; }
+.itqs-secundario a { color: var(--it-negro); font-weight: 600; }
 .itqs-secundario a:hover { color: var(--it-red); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1318,7 +1327,7 @@ body .elementor-12 .elementor-element.elementor-element-0fd8453 i { color: var(-
   background: #F4F6F9;
   font-size: .875rem;
   font-weight: 600;
-  color: #16202E;
+  color: var(--it-negro);
 }
 /* Lista vacia: el aviso manda al catalogo, porque el servidor rechaza el envio
    sin productos y no tiene sentido dejar rellenar ocho campos para nada. */
@@ -1436,7 +1445,7 @@ body .popup-over.leo_block_top .popup-content.itcuenta {
   border-radius: 4px;
   background: #fff;
   box-shadow: 0 18px 44px rgba(6, 9, 14, .28), 0 2px 6px rgba(6, 9, 14, .14);
-  color: var(--itc-tinta, #16202E);
+  color: var(--it-negro);
 }
 
 /* --- 17.2 cabecera de identidad ------------------------------------------- */
@@ -1513,7 +1522,7 @@ body .popup-over.leo_block_top .popup-content a.itcuenta__item {
   padding: .55rem 1rem;
   font-size: 13.5px;
   line-height: 1.3;
-  color: var(--itc-tinta, #16202E);
+  color: var(--it-negro);
   transition: background .15s ease, color .15s ease;
 }
 body .popup-over.leo_block_top .popup-content a.itcuenta__item > span:first-of-type { flex: 1 1 auto; }
@@ -1608,10 +1617,10 @@ body .popup-over.leo_block_top .popup-content a.itcuenta__btn--rojo {
 body .popup-over.leo_block_top .popup-content a.itcuenta__btn--rojo:hover { background: #B81A16; color: #fff; }
 body .popup-over.leo_block_top .popup-content a.itcuenta__btn--linea {
   background: #fff;
-  color: #16202E;
+  color: var(--it-negro);
   border: 1px solid #D5DAE2;
 }
-body .popup-over.leo_block_top .popup-content a.itcuenta__btn--linea:hover { border-color: #16202E; color: #000; }
+body .popup-over.leo_block_top .popup-content a.itcuenta__btn--linea:hover { border-color: var(--it-negro); color: #000; }
 
 /* ⚠️ Hay que repetir la escalera entera de selectores. El tema trae
        .popup-over.leo_block_top .popup-content p{font-weight:700;font-size:11px;text-transform:uppercase}
@@ -1782,7 +1791,7 @@ body .popup-over.leo_block_top .popup-content p.itcuenta__nota {
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: .04em;
-  color: #16202E;
+  color: var(--it-negro);
   word-break: break-word;
 }
 .itsf__marca {

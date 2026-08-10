@@ -252,8 +252,25 @@ Precios en Latinoamérica Hosting (mismo proveedor del hosting, cómodo para fac
       `deploy/img/it/`).
       ⚠️ **Al desplegar hay que subir `deploy/img/it/` a `<docroot>/img/it/`.**
 - [x] **Código postal 082001** en configuración y en la tienda física.
-- [ ] Aplicar colores y tipografías de la marca (`--it-red #E2211C`, `--it-navy #1F3864`)
-      a cabecera, botones, precios y etiquetas.
+- [x] **Colores de la interfaz cerrados con el cliente (10/08/2026): rojo de marca +
+      el negro del tema. El azul marino se retira de la interfaz.**
+      El botón «Agregar a mi cotización» estaba en producción con
+      `background: var(--itc-navy)` = **#1F3864**, y ese azul se usaba además en
+      **11 declaraciones** más: los `h2` del panel de cotización y de *Pagos
+      autorizados*, las etiquetas y el texto de los campos, los enlaces
+      (`.itcot-link`, `.itcot-ayuda a`), el borde de foco del textarea, el aviso
+      flotante, la referencia de las tarjetas sin foto (`.itsf__ref`), el panel de
+      la cuenta y los `h3` de *Quiénes somos* y *Quiero ser cliente*.
+      Todo eso pasa a **`#000`**, que **no es un negro inventado**: es el valor que
+      AutoSoe declara en `--headings-color`, `--link-color` y
+      `--product-name-color`. Comprobado leyendo el CSS que sirve el servidor, no
+      suponiéndolo.
+      Se hizo **por variable, no regla por regla**: `--itc-boton`, `--itc-navy`,
+      `--itc-tinta`, `--itq-tinta` y un token nuevo `--it-negro` en `:root`.
+      El token `--it-navy` se retiró del CSS (no lo usaba nada) para que no vuelva
+      a colarse. La banda degradada de la cabecera de cotización se pasó también a
+      negros (`#1a1a1a → #000`): era la única superficie azul que quedaba y habría
+      cantado más que antes.
 
 > ⚠️ **Caché de CSS de Elementor.** `psjy_leoelements_meta` guarda el CSS generado con
 > `name = '_elementor_css_id_lang_N'`. Vaciar `var/cache/`, `assets/cache/` y
