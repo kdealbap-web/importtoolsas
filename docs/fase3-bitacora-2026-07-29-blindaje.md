@@ -220,10 +220,10 @@ LEOELEMENTS_PANEL_TOOL = 0 · contenidos con rastro demo = 0
 | Fichero | Qué es |
 |---|---|
 | `00-PROGRESO-CLIENTE.md` | Para el cliente: qué está listo, dónde edita cada cosa, qué falta |
-| `01-LEEME-DESPLIEGUE.md` | Instalación paso a paso |
+| `historico/01-LEEME-DESPLIEGUE.md` | Instalación paso a paso |
 | `02-ajustes-tras-importar.sql` | Obligatorio: dominio, HTTPS, caché de CSS de Elementor |
 | `03-opcional-precios-prueba.sql` | Las dos salidas para los precios generados |
-| `04-PLAN-IMPORTACION.md` | Plan por fases + **diagnóstico de los 5 fallos con su causa** |
+| `historico/04-PLAN-IMPORTACION.md` | Plan por fases + **diagnóstico de los 5 fallos con su causa** |
 | `05-CREDENCIALES.md` | Cuentas, alcance del perfil del cliente, recordatorios de seguridad |
 | `vt_autosoe_child.zip` | Tema hijo, 8,8 MB, 659 ficheros |
 | `img-importtools.zip` | Imágenes de contenido y logotipos, 3,6 MB |

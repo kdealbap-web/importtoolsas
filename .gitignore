@@ -13,6 +13,18 @@ theme-autosoe/*.zip
 *.zip
 *-license.txt
 
+# Tema padre comercial de ThemeForest (41 MB, licencia de pago). Lo que SÍ se versiona
+# es el tema hijo `theme-autosoe/vt_autosoe_child/`, que es lo nuestro.
+theme-autosoe/themeforest-*/
+
+# Los .zip de `deploy/paquete/` son ARTEFACTOS: se reconstruyen con
+#   python local-dev/empaquetar.py
+# desde `theme-autosoe/vt_autosoe_child/`, `modules-custom/itcotizacion/`, `deploy/img/`
+# y `deploy/paquete/modules/`. No se versionan (los cubre `*.zip` de arriba).
+# Excepción documentada: los dos `traducciones-EXTRAER-EN-*.zip` de
+# `deploy/paquete/historico/` NO se reconstruyen — son el catálogo es-CO del núcleo de
+# PrestaShop. Ver `deploy/paquete/historico/LEEME.md`.
+
 # Respaldos locales
 backups/
 
@@ -62,3 +74,7 @@ deploy/paquete/config/php.ini.produccion
 # Carpeta de entrada: volcados y logs de produccion (datos reales)
 deploy/entrada/*
 !deploy/entrada/LEEME.md
+
+# Capturas y recortes de trabajo del espejo: se regeneran con local-dev/captura.sh
+tmp-shots/
+tmp-rec/
