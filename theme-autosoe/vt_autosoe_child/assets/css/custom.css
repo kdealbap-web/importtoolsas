@@ -541,18 +541,67 @@ body#cms [data-elementor-id="17"] { display: none; }
 .itqs-hero__foto { margin: 0; }
 .itqs-hero__foto img { display: block; width: 100%; height: auto; }
 
-@media (min-width: 992px) {
-  .itqs-hero .itqs-rail {
-    grid-template-columns: minmax(0, 42%) minmax(0, 58%);
-    gap: 2rem;
-    padding-block: clamp(2.5rem, 3vw, 4rem);
+/* --- 11/08/2026: la foto del hero se veia pequena, y no era falta de sitio ---
+   Las dos fotos que envio el cliente traen el ~40 % izquierdo en NEGRO PURO:
+   estan recortadas para llevar el texto ENCIMA, a ancho completo. Al meterlas en
+   la columna del 58 % ese negro caia al lado del texto —sobre un fondo tambien
+   negro, o sea invisible— y el motivo real (las herramientas en una pagina, los
+   dos hombres en la otra) se quedaba en unos 480 px de los 1440 de pantalla.
+   Puestas de FONDO de la banda, el motivo pasa a ~1000 px sin tocar los
+   ficheros ni pedirle nada al cliente.
+   `.itqs-banda` ya sangra la banda a todo el viewport (linea 479), asi que la
+   figura NO se sangra: eso es justo lo que estiraba la banda a 920 px de alto. */
+
+/* Movil y tablet: son fotos panoramicas (ratio 2,30 y 3,16). A 390 px se
+   quedaban en una tira de ~170 px con casi todo negro. Se recortan a 16/10 y se
+   anclan a la DERECHA, que es donde esta el motivo. */
+@media (max-width: 991px) {
+  .itqs-hero__foto img {
+    aspect-ratio: 16 / 10;
+    height: auto;
+    object-fit: cover;
+    object-position: right center;
   }
 }
-/* La foto se recorto de la maqueta y viene YA sobre negro, del mismo tono que la
-   banda: no hace falta sangrarla ni enmascararla, empalma sola. Y no se sangra a
-   proposito: en un item de rejilla los margenes en % se resuelven contra el area
-   de rejilla, no contra el contenedor, asi que `calc(50% - 50vw)` se pasaba de
-   largo y estiraba la banda a 920 px de alto en vez de los ~610 de la maqueta. */
+
+@media (min-width: 992px) {
+  .itqs-hero { position: relative; overflow: hidden; }
+  .itqs-hero .itqs-rail {
+    grid-template-columns: minmax(0, 1fr);   /* una sola columna: el texto */
+    align-content: center;
+    min-height: clamp(400px, 30vw, 540px);
+    padding-block: clamp(2.5rem, 3vw, 4rem);
+  }
+  .itqs-hero__foto {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    z-index: 0;
+  }
+  .itqs-hero__foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center;
+  }
+  /* Velo del mismo tono que la banda. Hace falta aunque la foto ya traiga su
+     degradado: al recortar con `cover` ese degradado se desplaza, y en pantallas
+     muy anchas deja de caer bajo el texto. */
+  .itqs-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg,
+      rgba(8, 10, 14, .95) 0%,
+      rgba(8, 10, 14, .88) 28%,
+      rgba(8, 10, 14, .50) 58%,
+      rgba(8, 10, 14, 0)   78%);
+  }
+  .itqs-hero__txt { position: relative; z-index: 2; max-width: 40rem; }
+  .itqs-hero__lede { max-width: 42ch; }
+}
 
 /* --------------------------------------------------- 9.2 cuatro ventajas */
 

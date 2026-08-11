@@ -1,0 +1,1395 @@
+<title>Importtools · Runbook de subida 10/08/2026</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   Paleta: papel cálido + grafito, y señalización de taller
+   (rojo = peligro/irreversible · ámbar = trampa · verde = hecho)
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --ground:#F4F3F0;
+  --surface:#FFFFFF;
+  --surface-2:#EAE8E3;
+  --ink:#15171B;
+  --ink-2:#3C434C;
+  --ink-3:#6E7681;
+  --line:#DAD7D1;
+  --line-2:#BFBBB3;
+  --rojo:#C81A16;
+  --rojo-bg:#FCEBEA;
+  --rojo-line:#F0B9B6;
+  --ambar:#8E5A00;
+  --ambar-bg:#FBF2E0;
+  --ambar-line:#E5CE9C;
+  --verde:#0F6B41;
+  --verde-bg:#E4F0E9;
+  --verde-line:#AFD3C1;
+  --grafito:#2E353D;
+  --grafito-bg:#E9EAEC;
+  --sombra:0 1px 2px rgba(21,23,27,.05), 0 4px 14px -6px rgba(21,23,27,.12);
+  --radio:10px;
+  --mono:ui-monospace,"Cascadia Mono","Cascadia Code",Consolas,"DejaVu Sans Mono",monospace;
+  --sans:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
+  --disp:"Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#14161A; --surface:#1C1F24; --surface-2:#252930;
+    --ink:#E8E7E3; --ink-2:#B4B8BF; --ink-3:#848B95;
+    --line:#31353C; --line-2:#454B54;
+    --rojo:#FF6B63; --rojo-bg:#2B1917; --rojo-line:#5E2B27;
+    --ambar:#E2A63C; --ambar-bg:#2A2116; --ambar-line:#584526;
+    --verde:#5CC38C; --verde-bg:#132420; --verde-line:#28503F;
+    --grafito:#C6CAD0; --grafito-bg:#262A30;
+    --sombra:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -8px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#14161A; --surface:#1C1F24; --surface-2:#252930;
+  --ink:#E8E7E3; --ink-2:#B4B8BF; --ink-3:#848B95;
+  --line:#31353C; --line-2:#454B54;
+  --rojo:#FF6B63; --rojo-bg:#2B1917; --rojo-line:#5E2B27;
+  --ambar:#E2A63C; --ambar-bg:#2A2116; --ambar-line:#584526;
+  --verde:#5CC38C; --verde-bg:#132420; --verde-line:#28503F;
+  --grafito:#C6CAD0; --grafito-bg:#262A30;
+  --sombra:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -8px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── Barra superior ─────────────────────────────────────────── */
+.barra{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  padding:10px clamp(16px,3vw,32px);
+  background:color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.barra__marca{
+  font-family:var(--mono); font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); white-space:nowrap;
+}
+.barra__marca b{color:var(--ink); font-weight:600}
+.barra__prog{display:flex; align-items:center; gap:10px; flex:1 1 220px; min-width:180px}
+.riel{flex:1; height:6px; background:var(--surface-2); border-radius:99px; overflow:hidden}
+.riel span{display:block; height:100%; width:0%; background:var(--verde); transition:width .3s ease}
+.barra__num{font-family:var(--mono); font-size:12px; color:var(--ink-2); font-variant-numeric:tabular-nums; white-space:nowrap}
+.estado{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  padding:5px 10px; border-radius:99px; white-space:nowrap;
+  background:var(--rojo-bg); color:var(--rojo); border:1px solid var(--rojo-line);
+}
+.estado.abierta{background:var(--verde-bg); color:var(--verde); border-color:var(--verde-line)}
+.btn-txt{
+  font:inherit; font-size:12px; font-family:var(--mono); color:var(--ink-3);
+  background:none; border:1px solid var(--line); border-radius:6px;
+  padding:5px 10px; cursor:pointer;
+}
+.btn-txt:hover{color:var(--ink); border-color:var(--line-2)}
+.btn-txt:focus-visible{outline:2px solid var(--rojo); outline-offset:2px}
+
+/* ── Rejilla ────────────────────────────────────────────────── */
+.envoltorio{
+  display:grid; grid-template-columns:minmax(0,1fr); gap:0;
+  max-width:1320px; margin:0 auto; padding:0 clamp(16px,3vw,32px) 96px;
+}
+@media (min-width:1080px){
+  .envoltorio{grid-template-columns:232px minmax(0,1fr); gap:48px}
+}
+.indice{display:none}
+@media (min-width:1080px){
+  .indice{
+    display:block; position:sticky; top:60px; align-self:start;
+    max-height:calc(100vh - 80px); overflow-y:auto; padding:32px 0;
+  }
+}
+.indice h4{
+  font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 12px; font-weight:600;
+}
+.indice ol{list-style:none; margin:0 0 24px; padding:0; display:flex; flex-direction:column; gap:1px}
+.indice a{
+  display:flex; align-items:baseline; gap:9px; padding:5px 8px; border-radius:6px;
+  color:var(--ink-2); text-decoration:none; font-size:13.5px; line-height:1.35;
+  border-left:2px solid transparent;
+}
+.indice a:hover{background:var(--surface); color:var(--ink)}
+.indice a.ok{color:var(--ink-3)}
+.indice a.ok .ix-n{background:var(--verde); color:var(--surface); border-color:var(--verde)}
+.ix-n{
+  font-family:var(--mono); font-size:10px; min-width:19px; height:19px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid var(--line-2); border-radius:4px; color:var(--ink-3);
+  flex:0 0 auto; transform:translateY(2px);
+}
+
+/* ── Cabecera ───────────────────────────────────────────────── */
+header.cab{padding:44px 0 8px}
+.cab .kicker{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--rojo); margin:0 0 12px;
+}
+.cab h1{
+  font-family:var(--disp); font-size:clamp(30px,4.4vw,46px); line-height:1.08;
+  letter-spacing:-.022em; font-weight:700; margin:0 0 14px; text-wrap:balance; max-width:20ch;
+}
+.cab .bajada{font-size:17.5px; color:var(--ink-2); max-width:62ch; margin:0 0 24px}
+.meta{
+  display:flex; flex-wrap:wrap; gap:0; border:1px solid var(--line);
+  border-radius:var(--radio); background:var(--surface); overflow:hidden; box-shadow:var(--sombra);
+}
+.meta div{padding:12px 18px; flex:1 1 160px; border-right:1px solid var(--line)}
+.meta div:last-child{border-right:0}
+.meta dt{
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 3px;
+}
+.meta dd{margin:0; font-size:14.5px; font-weight:600; color:var(--ink)}
+
+/* ── Bloques ────────────────────────────────────────────────── */
+section.paso{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radio);
+  margin:22px 0; box-shadow:var(--sombra); scroll-margin-top:72px; overflow:hidden;
+}
+.paso__cab{
+  display:flex; align-items:flex-start; gap:16px; padding:20px 24px 16px;
+  border-bottom:1px solid var(--line); background:var(--surface);
+}
+.paso__n{
+  font-family:var(--mono); font-size:13px; font-weight:600;
+  min-width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+  background:var(--grafito-bg); color:var(--grafito);
+  border:1px solid var(--line-2); border-radius:7px; flex:0 0 auto;
+}
+.paso.hecho .paso__n{background:var(--verde); border-color:var(--verde); color:#fff}
+.paso__t{flex:1; min-width:0}
+.paso__t h2{
+  font-family:var(--disp); font-size:21px; line-height:1.25; letter-spacing:-.012em;
+  font-weight:650; margin:2px 0 4px; text-wrap:balance;
+}
+.paso__t p{margin:0; color:var(--ink-3); font-size:14.5px}
+.paso__cuerpo{padding:20px 24px 24px}
+.paso__cuerpo > :first-child{margin-top:0}
+.paso__cuerpo > :last-child{margin-bottom:0}
+
+.chip{
+  font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase;
+  padding:4px 8px; border-radius:5px; white-space:nowrap; border:1px solid; align-self:center;
+}
+.chip--sql{background:var(--grafito-bg); color:var(--grafito); border-color:var(--line-2)}
+.chip--php{background:var(--ambar-bg); color:var(--ambar); border-color:var(--ambar-line)}
+.chip--ok{background:var(--verde-bg); color:var(--verde); border-color:var(--verde-line)}
+.chip--peligro{background:var(--rojo-bg); color:var(--rojo); border-color:var(--rojo-line)}
+
+h3{
+  font-family:var(--disp); font-size:15px; font-weight:650; letter-spacing:-.005em;
+  margin:26px 0 10px; color:var(--ink);
+}
+h3:first-child{margin-top:0}
+p{margin:0 0 12px}
+a{color:var(--ink); text-underline-offset:3px; text-decoration-color:var(--line-2)}
+a:hover{text-decoration-color:var(--rojo)}
+code{
+  font-family:var(--mono); font-size:.86em; background:var(--surface-2);
+  padding:1.5px 5px; border-radius:4px; color:var(--ink); word-break:break-word;
+}
+
+/* ── Avisos ─────────────────────────────────────────────────── */
+.aviso{
+  border:1px solid var(--line); border-left:3px solid var(--ink-3);
+  background:var(--surface-2); border-radius:8px; padding:14px 18px; margin:16px 0;
+}
+.aviso > :first-child{margin-top:0} .aviso > :last-child{margin-bottom:0}
+.aviso b:first-child{display:block; margin-bottom:4px}
+.aviso--peligro{background:var(--rojo-bg); border-color:var(--rojo-line); border-left-color:var(--rojo)}
+.aviso--peligro b:first-child{color:var(--rojo)}
+.aviso--trampa{background:var(--ambar-bg); border-color:var(--ambar-line); border-left-color:var(--ambar)}
+.aviso--trampa b:first-child{color:var(--ambar)}
+.aviso--ok{background:var(--verde-bg); border-color:var(--verde-line); border-left-color:var(--verde)}
+.aviso--ok b:first-child{color:var(--verde)}
+
+/* ── Código ─────────────────────────────────────────────────── */
+.cod{position:relative; margin:14px 0}
+.cod__cab{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-3); padding:7px 12px; background:var(--surface-2);
+  border:1px solid var(--line); border-bottom:0; border-radius:8px 8px 0 0;
+}
+.cod pre{
+  margin:0; padding:14px 16px; overflow-x:auto;
+  background:var(--grafito-bg); border:1px solid var(--line); border-radius:0 0 8px 8px;
+  font-family:var(--mono); font-size:13px; line-height:1.62; color:var(--ink);
+  tab-size:2;
+}
+.cod--solo pre{border-radius:8px}
+.copiar{
+  font:inherit; font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  background:var(--surface); color:var(--ink-2); border:1px solid var(--line-2);
+  border-radius:5px; padding:3px 9px; cursor:pointer;
+}
+.copiar:hover{color:var(--ink); border-color:var(--ink-3)}
+.copiar:focus-visible{outline:2px solid var(--rojo); outline-offset:2px}
+.copiar.listo{background:var(--verde); color:#fff; border-color:var(--verde)}
+
+/* ── Tablas ─────────────────────────────────────────────────── */
+.tabla{overflow-x:auto; margin:16px 0; border:1px solid var(--line); border-radius:8px}
+table{border-collapse:collapse; width:100%; font-size:14px; min-width:460px}
+th{
+  text-align:left; font-family:var(--mono); font-size:10px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:600;
+  padding:9px 14px; background:var(--surface-2); border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+td{padding:9px 14px; border-bottom:1px solid var(--line); vertical-align:top; color:var(--ink-2)}
+tr:last-child td{border-bottom:0}
+td strong{color:var(--ink); font-weight:600}
+td.num{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
+
+/* ── Listas de comprobación ─────────────────────────────────── */
+ul.lista{list-style:none; margin:14px 0; padding:0; display:flex; flex-direction:column; gap:2px}
+ul.lista li{display:flex; align-items:flex-start; gap:11px; padding:7px 10px; border-radius:7px}
+ul.lista li:hover{background:var(--surface-2)}
+ul.lista input[type=checkbox]{
+  appearance:none; width:18px; height:18px; flex:0 0 auto; margin:3px 0 0;
+  border:1.5px solid var(--line-2); border-radius:5px; background:var(--surface); cursor:pointer;
+  position:relative; transition:background .12s, border-color .12s;
+}
+ul.lista input[type=checkbox]:hover{border-color:var(--ink-3)}
+ul.lista input[type=checkbox]:focus-visible{outline:2px solid var(--rojo); outline-offset:2px}
+ul.lista input[type=checkbox]:checked{background:var(--verde); border-color:var(--verde)}
+ul.lista input[type=checkbox]:checked::after{
+  content:""; position:absolute; left:5px; top:1px; width:5px; height:10px;
+  border:solid #fff; border-width:0 2px 2px 0; transform:rotate(42deg);
+}
+ul.lista label{flex:1; cursor:pointer; font-size:14.7px; line-height:1.5}
+ul.lista input:checked + label{color:var(--ink-3); text-decoration:line-through; text-decoration-color:var(--line-2)}
+ul.lista label small{display:block; color:var(--ink-3); font-size:13px; margin-top:2px; text-decoration:none}
+ul.lista input:checked + label small{color:var(--line-2)}
+
+ul.puntos{margin:12px 0; padding-left:20px}
+ul.puntos li{margin-bottom:7px; color:var(--ink-2)}
+
+details{
+  border:1px solid var(--line); border-radius:8px; margin:14px 0;
+  background:var(--surface-2); overflow:hidden;
+}
+summary{
+  cursor:pointer; padding:11px 16px; font-size:13.5px; font-weight:600; color:var(--ink-2);
+  font-family:var(--mono); letter-spacing:.02em; list-style:none; display:flex; gap:8px; align-items:center;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸"; color:var(--ink-3); transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+summary:hover{color:var(--ink)}
+summary:focus-visible{outline:2px solid var(--rojo); outline-offset:-2px}
+details .interior{padding:2px 18px 16px; font-size:14.5px; border-top:1px solid var(--line)}
+details .interior > :first-child{margin-top:12px}
+
+hr.sep{border:0; border-top:1px solid var(--line); margin:40px 0 26px}
+.titulo-seccion{
+  font-family:var(--mono); font-size:11px; letter-spacing:.17em; text-transform:uppercase;
+  color:var(--ink-3); margin:44px 0 4px; display:flex; align-items:center; gap:12px;
+}
+.titulo-seccion::after{content:""; flex:1; height:1px; background:var(--line)}
+
+footer.pie{
+  margin-top:56px; padding-top:24px; border-top:1px solid var(--line);
+  font-size:13.5px; color:var(--ink-3);
+}
+
+@media print{
+  .barra,.indice,.copiar,.btn-txt{display:none !important}
+  body{background:#fff; color:#000; font-size:11pt}
+  section.paso{break-inside:avoid; box-shadow:none}
+  details{border:0} details .interior{display:block !important}
+  details[open] summary::before,summary::before{content:""}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+</style>
+
+<div class="barra">
+  <div class="barra__marca"><b>IMPORTTOOLS</b> · runbook 10/08</div>
+  <div class="barra__prog">
+    <div class="riel"><span id="riel"></span></div>
+    <div class="barra__num"><span id="hechos">0</span>/<span id="total">0</span></div>
+  </div>
+  <div class="estado" id="estado">Tienda cerrada</div>
+  <button class="btn-txt" id="reiniciar" type="button">Reiniciar</button>
+</div>
+
+<div class="envoltorio">
+
+<nav class="indice" aria-label="Índice de pasos">
+  <h4>Los pasos</h4>
+  <ol id="ix"></ol>
+  <h4>Referencia</h4>
+  <ol>
+    <li><a href="#atras"><span class="ix-n">↩</span> Marcha atrás</a></li>
+    <li><a href="#nopisar"><span class="ix-n">!</span> No pisar al cliente</a></li>
+    <li><a href="#manana"><span class="ix-n">→</span> Mañana: el correo</a></li>
+    <li><a href="#ficheros"><span class="ix-n">≡</span> Qué es cada fichero</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="cab">
+  <p class="kicker">Despliegue nº 3 · ronda del 08/08 + retoque del 10/08</p>
+  <h1>Dejar la tienda actualizada y abrirla</h1>
+  <p class="bajada">
+    Los tres zips ya están extraídos. Lo que queda son <strong>cinco scripts</strong>, un
+    vaciado de cachés, las comprobaciones y abrir la tienda. Este documento es el
+    <code>23-PASO-A-PASO-20260809.md</code> con el estado de hoy y con las dos rutas
+    (con terminal y sin terminal) para lo que necesita PHP.
+  </p>
+  <dl class="meta">
+    <div><dt>Tienda</dt><dd>www.importtoolsas.com</dd></div>
+    <div><dt>Hosting</dt><dd>LAH H2 · cPanel</dd></div>
+    <div><dt>Prefijo BD</dt><dd>psjy_</dd></div>
+    <div><dt>Paquete</dt><dd>10/08/2026 13:39</dd></div>
+    <div><dt>Tiempo</dt><dd>~35 min + respaldo</dd></div>
+  </dl>
+</header>
+
+<div class="aviso aviso--peligro">
+  <b>Lee esto antes de tocar nada: lo que ya subiste todavía NO se está aplicando.</b>
+  <p>Producción tiene <code>PS_SMARTY_FORCE_COMPILE = 0</code>. Con eso, Smarty
+  <strong>ni mira</strong> si la plantilla cambió: sirve lo que compiló la vez anterior.
+  Puedes haber extraído los 475 ficheros del tema perfectamente y no cambiar un píxel,
+  sin ningún error en ningún sitio.</p>
+  <p style="margin-bottom:0"><strong>No hay que volver a subir nada.</strong> Se arregla en el paso 2
+  (poner la variable a 1) + el paso 7 (vaciar cachés). Los ficheros ya están en su sitio;
+  solo falta darle permiso al motor para volver a mirarlos.</p>
+</div>
+
+<p class="titulo-seccion">Dónde estás ahora</p>
+
+<section class="paso" id="p0">
+  <div class="paso__cab">
+    <div class="paso__n">✓</div>
+    <div class="paso__t">
+      <h2>Lo que ya está hecho</h2>
+      <p>Ficheros subidos y extraídos · tienda en mantenimiento</p>
+    </div>
+    <span class="chip chip--ok">Hecho</span>
+  </div>
+  <div class="paso__cuerpo">
+    <div class="tabla"><table>
+      <thead><tr><th>Zip</th><th>Se extrae en</th><th class="num">Entradas</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td><code>vt_autosoe_child-EXTRAER-EN-themes.zip</code></td><td><code>public_html/themes/</code></td><td class="num">475</td><td><strong>Extraído</strong></td></tr>
+        <tr><td><code>itcotizacion-EXTRAER-EN-modules.zip</code></td><td><code>public_html/modules/</code></td><td class="num">18</td><td><strong>Extraído</strong></td></tr>
+        <tr><td><code>img-importtools.zip</code></td><td><code>public_html/img/</code></td><td class="num">60</td><td><strong>Extraído</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p>Los tres son los del paquete de hoy (13:39) y llevan ya el cambio del 10/08 —fuera el
+    azul marino—. Comprobado antes de empaquetar: <strong>0 entradas con barra invertida</strong>
+    (lo que rompía las subidas viejas) y <strong>0 ficheros con BOM</strong>.</p>
+
+    <div class="aviso aviso--trampa">
+      <b>Falta un zip que no está en la tabla, y puede que no haga falta</b>
+      <p style="margin-bottom:0"><code>modulos-traducciones-EXTRAER-EN-modules.zip</code> (4 ficheros:
+      los <code>es.php</code> de <code>leoelements</code>, <code>leofeature</code>,
+      <code>leoproductsearch</code> y <code>leoquicklogin</code>) se subió en la ronda del 03/08,
+      que <strong>sí está publicada</strong>. No ha cambiado desde entonces. Solo súbelo si en el
+      paso 9 ves el aviso del corazón en inglés («You must be logged in…»).</p>
+    </div>
+
+    <h3>Qué hay hoy en producción, medido el 09/08</h3>
+    <div class="tabla"><table>
+      <thead><tr><th>Se comprobó</th><th>Resultado</th></tr></thead>
+      <tbody>
+        <tr><td>Ronda del <strong>03/08</strong></td><td><strong>Publicada.</strong> <code>translateX(100vw)</code>, <code>header__button--cotizar</code>, <code>off-canvas-button-megamenu</code> e <code>itfav</code> están en el CSS/JS servido</td></tr>
+        <tr><td>Ronda del <strong>08/08</strong></td><td><strong>No publicada.</strong> 0 apariciones de <code>product-miniature--sin-foto</code>, <code>--itc-boton</code>, <code>:focus-within</code> y <code>--cero</code></td></tr>
+        <tr><td>Menú <strong>MARCAS</strong></td><td>Salen las 7 (faltan por quitar Proto, Irwin y Grainger)</td></tr>
+        <tr><td><em>Quiénes somos</em> y <em>Quiero ser cliente</em></td><td>Contenido viejo: la tarjeta del ventilador sigue diciendo «Herramientas de aire»; no está la banda «Sé nuestro cliente» ni el botón «Dejar mis datos»</td></tr>
+        <tr><td>Franja de contacto bajo el menú</td><td>Sigue ahí (<code>elementor-element-e23515a</code>)</td></tr>
+        <tr><td>Fotos de producto</td><td><strong>13 productos con 77 fotos</strong>, subidas por el cliente. 0 rotas</td></tr>
+        <tr><td>Precios visibles</td><td><strong>0.</strong> El modo catálogo está bien puesto</td></tr>
+      </tbody>
+    </table></div>
+
+    <details>
+      <summary>Tres cosas que el plan daba por pendientes y ya no lo están</summary>
+      <div class="interior">
+        <div class="tabla"><table>
+          <thead><tr><th>Daba por pendiente</th><th>Estado real en producción</th></tr></thead>
+          <tbody>
+            <tr><td>Scripts de depuración en el docroot (<code>_inv.php</code>, <code>_q.php</code>, <code>_sn.php</code>)</td><td><strong>404 los tres.</strong> Ya no existen. Nada que hacer</td></tr>
+            <tr><td>El hero con la imagen de la demo (<code>sample_slider_1.png</code>)</td><td><strong>Falso.</strong> La portada ya sirve <code>/img/it/slide-1.jpg</code></td></tr>
+            <tr><td>La primera diapositiva vacía</td><td><strong>Falso.</strong> Tiene 7 capas y el titular «Herramienta profesional para tu taller»</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-bottom:0">El espejo local y producción habían divergido en la tabla del
+        slideshow. Por eso el script 22 se cambió para que <strong>solo informe</strong>: la versión
+        anterior llevaba un <code>WHERE id = 6</code> copiado del espejo que en producción habría
+        desactivado una diapositiva que funciona.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<p class="titulo-seccion">La secuencia</p>
+
+<section class="paso" id="p1" data-ix="Respaldo de JetBackup">
+  <div class="paso__cab">
+    <div class="paso__n">1</div>
+    <div class="paso__t">
+      <h2>Respaldo, y que sea de hoy</h2>
+      <p>JetBackup · base de datos + <code>public_html</code></p>
+    </div>
+    <span class="chip chip--peligro">No lo saltes</span>
+  </div>
+  <div class="paso__cuerpo">
+    <ul class="lista">
+      <li><input type="checkbox" id="c101"><label for="c101">Lanzar respaldo completo en JetBackup (archivos + base) y <strong>esperar a que termine</strong></label></li>
+      <li><input type="checkbox" id="c102"><label for="c102">Anotar la hora del punto de restauración<small>Es tu única marcha atrás real. Escríbela aquí mismo o en tus notas.</small></label></li>
+    </ul>
+    <div class="aviso aviso--peligro">
+      <b>El respaldo tiene que ser de HOY, no uno anterior al 08/08</b>
+      <p style="margin-bottom:0">El cliente lleva trabajando dentro de la tienda: 77 fotos, 18 productos
+      nuevos, banners. Restaurar un punto viejo <strong>le borra todo eso</strong>. Si algo sale mal
+      esta noche, el punto al que se vuelve es el que acabas de crear.</p>
+    </div>
+  </div>
+</section>
+
+<section class="paso" id="p2" data-ix="Cachés off + mantenimiento">
+  <div class="paso__cab">
+    <div class="paso__n">2</div>
+    <div class="paso__t">
+      <h2>Apagar la caché de Smarty y confirmar el mantenimiento</h2>
+      <p>phpMyAdmin · <code>14a-caches-off-al-empezar.sql</code></p>
+    </div>
+    <span class="chip chip--sql">SQL</span>
+  </div>
+  <div class="paso__cuerpo">
+    <p>Este es <strong>el paso que hace que lo ya subido empiece a verse</strong>. Sin él, el resto
+    de la noche no cambia nada en pantalla.</p>
+    <div class="cod">
+      <div class="cod__cab"><span>phpMyAdmin → SQL</span><button class="copiar" type="button">Copiar</button></div>
+<pre>UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_SMARTY_FORCE_COMPILE';
+UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SMARTY_CACHE';
+UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SHOP_ENABLE';
+
+SELECT name, value FROM psjy_configuration
+ WHERE name IN ('PS_SHOP_ENABLE', 'PS_SMARTY_CACHE',
+                'PS_SMARTY_FORCE_COMPILE', 'PS_MAINTENANCE_ALLOW_ADMINS')
+ ORDER BY name;</pre>
+    </div>
+    <h3>Tiene que devolver exactamente esto</h3>
+    <div class="tabla"><table>
+      <thead><tr><th>name</th><th class="num">value</th><th>Qué significa</th></tr></thead>
+      <tbody>
+        <tr><td><code>PS_MAINTENANCE_ALLOW_ADMINS</code></td><td class="num">1</td><td>Tú sigues viendo la tienda con tu sesión de admin; el público ve el aviso</td></tr>
+        <tr><td><code>PS_SHOP_ENABLE</code></td><td class="num">0</td><td>Cerrada. Ya lo estaba, se confirma</td></tr>
+        <tr><td><code>PS_SMARTY_CACHE</code></td><td class="num">0</td><td>Sin caché de salida</td></tr>
+        <tr><td><code>PS_SMARTY_FORCE_COMPILE</code></td><td class="num">1</td><td><strong>La clave.</strong> Vuelve a compilar las plantillas en cada visita</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c201"><label for="c201">Ejecutado, y las cuatro filas salen con esos valores</label></li>
+      <li><input type="checkbox" id="c202"><label for="c202">Confirmado en <strong>ventana de incógnito</strong> que sale el aviso de mantenimiento</label></li>
+    </ul>
+    <div class="aviso">
+      <b>Mientras esto esté a 1 la tienda va más lenta</b>
+      <p style="margin-bottom:0">Es a propósito y dura solo el despliegue: recompila en cada visita.
+      En el paso 10 se devuelve a producción con <code>14b</code>. No dejes la noche a medias con
+      esto encendido.</p>
+    </div>
+
+    <div class="aviso aviso--ok">
+      <b>Si cerraste la tienda «también para el admin»: NO estás bloqueado</b>
+      <p>El mantenimiento <strong>solo afecta al front</strong>.
+      <code>displayMaintenancePage()</code> vive en <code>FrontController.php:801</code>;
+      <code>AdminController</code> lee <code>PS_SHOP_ENABLE</code> únicamente para pintar el aviso
+      amarillo de arriba. <strong>Al back office se entra igual</strong>:
+      <code>https://www.importtoolsas.com/panel-4h5o/</code> — <strong>con www</strong>.</p>
+      <p style="margin-bottom:0">Para volver a ver el front hacen falta <strong>las dos cosas a la
+      vez</strong> (<code>Tools::isAllowedToBypassMaintenance()</code>): la cookie
+      <code>psAdmin</code> con un empleado dentro <strong>y</strong>
+      <code>PS_MAINTENANCE_ALLOW_ADMINS = 1</code>. Entrar al panel te da la primera; esta consulta,
+      la segunda.</p>
+    </div>
+    <div class="cod">
+      <div class="cod__cab"><span>phpMyAdmin → recuperar la vista del front</span><button class="copiar" type="button">Copiar</button></div>
+<pre>UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_MAINTENANCE_ALLOW_ADMINS';
+
+SELECT name, value FROM psjy_configuration
+ WHERE name IN ('PS_SHOP_ENABLE', 'PS_MAINTENANCE_ALLOW_ADMINS');</pre>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c203"><label for="c203">Sesión del panel abierta otra vez y <code>PS_MAINTENANCE_ALLOW_ADMINS</code> en <strong>1</strong></label></li>
+    </ul>
+    <div class="aviso aviso--trampa">
+      <b>La otra salida es tu IP — pero ahí hay que INSERTAR, no actualizar</b>
+      <p style="margin-bottom:0">La fila <code>PS_MAINTENANCE_IP</code> <strong>no existe</strong> en
+      esta base (comprobado: 0 filas). Un <code>UPDATE</code> sobre ella no haría nada
+      <strong>y no avisaría</strong>. Si la quieres —va bien cuando la sesión se cae sola—, mira tu IP
+      pública y ejecuta:</p>
+      <div class="cod" style="margin-bottom:0">
+        <div class="cod__cab"><span>Solo si la necesitas</span><button class="copiar" type="button">Copiar</button></div>
+<pre>INSERT INTO psjy_configuration (id_shop_group, id_shop, name, value, date_add, date_upd)
+VALUES (NULL, NULL, 'PS_MAINTENANCE_IP', 'PON.AQUI.TU.IP', NOW(), NOW());</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="paso" id="p3" data-ix="Rematar los ficheros">
+  <div class="paso__cab">
+    <div class="paso__n">3</div>
+    <div class="paso__t">
+      <h2>Rematar los ficheros: comprobar y borrar los zips</h2>
+      <p>Administrador de archivos de cPanel</p>
+    </div>
+    <span class="chip chip--peligro">Seguridad</span>
+  </div>
+  <div class="paso__cuerpo">
+    <div class="aviso aviso--peligro">
+      <b>Borra los zips de <code>themes/</code> en cuanto extraigas</b>
+      <p style="margin-bottom:0">El <code>.htaccess</code> de esa carpeta <strong>permite servir
+      <code>.zip</code></strong>: está comprobado, se descargó uno de 9,25 MB con HTTP 200. Mientras
+      siga ahí, cualquiera con la URL se lleva el tema comercial completo. Del despliegue anterior
+      quedó uno: bórralo también.</p>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c301"><label for="c301">Borrados <strong>todos</strong> los <code>.zip</code> de <code>public_html/themes/</code>, incluido el de la ronda anterior</label></li>
+      <li><input type="checkbox" id="c302"><label for="c302">Borrados los <code>.zip</code> sueltos de <code>public_html/</code> y <code>public_html/modules/</code></label></li>
+    </ul>
+
+    <h3>Puntos de referencia: si estos ocho existen, la extracción salió bien</h3>
+    <div class="tabla"><table>
+      <thead><tr><th>Ruta bajo <code>public_html/</code></th><th class="num">Bytes</th></tr></thead>
+      <tbody>
+        <tr><td><code>themes/vt_autosoe_child/config/theme.yml</code></td><td class="num">—</td></tr>
+        <tr><td><code>themes/vt_autosoe_child/assets/css/custom.css</code></td><td class="num">83.786</td></tr>
+        <tr><td><code>themes/vt_autosoe_child/assets/js/custom.js</code></td><td class="num">20.030</td></tr>
+        <tr><td><code>themes/vt_autosoe_child/modules/leoelements/views/templates/front/products/plist3413072022.tpl</code></td><td class="num">7.796</td></tr>
+        <tr><td><code>themes/vt_autosoe_child/modules/blockgrouptop/views/templates/hook/blockgrouptop.tpl</code></td><td class="num">7.953</td></tr>
+        <tr><td><code>modules/itcotizacion/views/js/arreglo-leoslideshow.js</code></td><td class="num">5.836</td></tr>
+        <tr><td><code>modules/itcotizacion/views/css/cotizacion.css</code></td><td class="num">14.443</td></tr>
+        <tr><td><code>img/it/hero-quienes-somos.jpg</code> · <code>hero-cliente.jpg</code> · <code>ico-asesor.png</code> · <code>ico-correo.png</code></td><td class="num">4 ficheros</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c303"><label for="c303">Los ocho puntos de referencia existen y los tamaños cuadran<small>Si <code>custom.css</code> pesa mucho menos de 83 KB, la extracción no sobrescribió: repite el zip del tema.</small></label></li>
+    </ul>
+
+    <div class="aviso aviso--trampa">
+      <b>Comprobar también los 169 XLIFF, que no van en ningún zip de hoy</b>
+      <p style="margin-bottom:0">Si <code>public_html/translations/es-CO/</code> no existe o tiene
+      menos de 169 ficheros, sube <code>historico/traducciones-EXTRAER-EN-RAIZ.zip</code>. Sin ellos
+      <strong>todo el núcleo cae al inglés</strong>: «There are 3036 products», «Sort by», «Back to
+      top»… Es un fallo que no se nota hasta que lo ve el cliente.</p>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c304"><label for="c304"><code>translations/es-CO/</code> tiene 169 ficheros</label></li>
+    </ul>
+  </div>
+</section>
+
+<section class="paso" id="p4" data-ix="Marcas del menú">
+  <div class="paso__cab">
+    <div class="paso__n">4</div>
+    <div class="paso__t">
+      <h2>Quitar Proto, Irwin y Grainger del menú MARCAS</h2>
+      <p>phpMyAdmin · <code>16-mejoras-cliente-20260808.sql</code></p>
+    </div>
+    <span class="chip chip--sql">SQL</span>
+  </div>
+  <div class="paso__cuerpo">
+    <p>Pega el fichero entero en phpMyAdmin. Imprime el antes y el después. Selecciona
+    <strong>por título, no por id</strong>, así que da igual que el espejo y producción no coincidan.</p>
+    <div class="cod">
+      <div class="cod__cab"><span>El núcleo del script</span><button class="copiar" type="button">Copiar</button></div>
+<pre>UPDATE psjy_btmegamenu
+   SET active = 0
+ WHERE id_btmegamenu IN (
+   SELECT id_btmegamenu FROM (
+     SELECT m.id_btmegamenu
+       FROM psjy_btmegamenu m
+       JOIN psjy_btmegamenu_lang ml
+         ON ml.id_btmegamenu = m.id_btmegamenu AND ml.id_lang = 2
+      WHERE m.id_parent = 61 AND ml.title IN ('Proto', 'Irwin', 'Grainger')
+   ) AS t
+ );
+
+SELECT m.id_btmegamenu, ml.title, m.active
+  FROM psjy_btmegamenu m
+  JOIN psjy_btmegamenu_lang ml
+    ON ml.id_btmegamenu = m.id_btmegamenu AND ml.id_lang = 2
+ WHERE m.id_parent = 61 ORDER BY m.position;</pre>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c401"><label for="c401">Ejecutado: Proto, Irwin y Grainger salen con <code>active = 0</code> y los otros cuatro en <code>1</code></label></li>
+    </ul>
+    <div class="aviso aviso--trampa">
+      <b>Se desactivan los ITEMS, nunca el grupo</b>
+      <p>Poner <code>psjy_btmegamenu_group.active = 0</code> <strong>tumba el menú entero</strong>,
+      porque <code>cacheGroupsByFields()</code> es una caché estática compartida: los dos widgets
+      pasan a decir «The Group of LeoBoostrapMenu is not active». Comprobado en su día con prueba A/B.</p>
+      <p style="margin-bottom:0">Y consecuencia ya acordada con el cliente: como el fabricante sigue
+      existiendo, esas tres marcas <strong>siguen saliendo en el filtro lateral y en la ficha</strong>
+      de sus 16 productos.</p>
+    </div>
+  </div>
+</section>
+
+<section class="paso" id="p5" data-ix="Hero (solo informa)">
+  <div class="paso__cab">
+    <div class="paso__n">5</div>
+    <div class="paso__t">
+      <h2>El hero: ejecutar para dejar constancia</h2>
+      <p>phpMyAdmin · <code>22-hero-imagen-demo.sql</code></p>
+    </div>
+    <span class="chip chip--sql">SQL</span>
+  </div>
+  <div class="paso__cuerpo">
+    <p>En producción <strong>este fichero no cambia nada, y así debe ser</strong>. Se ejecuta porque
+    deja impreso el estado del carrusel y porque es el que hace falta si algún día se repuebla desde
+    el volcado del espejo.</p>
+    <h3>Debe terminar diciendo</h3>
+    <div class="cod cod--solo">
+<pre>diapositivas que aun usan una imagen de muestra: 0
+diapositivas ACTIVAS y VACIAS en la portada: 0</pre>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c501"><label for="c501">Ejecutado y los dos recuentos salen a <strong>0</strong></label></li>
+    </ul>
+    <div class="aviso aviso--trampa">
+      <b>Si algún recuento sale distinto de 0, no ejecutes nada más: míralo en el panel</b>
+      <p style="margin-bottom:0">Una diapositiva <em>recién creada y aún sin capas</em> es indistinguible
+      de la vacía de la demo. Como el cliente ya gestiona banners, el script se cambió el 10/08 para
+      <strong>solo listar candidatas</strong>: el <code>UPDATE</code> que las desactivaba está comentado
+      dentro del fichero. Si sale alguna, es probable que sea un banner suyo a medio hacer.</p>
+    </div>
+  </div>
+</section>
+
+<section class="paso" id="p6" data-ix="Un solo SQL: páginas + banners">
+  <div class="paso__cab">
+    <div class="paso__n">6</div>
+    <div class="paso__t">
+      <h2>Las dos páginas del cliente y el arreglo de banners</h2>
+      <p>phpMyAdmin · <code>25-SIN-TERMINAL.sql</code> — un solo pegado</p>
+    </div>
+    <span class="chip chip--sql">SQL</span>
+  </div>
+  <div class="paso__cuerpo">
+    <div class="aviso aviso--ok">
+      <b>No necesitas el Terminal. Este fichero sustituye a los dos scripts PHP</b>
+      <p style="margin-bottom:0">Los pasos que antes pedían línea de comandos
+      (<code>17-contenido-cms-20260808.php</code> y <code>15-arreglo-slideshow.php</code>) están
+      convertidos a SQL dentro de <code>25-SIN-TERMINAL.sql</code>. Se pega entero en phpMyAdmin,
+      como los demás. <strong>Probado ejecutándolo contra el espejo</strong>: se rompió el estado a
+      propósito, se ejecutó, y el HTML quedó <strong>idéntico byte a byte</strong> a los ficheros del
+      repositorio (mismo MD5, 11.610 y 11.840 bytes). Ejecutado dos veces seguidas no rompe nada.</p>
+    </div>
+
+    <h3>Cómo se hace</h3>
+    <ol class="puntos" style="padding-left:22px">
+      <li>cPanel → <strong>phpMyAdmin</strong> → clic en la base de la tienda, en la columna de la izquierda.</li>
+      <li>Pestaña <strong>SQL</strong>.</li>
+      <li>Abre <code>deploy/paquete/25-SIN-TERMINAL.sql</code> en el Bloc de notas, <strong>Ctrl+A</strong>,
+      <strong>Ctrl+C</strong>, y pégalo en el recuadro. → <strong>Continuar</strong>.</li>
+    </ol>
+    <p>Si el fichero se te hace grande para pegar, usa la pestaña <strong>Importar</strong> →
+    <em>Seleccionar archivo</em> → <code>25-SIN-TERMINAL.sql</code> → juego de caracteres
+    <strong>utf-8</strong> → <em>Continuar</em>. Hace exactamente lo mismo.</p>
+
+    <h3>Qué hace, y qué tiene que imprimir</h3>
+    <div class="tabla"><table>
+      <thead><tr><th>Bloque</th><th>Qué hace</th><th>Salida correcta</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A.1</strong></td>
+          <td>Respaldo dentro de la base, en <code>psjy_cms_lang_bk_20260810</code></td>
+          <td><strong>4 filas</strong> (2 páginas × 2 idiomas)</td>
+        </tr>
+        <tr>
+          <td><strong>A.2</strong></td>
+          <td>Tamaño de lo que hay ahora, para compararlo</td>
+          <td>Si NO coincide con A.1, es que ya lo ejecutaste antes</td>
+        </tr>
+        <tr>
+          <td><strong>A.3–A.4</strong></td>
+          <td>Escribe el HTML nuevo de <em>Quiénes somos</em> y <em>Quiero ser cliente</em></td>
+          <td><strong>11.610</strong> bytes en la 4 y <strong>11.840</strong> en la 7</td>
+        </tr>
+        <tr>
+          <td><strong>B.1</strong></td>
+          <td>Registra el hook que carga <code>arreglo-leoslideshow.js</code></td>
+          <td>Antes <code>0</code> → después <strong><code>1</code></strong></td>
+        </tr>
+        <tr>
+          <td><strong>B.2</strong></td>
+          <td>Deja el menú del slideshow abriendo un grupo que sí se ve</td>
+          <td>Lista de grupos con <code>usado_en</code>, y el valor final en <strong>3</strong></td>
+        </tr>
+      </tbody>
+    </table></div>
+
+    <div class="aviso aviso--peligro">
+      <b>El bloque A es el único paso de la noche que puede pisar trabajo del cliente</b>
+      <p style="margin-bottom:0">Reescribe las páginas CMS <strong>4</strong> y <strong>7</strong>. Si el
+      cliente las editó desde el panel, se pierde lo suyo. Por eso lo primero que hace es el respaldo
+      A.1 — y por eso <strong>hay que mirar la salida de A.2</strong>: si los bytes de ahora no son 11.610
+      y 11.840 ni los que tenías antes, alguien tocó esas páginas. Párate y míralo.</p>
+    </div>
+
+    <ul class="lista">
+      <li><input type="checkbox" id="c601"><label for="c601">Pegado el fichero entero en phpMyAdmin y ejecutado sin errores en rojo</label></li>
+      <li><input type="checkbox" id="c602"><label for="c602">A.1 imprime <strong>4 filas</strong> de respaldo</label></li>
+      <li><input type="checkbox" id="c603"><label for="c603">A.4 imprime <strong>11.610</strong> y <strong>11.840</strong> bytes</label></li>
+      <li><input type="checkbox" id="c701"><label for="c701">B.1 pasa de <code>0</code> a <strong><code>1</code></strong></label></li>
+      <li><input type="checkbox" id="c702"><label for="c702">B.2 deja <code>LEOSLIDESHOW_GROUP_DE</code> en <strong>3</strong><small>Estaba en 4 («Slide Home 5»), un grupo que no sale en ninguna página: el cliente editaba banners invisibles.</small></label></li>
+    </ul>
+
+    <div class="aviso aviso--trampa">
+      <b>Esto no se ve hasta que vacíes cachés</b>
+      <p style="margin-bottom:0">PrestaShop guarda la configuración y la lista de hooks en caché. El
+      paso 7 es el que hace que surta efecto. Si miras la tienda ahora mismo y sigue igual, es normal.</p>
+    </div>
+
+    <details>
+      <summary>Por qué el módulo de banners parecía roto, y no lo estaba</summary>
+      <div class="interior">
+        <p>El cliente reportó que <em>Leo Slideshow Configuration</em> «se queda en editing, no
+        actualiza, se bloquea». Descartado por medición, en este orden: <strong>no</strong> son permisos
+        (el perfil 5 tiene <code>ROLE_MOD_MODULE_LEOSLIDESHOW_UPDATE</code>); <strong>no</strong> es un
+        módulo manipulado (idéntico byte a byte al original de ThemeForest); <strong>no</strong> es la
+        versión free. Y el servidor <strong>guarda bien</strong>: <code>slideProcessAjax()</code> responde
+        <code>{"error":0,…}</code> y deja el título en la base.</p>
+        <p>La causa: <code>getModuleConfigUrl()</code> devuelve una URL <strong>absoluta</strong> con
+        <code>PS_SHOP_DOMAIN_SSL</code> = <code>www.importtoolsas.com</code>, y <strong>el cliente entra al
+        panel por <code>importtoolsas.com</code>, sin www</strong>. El AJAX sale a otro origen y el
+        navegador lo bloquea.</p>
+        <p style="margin-bottom:0">Y es mudo porque <code>script.js:495</code> solo define
+        <code>.done()</code>, sin <code>.fail()</code>: una petición bloqueada no produce ni alerta ni
+        consola. El botón se queda igual — literalmente el síntoma que describió. Este arreglo lo tapa;
+        <strong>el paso 8 lo cierra de raíz</strong>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Si aun así quieres usar el Terminal: dónde está y cómo</summary>
+      <div class="interior">
+        <p>En cPanel, escribe <strong>«Terminal»</strong> en el buscador de arriba del todo. Si aparece,
+        está en la sección <em>Avanzado</em>. <strong>Muchos hosting compartidos lo tienen desactivado</strong>;
+        si no sale, no es que lo estés buscando mal — hay que pedírselo a soporte de Latinoamérica Hosting.</p>
+        <p>Con Terminal, sube <code>deploy/paquete/</code> completo dentro de <code>public_html/</code>
+        (los scripts buscan <code>config/config.inc.php</code> subiendo carpetas, así que fuera del
+        docroot no lo encuentran) y ejecuta:</p>
+        <div class="cod">
+          <div class="cod__cab"><span>cPanel → Terminal</span><button class="copiar" type="button">Copiar</button></div>
+<pre>cd ~/public_html
+/usr/local/bin/ea-php85 deploy/paquete/17-contenido-cms-20260808.php --simular
+/usr/local/bin/ea-php85 deploy/paquete/17-contenido-cms-20260808.php
+/usr/local/bin/ea-php85 deploy/paquete/15-arreglo-slideshow.php</pre>
+        </div>
+        <p><strong>Hay una tercera vía sin Terminal ni SQL:</strong> cPanel → <em>Trabajos cron</em>, crear
+        uno para dentro de dos minutos con ese mismo comando y <code>&gt; ~/salida.txt 2&gt;&amp;1</code> al
+        final, y borrarlo después. Funciona, pero para lo de esta noche el SQL es más directo.</p>
+        <div class="aviso aviso--peligro" style="margin-bottom:0">
+          <b>Si usas el Terminal, borra <code>deploy/</code> del servidor al terminar</b>
+          <p style="margin-bottom:0">Un <code>.php</code> que carga <code>config.inc.php</code> y está bajo
+          el docroot es alcanzable por URL sin autenticación. Es exactamente el problema que tuvieron
+          <code>_inv.php</code>, <code>_q.php</code> y <code>_sn.php</code>. <strong>Con la vía SQL este
+          riesgo no existe</strong>: no subes ningún PHP.</p>
+        </div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section class="paso" id="p7" data-ix="Vaciar cachés">
+  <div class="paso__cab">
+    <div class="paso__n">7</div>
+    <div class="paso__t">
+      <h2>Vaciar cachés</h2>
+      <p>Una consulta + cuatro carpetas + LiteSpeed</p>
+    </div>
+    <span class="chip chip--sql">SQL + ficheros</span>
+  </div>
+  <div class="paso__cuerpo">
+    <div class="aviso aviso--trampa">
+      <b>Vaciar carpetas no basta: el CSS de Elementor vive en la base</b>
+      <p style="margin-bottom:0"><code>psjy_leoelements_meta</code> guarda el CSS generado con
+      <code>name = '_elementor_css_id_lang_N'</code>. Vaciar <code>var/cache/</code>,
+      <code>assets/cache/</code> y <code>gencode/</code> <strong>no lo invalida</strong>: el front seguía
+      sirviendo URLs viejas con la base ya limpia.</p>
+    </div>
+    <div class="cod">
+      <div class="cod__cab"><span>phpMyAdmin → SQL</span><button class="copiar" type="button">Copiar</button></div>
+<pre>DELETE FROM psjy_leoelements_meta WHERE name LIKE '%elementor_css%';</pre>
+    </div>
+    <h3>Y estas cuatro carpetas, desde el Administrador de archivos</h3>
+    <div class="cod cod--solo">
+<pre>var/cache/prod/smarty/compile/            ← la que de verdad importa
+var/cache/                                (todo)
+themes/vt_autosoe_child/assets/cache/     (todo; la carpeta se queda)
+modules/leoelements/gencode/LeoGenCode_*.html</pre>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c801"><label for="c801"><code>DELETE</code> del CSS de Elementor ejecutado</label></li>
+      <li><input type="checkbox" id="c802"><label for="c802">Las cuatro carpetas vaciadas <strong>con tu usuario de cPanel</strong>, nunca como root</label></li>
+      <li><input type="checkbox" id="c803"><label for="c803">LiteSpeed purgado (cPanel → LiteSpeed Web Cache Manager → <em>Flush All</em>)</label></li>
+      <li><input type="checkbox" id="c804"><label for="c804">Cargada la portada una vez y esperados los ~57 s de la primera compilación</label></li>
+    </ul>
+    <div class="aviso">
+      <b>La primera página después tarda ~57 s. Medido, y ocurre una sola vez</b>
+      <p style="margin-bottom:0">Las siguientes van a 0,3–0,5 s. <strong>No vacíes la caché justo antes
+      de enseñarle la tienda al cliente</strong>: cárgala tú una vez primero. Y si aparecen HTTP 500
+      intermitentes con <code>SmartyException: unable to create directory</code>, es caché escrita por
+      otro usuario: borra <code>var/cache/</code> otra vez y deja que la reconstruya la primera visita.</p>
+    </div>
+  </div>
+</section>
+
+<section class="paso" id="p8" data-ix="301 a un solo dominio">
+  <div class="paso__cab">
+    <div class="paso__n">8</div>
+    <div class="paso__t">
+      <h2>Un solo dominio, con 301 de servidor</h2>
+      <p><code>.htaccess</code> de <code>public_html</code></p>
+    </div>
+    <span class="chip chip--peligro">Recomendado hoy</span>
+  </div>
+  <div class="paso__cuerpo">
+    <p>Es fácil creer que esto ya está resuelto, porque <code>https://importtoolsas.com/</code> responde
+    302 hacia www. <strong>Medido el 09/08, no lo está</strong>: ese 302 lo hace PrestaShop desde PHP,
+    no el servidor, así que <strong>solo cubre el front-office</strong>.</p>
+    <div class="tabla"><table>
+      <thead><tr><th>Petición sin www</th><th>Qué hace hoy</th></tr></thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>302 → www</td></tr>
+        <tr><td><code>/17-herramientas-electricas</code></td><td>302 → www</td></tr>
+        <tr><td><code>/img/it/slide-1.jpg</code></td><td><strong>200. No redirige</strong></td></tr>
+        <tr><td><code>/panel-4h5o/</code></td><td><strong>200, el back office carga entero sin www</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p>Es decir: la condición que rompe el AJAX de los módulos Leo <strong>sigue viva justo donde el
+    cliente trabaja</strong>. El paso 6 lo tapa; esto lo cierra.</p>
+    <h3>Cómo abrir el <code>.htaccess</code> en cPanel (no se abre con doble clic)</h3>
+    <div class="aviso aviso--trampa">
+      <b>El doble clic en el Administrador de archivos NO abre: descarga</b>
+      <p style="margin-bottom:0">Por eso «no pasa nada» al pulsarlo dos veces. Y no lo edites desde los
+      resultados del buscador: navega a la carpeta.</p>
+    </div>
+    <ol class="puntos" style="padding-left:22px">
+      <li>Administrador de archivos → botón <strong>Configuración</strong> (arriba a la derecha) →
+      marcar <strong>«Mostrar archivos ocultos (dotfiles)»</strong> → Guardar. Sin esto el
+      <code>.htaccess</code> ni aparece en el listado.</li>
+      <li>Entra a <code>public_html</code> navegando por el árbol.</li>
+      <li><strong>Un solo clic</strong> sobre <code>.htaccess</code> para seleccionarlo (se pone azul).</li>
+      <li>Botón <strong>Editar</strong> de la barra de arriba —o clic derecho → <em>Edit</em>—. Si sale
+      el aviso de codificación, <em>utf-8</em> y continuar.</li>
+    </ol>
+    <p>Si aun así no te deja: descárgalo, edítalo en el Bloc de notas y súbelo encima. O usa
+    cPanel → <strong>Dominios → Redirecciones</strong>, que escribe la regla por ti (elige
+    <em>Permanente 301</em> y comprueba después las cuatro filas de la tabla de arriba, porque las
+    opciones de www de esa pantalla se confunden con facilidad).</p>
+
+    <div class="aviso aviso--peligro">
+      <b>Antes de tocarlo, haz una copia: <code>.htaccess.bak</code></b>
+      <p style="margin-bottom:0">Una regla mal escrita deja <strong>toda la tienda en HTTP 500</strong>,
+      front y panel incluidos. Con la copia se deshace en diez segundos.</p>
+    </div>
+
+    <h3>Dónde va exactamente</h3>
+    <p>En <strong>la línea 1</strong>, por <strong>encima</strong> de
+    <code># ~~start~~</code>. En este <code>.htaccess</code> ese marcador es literalmente la primera
+    línea del fichero: hay que empujarlo hacia abajo.</p>
+    <div class="cod">
+      <div class="cod__cab"><span>public_html/.htaccess · pegar en lo más alto del fichero</span><button class="copiar" type="button">Copiar</button></div>
+<pre># --- Un solo dominio: sin www -> con www (301 de servidor) ---
+&lt;IfModule mod_rewrite.c&gt;
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^importtoolsas\.com$ [NC]
+RewriteRule ^(.*)$ https://www.importtoolsas.com/$1 [R=301,L]
+&lt;/IfModule&gt;
+
+# ~~start~~ Do not remove this comment, Prestashop will keep automatically…</pre>
+    </div>
+    <div class="aviso">
+      <b>Va envuelta en <code>&lt;IfModule mod_rewrite.c&gt;</code> a propósito</b>
+      <p style="margin-bottom:0">Una directiva <code>RewriteEngine</code> suelta, si algún día el
+      módulo no estuviera cargado, devuelve <strong>HTTP 500 en toda la tienda</strong>. Dentro del
+      <code>IfModule</code>, en ese caso simplemente no se aplica. Es lo que hace PrestaShop con las
+      suyas.</p>
+    </div>
+
+    <h3>Probado antes de dártelo</h3>
+    <p>Se levantó un Apache de usar y tirar con <strong>tu <code>.htaccess</code> de producción tal
+    cual</strong>, con y sin la regla, y se pidieron las mismas URL cambiando la cabecera
+    <code>Host</code>:</p>
+    <div class="tabla"><table>
+      <thead><tr><th>Petición</th><th>Hoy (sin la regla)</th><th>Con la regla</th></tr></thead>
+      <tbody>
+        <tr><td><code>importtoolsas.com/</code></td><td>—</td><td><strong>301</strong> → <code>https://www.importtoolsas.com/</code></td></tr>
+        <tr><td><code>importtoolsas.com/17-herramientas-electricas</code></td><td>—</td><td><strong>301</strong>, con la ruta intacta</td></tr>
+        <tr><td><code>importtoolsas.com/img/it/slide-1.jpg</code></td><td><strong>200</strong>, no redirige</td><td><strong>301</strong></td></tr>
+        <tr><td><code>importtoolsas.com/panel-4h5o/</code></td><td><strong>200</strong>, back office sin www</td><td><strong>301</strong></td></tr>
+        <tr><td><code>importtoolsas.com/?buscar=taladro&amp;page=2</code></td><td>—</td><td><strong>301</strong>, conserva la query</td></tr>
+        <tr><td><code>IMPORTTOOLSAS.COM/</code> (mayúsculas)</td><td>—</td><td><strong>301</strong> — el <code>[NC]</code> funciona</td></tr>
+        <tr><td><code>www.importtoolsas.com/</code></td><td>igual</td><td><strong>sin redirigir</strong> — no hay bucle</td></tr>
+        <tr><td><code>www.importtoolsas.com/67-home_default/x.jpg</code></td><td>200</td><td><strong>200</strong>, sirve <code>img/p/6/7/…</code></td></tr>
+      </tbody>
+    </table></div>
+    <p>Las dos filas de «hoy» reproducen exactamente lo que se midió contra la tienda real el 09/08,
+    así que la prueba es fiel. <strong>Con www no aparece ni un 301</strong>: descartado el bucle, que
+    es el único fallo de esta regla capaz de tumbar el sitio.</p>
+    <div class="aviso aviso--trampa">
+      <b>Un matiz honesto: la prueba fue en Apache y tu hosting es LiteSpeed</b>
+      <p style="margin-bottom:0">LiteSpeed lee <code>.htaccess</code> e implementa las mismas
+      directivas, así que el comportamiento debería ser idéntico — pero no es el mismo binario.
+      Por eso las cuatro comprobaciones de abajo van igual, sobre el servidor de verdad.</p>
+    </div>
+    <div class="aviso aviso--ok">
+      <b>Ponerla ahí arriba es lo que hace que sobreviva</b>
+      <p style="margin-bottom:0">PrestaShop reescribe este fichero solo cada vez que guardas
+      <em>Tráfico y SEO</em>. <code>Tools::generateHtaccess()</code> hace
+      <code>preg_match('#^(.*)\# ~~start~~.*\# ~~end~~[^\n]*(.*)$#s')</code> y <strong>conserva el
+      grupo 1</strong> —todo lo anterior al marcador— y el grupo 2. Comprobado leyendo
+      <code>classes/Tools.php:2116</code>, no supuesto. Si la metes <em>dentro</em> del bloque, el día
+      que el cliente guarde una opción de SEO tu regla desaparece sin que nadie se entere.</p>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="c900"><label for="c900">Copia <code>.htaccess.bak</code> hecha</label></li>
+      <li><input type="checkbox" id="c901"><label for="c901">Regla puesta en la línea 1, <strong>por encima</strong> de <code># ~~start~~</code></label></li>
+      <li><input type="checkbox" id="c902"><label for="c902">Las cuatro filas de la tabla dan ahora <strong>301</strong> hacia www</label></li>
+      <li><input type="checkbox" id="c903"><label for="c903">La tienda y el panel siguen cargando (no hay 500 ni bucle de redirección)</label></li>
+    </ul>
+    <details>
+      <summary>Y una tercera consecuencia, de rendimiento: cada foto arranca PHP</summary>
+      <div class="interior">
+        <p><code>Tools::generateHtaccess()</code> <strong>escribe el dominio dentro del
+        <code>.htaccess</code></strong>: cada regla de imagen de producto va precedida de
+        <code>RewriteCond %{HTTP_HOST} ^www.importtoolsas.com$</code>. Por el dominio sin www la
+        reescritura no ocurre.</p>
+        <div class="tabla"><table>
+          <thead><tr><th>Petición de una foto real</th><th>Resultado</th></tr></thead>
+          <tbody>
+            <tr><td><code>www.importtoolsas.com/67-home_default/….jpg</code></td><td><strong>200</strong>, 26.172 bytes, directo</td></tr>
+            <tr><td><code>importtoolsas.com/67-home_default/….jpg</code></td><td><strong>302</strong> → www, y siguiéndolo, 200</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-bottom:0">O sea: <strong>no se rompen</strong> —corrijo lo que yo mismo escribí
+        antes de medirlo—, pero cada foto pasa por el dispatcher de PrestaShop para acabar redirigida.
+        Una página con 30 fotos son <strong>30 arranques de PHP</strong> en vez de 30 ficheros estáticos.
+        Es rendimiento, no imágenes rotas, y el 301 lo elimina.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section class="paso" id="p9" data-ix="Comprobaciones">
+  <div class="paso__cab">
+    <div class="paso__n">9</div>
+    <div class="paso__t">
+      <h2>Comprobar — solo lo que cambia en esta subida</h2>
+      <p>Con tu sesión de admin abierta, la tienda aún cerrada</p>
+    </div>
+    <span class="chip chip--ok">21 puntos</span>
+  </div>
+  <div class="paso__cuerpo">
+
+    <h3>Centinelas: ¿se está sirviendo lo nuevo o lo viejo?</h3>
+    <p>Es la única forma de descartar la trampa de <code>compile_check</code>. Los ficheros estáticos
+    (CSS y JS) responden aunque la tienda esté en mantenimiento; los de HTML hazlos en el navegador
+    donde tienes la sesión abierta.</p>
+    <div class="cod">
+      <div class="cod__cab"><span>PowerShell, desde tu equipo</span><button class="copiar" type="button">Copiar</button></div>
+<pre># 1) El JS del arreglo debe existir. Hoy da 404; tiene que dar 200.
+try { (Invoke-WebRequest "https://www.importtoolsas.com/modules/itcotizacion/views/js/arreglo-leoslideshow.js" -UseBasicParsing).StatusCode }
+catch { $_.Exception.Response.StatusCode.value__ }
+
+# 2) El azul marino tiene que haber desaparecido: los tres en #000
+((Invoke-WebRequest "https://www.importtoolsas.com/modules/itcotizacion/views/css/cotizacion.css" -UseBasicParsing).Content -split "`n") |
+  Select-String -- "--itc-(boton|navy|tinta):"</pre>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="cA01"><label for="cA01"><code>arreglo-leoslideshow.js</code> devuelve <strong>200</strong> (antes 404)</label></li>
+      <li><input type="checkbox" id="cA02"><label for="cA02"><code>--itc-boton</code>, <code>--itc-navy</code> y <code>--itc-tinta</code> dicen <strong><code>#000</code></strong><small>Si alguno sigue en <code>#1F3864</code> o <code>#16202E</code> se está sirviendo el CSS viejo: vuelve al paso 7.</small></label></li>
+      <li><input type="checkbox" id="cA03"><label for="cA03">En la portada, el código fuente contiene <code>product-miniature--sin-foto</code> (antes 0 veces)</label></li>
+    </ul>
+
+    <h3>Escritorio, a 1440 px</h3>
+    <ul class="lista">
+      <li><input type="checkbox" id="cB01"><label for="cB01">Los productos sin foto muestran <strong>«Referencia» + código + marca</strong>, no «Imagen no disponible»</label></li>
+      <li><input type="checkbox" id="cB02"><label for="cB02">Las tarjetas con y sin foto <strong>miden lo mismo</strong> y las filas no quedan escalonadas</label></li>
+      <li><input type="checkbox" id="cB03"><label for="cB03">Barra superior: los cuatro textos con <strong>icono rojo</strong> delante</label></li>
+      <li><input type="checkbox" id="cB04"><label for="cB04"><strong>Ya no está</strong> la franja «Carrera Cordialidad… · +57… · Lun a vie…» bajo el menú</label></li>
+      <li><input type="checkbox" id="cB05"><label for="cB05">Menú MARCAS: solo <strong>Nikato, Dragon Tools, Proweld y Ventum</strong></label></li>
+      <li><input type="checkbox" id="cB06"><label for="cB06">Panel de la cuenta: abre <strong>con clic y con tabulador</strong>; la cotización va antes que los favoritos</label></li>
+      <li><input type="checkbox" id="cB07"><label for="cB07">Ficha de producto: «AGREGAR A MI COTIZACIÓN» en <strong>negro</strong>, y <strong>rojo</strong> al pasar el ratón</label></li>
+      <li><input type="checkbox" id="cB08"><label for="cB08">Página de cotización: banda de cabecera negra, títulos negros, enlaces negros</label></li>
+      <li><input type="checkbox" id="cB09"><label for="cB09"><em>Quiénes somos</em>: foto real arriba · la tarjeta del ventilador dice <strong>«Ventiladores industriales»</strong> y lleva a <code>/24-ventiladores-industriales</code> · banda <strong>«Sé nuestro cliente»</strong></label></li>
+      <li><input type="checkbox" id="cB10"><label for="cB10"><em>Quiero ser cliente</em>: foto real arriba · botón <strong>«Dejar mis datos»</strong> en el paso 02</label></li>
+      <li><input type="checkbox" id="cB11"><label for="cB11">Pasar el ratón por una ficha dice <strong>«Vista rápida»</strong>, no «Quick view»</label></li>
+    </ul>
+
+    <h3>Móvil, a 390 px</h3>
+    <ul class="lista">
+      <li><input type="checkbox" id="cC01"><label for="cC01">Sin desplazamiento horizontal en ninguna página</label></li>
+      <li><input type="checkbox" id="cC02"><label for="cC02">Los iconos rojos de la barra superior se ven</label></li>
+      <li><input type="checkbox" id="cC03"><label for="cC03">El menú entra <strong>por la derecha</strong> y se cierra tocando fuera o con Escape</label></li>
+    </ul>
+
+    <h3>Back office</h3>
+    <ul class="lista">
+      <li><input type="checkbox" id="cD01"><label for="cD01">Diseño → <strong>Leo Slideshow Configuration</strong> abre «Slide Home 3»</label></li>
+      <li><input type="checkbox" id="cD02"><label for="cD02">Editar un banner, cambiar el título y <strong>guardar</strong>: recarga y el cambio queda</label></li>
+      <li><input type="checkbox" id="cD03"><label for="cD03">Lo mismo <strong>subiendo una imagen</strong>. Si falla, ahora sale aviso rojo en pantalla</label></li>
+      <li><input type="checkbox" id="cD04"><label for="cD04">Repetido entrando por <code>importtoolsas.com</code> <strong>sin www</strong><small>Con el 301 del paso 8 ni siquiera deberías poder quedarte ahí.</small></label></li>
+    </ul>
+
+    <h3>Las fotos del cliente siguen ahí</h3>
+    <div class="aviso aviso--peligro">
+      <b>Esta es la comprobación que más importa esta noche</b>
+      <p style="margin-bottom:0">La plantilla nueva decide por <code>{if !$product.cover}</code>. Si algo
+      va mal, taparía con «Referencia» fotos que existen. Los <strong>13 productos con foto</strong>
+      tienen que seguir mostrándola.</p>
+    </div>
+    <div class="cod">
+      <div class="cod__cab"><span>PowerShell</span><button class="copiar" type="button">Copiar</button></div>
+<pre>$u = "https://www.importtoolsas.com/2-catalogo?resultsPerPage=100&amp;page=30"
+$h = (Invoke-WebRequest $u -UseBasicParsing -WebSession $s).Content
+([regex]::Matches($h,"product-miniature--sin-foto")).Count   # debe ser 18, NO 29</pre>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="cE01"><label for="cE01">En la página 30 del catálogo: <strong>18 tarjetas sin foto y 11 con foto</strong><small>Si salen 29, la plantilla nueva está tapando fotos que existen: no abras la tienda y vuelve atrás.</small></label></li>
+      <li><input type="checkbox" id="cE02"><label for="cE02">Abrir el ventilador <code>3020</code> y ver su foto real en la ficha</label></li>
+    </ul>
+  </div>
+</section>
+
+<section class="paso" id="p10" data-ix="Cerrar y abrir la tienda">
+  <div class="paso__cab">
+    <div class="paso__n">10</div>
+    <div class="paso__t">
+      <h2>Cachés a producción y abrir la tienda</h2>
+      <p><code>14b</code> → vaciar caché una vez más → <code>14c</code></p>
+    </div>
+    <span class="chip chip--peligro">Irreversible a la vista</span>
+  </div>
+  <div class="paso__cuerpo">
+    <p>Solo cuando el paso 9 esté en verde. Va en este orden y con un vaciado de caché en medio.</p>
+    <div class="cod">
+      <div class="cod__cab"><span>1 · 14b — cachés a valores de producción</span><button class="copiar" type="button">Copiar</button></div>
+<pre>UPDATE psjy_configuration SET value = '0' WHERE name = 'PS_SMARTY_FORCE_COMPILE';
+UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_SMARTY_CACHE';
+UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_CSS_THEME_CACHE';
+UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_JS_THEME_CACHE';
+
+SELECT name, value FROM psjy_configuration
+ WHERE name IN ('PS_CSS_THEME_CACHE', 'PS_JS_THEME_CACHE', 'PS_SMARTY_CACHE',
+                'PS_SMARTY_FORCE_COMPILE', 'PS_SHOP_ENABLE')
+ ORDER BY name;</pre>
+    </div>
+    <div class="aviso aviso--trampa">
+      <b>Hay que vaciar <code>var/cache/</code> UNA VEZ MÁS después de esto</b>
+      <p style="margin-bottom:0">Al volver <code>PS_SMARTY_FORCE_COMPILE</code> a 0, <strong>lo primero
+      que se compile queda congelado</strong>. Si no vacías ahora, se congela lo que había a medias.
+      Vacía, carga la portada tú (otros ~57 s) y míralas: portada, catálogo, una ficha, las dos CMS.</p>
+    </div>
+    <div class="cod">
+      <div class="cod__cab"><span>2 · 14c — abrir la tienda</span><button class="copiar" type="button">Copiar</button></div>
+<pre>UPDATE psjy_configuration SET value = '1' WHERE name = 'PS_SHOP_ENABLE';
+
+SELECT name, value FROM psjy_configuration WHERE name = 'PS_SHOP_ENABLE';</pre>
+    </div>
+    <ul class="lista">
+      <li><input type="checkbox" id="cF01"><label for="cF01"><code>14b</code> ejecutado: <code>PS_SHOP_ENABLE</code> sigue en <strong>0</strong> y los otros cuatro correctos</label></li>
+      <li><input type="checkbox" id="cF02"><label for="cF02"><code>var/cache/</code> vaciado otra vez y portada cargada por ti</label></li>
+      <li><input type="checkbox" id="cF03"><label for="cF03">Repaso a ojo: portada, <code>/2-catalogo</code>, una ficha, <em>Quiénes somos</em>, <em>Quiero ser cliente</em></label></li>
+      <li><input type="checkbox" id="cF04" data-abre="1"><label for="cF04"><strong>Tienda abierta</strong> con <code>14c</code> y confirmado en ventana de incógnito</label></li>
+      <li><input type="checkbox" id="cF05"><label for="cF05">Avisado al cliente de que ya puede mirar</label></li>
+    </ul>
+  </div>
+</section>
+
+<hr class="sep">
+
+<section class="paso" id="atras">
+  <div class="paso__cab">
+    <div class="paso__n">↩</div>
+    <div class="paso__t">
+      <h2>Marcha atrás</h2>
+      <p>De lo más acotado a lo más gordo</p>
+    </div>
+  </div>
+  <div class="paso__cuerpo">
+    <div class="tabla"><table>
+      <thead><tr><th>Qué</th><th>Cómo</th></tr></thead>
+      <tbody>
+        <tr><td>Marcas del menú</td><td><code>UPDATE psjy_btmegamenu SET active = 1 WHERE id_parent = 61;</code></td></tr>
+        <tr><td>Las dos páginas CMS</td><td><code>UPDATE psjy_cms_lang c JOIN psjy_cms_lang_bk_20260810 b ON b.id_cms=c.id_cms AND b.id_lang=c.id_lang SET c.content=b.content WHERE c.id_cms IN (4,7);</code></td></tr>
+        <tr><td>Hero</td><td><code>UPDATE psjy_leoslideshow_slides SET active = 1 WHERE id_group IN (3,5);</code></td></tr>
+        <tr><td>Arreglo del slideshow</td><td>La marcha atrás está comentada al final del bloque B de <code>25-SIN-TERMINAL.sql</code></td></tr>
+        <tr><td>El azul del botón</td><td>Una línea: <code>--itc-boton</code> a <code>#1F3864</code> en <code>cotizacion.css</code></td></tr>
+        <tr><td>CSS/JS del tema</td><td>Volver a subir los del respaldo de JetBackup</td></tr>
+        <tr><td><strong>Todo</strong></td><td>Restaurar el punto de JetBackup del paso 1 — <strong>el de hoy</strong></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="paso" id="nopisar">
+  <div class="paso__cab">
+    <div class="paso__n">!</div>
+    <div class="paso__t">
+      <h2>Datos que ha metido el cliente y no se pueden pisar</h2>
+      <p>Auditoría del 10/08 sobre la tienda en línea</p>
+    </div>
+    <span class="chip chip--peligro">Leer</span>
+  </div>
+  <div class="paso__cuerpo">
+    <p>La tienda <strong>dejó de ser un espejo del volcado de julio el día que se publicó</strong>. Hay
+    datos que solo existen en producción.</p>
+    <div class="tabla"><table>
+      <thead><tr><th>Qué</th><th class="num">Cuánto</th></tr></thead>
+      <tbody>
+        <tr><td>Productos con foto</td><td class="num">13 · 77 imágenes</td></tr>
+        <tr><td>Ficheros de imagen en disco</td><td class="num">100</td></tr>
+        <tr><td>Imágenes huérfanas</td><td class="num">23</td></tr>
+        <tr><td>Imágenes rotas</td><td class="num">0</td></tr>
+        <tr><td>Productos nuevos creados por el cliente</td><td class="num">18</td></tr>
+        <tr><td>Productos fuera de la categoría <code>Catálogo</code></td><td class="num">107</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Verificado uno a uno: ningún paso de esta noche los toca</h3>
+    <div class="tabla"><table>
+      <thead><tr><th>Paso</th><th>Riesgo</th><th>Por qué</th></tr></thead>
+      <tbody>
+        <tr><td><code>img-importtools.zip</code></td><td><strong>Ninguno</strong></td><td>El zip tiene <strong>0 entradas bajo <code>p/</code></strong>: solo <code>it/</code>, <code>m/</code> y 6 ficheros de raíz. No puede alcanzar las fotos de producto</td></tr>
+        <tr><td>Zip del tema</td><td><strong>Ninguno</strong></td><td>No contiene nada de <code>img/</code></td></tr>
+        <tr><td>Plantillas nuevas de listado</td><td><strong>Ninguno</strong></td><td>La condición es <code>{if !$product.cover}</code>: los 13 con foto siguen por la rama de siempre</td></tr>
+        <tr><td><code>16-…sql</code></td><td><strong>Ninguno</strong></td><td>Solo <code>UPDATE psjy_btmegamenu</code></td></tr>
+        <tr><td><code>25-…sql</code> bloque A</td><td><strong>Sí, acotado</strong></td><td>Reescribe las páginas CMS 4 y 7. Mirar la salida de A.2 (paso 6)</td></tr>
+        <tr><td><code>22-…sql</code></td><td><strong>Ninguno ya</strong></td><td>Se cambió a solo informar</td></tr>
+        <tr><td><code>25-…sql</code> bloque B</td><td><strong>Ninguno</strong></td><td>Registra un hook y ajusta qué grupo abre el menú</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Lo que sí borraría datos del cliente, y por eso no está en este plan</h3>
+    <ul class="puntos">
+      <li><strong>⛔ <code>02b-limpieza-datos-demo.sql</code></strong> — borra pedidos, carritos, clientes,
+      mensajes, proveedores y estadísticas. Es para preparar un volcado, <strong>no para producción</strong>.</li>
+      <li><strong>⛔ Importar el volcado de entrega</strong> (<code>backups/importtools-FINAL-*.sql.gz</code>).
+      Sobre la producción de hoy se llevaría por delante <strong>las 77 fotos, los 18 productos nuevos y
+      los 107 sin categoría</strong>. Solo vale para un servidor vacío.</li>
+      <li><strong>⚠️ Restaurar un JetBackup anterior al 08/08</strong> — devuelve la tienda a antes del
+      trabajo del cliente.</li>
+      <li><strong>⚠️ Regenerar miniaturas</strong> es seguro (los originales están en disco), pero son 100
+      ficheros y en hosting compartido consume inodos y CPU. Solo si hace falta.</li>
+    </ul>
+
+    <h3>Dos cosas que hay que hablar con el cliente</h3>
+    <ul class="puntos">
+      <li><strong>Los 107 productos fuera de <code>Catálogo</code>.</strong> Existen y son públicos, pero
+      <strong>no aparecen en <code>/2-catalogo</code> ni en los carruseles de la portada</strong>. Ahí están
+      los 18 que él creó. Al dar de alta un producto tiene que marcarle <strong>también la categoría
+      <code>Catálogo</code></strong>, o se queda invisible en la vista general.</li>
+      <li><strong>Las 23 imágenes huérfanas.</strong> Ocupan disco e inodos y no las usa nadie. No corre
+      prisa y no se borran sin preguntar: borrar ficheros de <code>img/p/</code> es irreversible.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="paso" id="manana">
+  <div class="paso__cab">
+    <div class="paso__n">→</div>
+    <div class="paso__t">
+      <h2>Mañana: el correo del dominio</h2>
+      <p><code>20-CORREO-DEL-DOMINIO.md</code> · <code>21-correo-del-dominio.sql</code></p>
+    </div>
+    <span class="chip chip--php">No bloquea hoy</span>
+  </div>
+  <div class="paso__cuerpo">
+    <div class="aviso aviso--trampa">
+      <b>El problema no es que falten cuentas: es que la tienda firma con otro dominio</b>
+      <p style="margin-bottom:0">La tienda vive en <code>importtoolsas.com</code> y manda los correos como
+      <code>ventas@importtoolslatam.com</code>, que ni siquiera está en este cPanel. SPF, DKIM y DMARC
+      miran si quien envía tiene permiso para usar ese remitente, y aquí no lo tiene → Gmail y Outlook lo
+      mandan a spam o lo rechazan. <strong>Por eso «Olvidé mi contraseña» no llega.</strong> No es que
+      PrestaShop no lo envíe.</p>
+    </div>
+    <p><strong>Sobre el import CSV masivo de cuentas:</strong> con <strong>tres</strong> basta y sobra —no
+    hace falta importar nada—. Quedan 19 huecos libres en el plan H2.</p>
+    <div class="tabla"><table>
+      <thead><tr><th>Cuenta</th><th>Para qué</th><th>¿La lee alguien?</th></tr></thead>
+      <tbody>
+        <tr><td><code>no-reply@importtoolsas.com</code></td><td><strong>Remitente</strong> de todo lo automático: registro, recuperación de contraseña, avisos</td><td>No</td></tr>
+        <tr><td><code>ventas@importtoolsas.com</code></td><td><strong>Buzón real</strong>: formulario de contacto y cotizaciones</td><td>Sí, a diario</td></tr>
+        <tr><td><code>info@importtoolsas.com</code></td><td>La que la gente escribe de memoria. Se redirige a <code>ventas@</code></td><td>Por redirección</td></tr>
+      </tbody>
+    </table></div>
+    <p>El remitente va en <code>no-reply@</code> y no en <code>info@</code>: si lo automático sale desde
+    <code>info@</code>, las respuestas de vacaciones y los rebotes acaban mezclados con mensajes de
+    clientes reales.</p>
+    <ul class="lista">
+      <li><input type="checkbox" id="cM01"><label for="cM01">Crear <code>no-reply@</code>, <code>ventas@</code> e <code>info@</code></label></li>
+      <li><input type="checkbox" id="cM02"><label for="cM02"><code>info@</code> reenvía a <code>ventas@</code>; <code>ventas@importtoolsas.com</code> reenvía a <code>ventas@importtoolslatam.com</code></label></li>
+      <li><input type="checkbox" id="cM03"><label for="cM03">cPanel → <em>Email Deliverability</em> → SPF y DKIM en verde (botón <strong>Repair</strong>)</label></li>
+      <li><input type="checkbox" id="cM04"><label for="cM04">TXT de DMARC en <code>_dmarc.importtoolsas.com</code>: <code>v=DMARC1; p=none; rua=mailto:admin_dev@importtoolsas.com; pct=100</code></label></li>
+      <li><input type="checkbox" id="cM05"><label for="cM05">PrestaShop → Parámetros avanzados → Correo → <strong>SMTP</strong>: <code>mail.importtoolsas.com</code>, usuario <code>no-reply@</code>, TLS, puerto <strong>587</strong><small>SMTP y no <code>mail()</code>: con <code>mail()</code> los fallos son mudos, que es justo el «Se ha producido un error al enviar el mensaje» de las pruebas.</small></label></li>
+      <li><input type="checkbox" id="cM06"><label for="cM06">Ejecutar <code>21-correo-del-dominio.sql</code> (cambia <code>PS_SHOP_EMAIL</code> y los dos buzones)</label></li>
+      <li><input type="checkbox" id="cM07"><label for="cM07">Correo de prueba <strong>a Gmail</strong> (no al propio dominio) → <em>Mostrar original</em> → SPF, DKIM y DMARC en <strong>PASS</strong></label></li>
+      <li><input type="checkbox" id="cM08"><label for="cM08">«Olvidé mi contraseña» probado de punta a punta</label></li>
+    </ul>
+
+    <h3>Y lo que sigue quedando fuera, por orden</h3>
+    <div class="tabla"><table>
+      <thead><tr><th class="num">#</th><th>Qué falta</th><th>De quién depende</th><th>Estado del mecanismo</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td><strong>Correo del dominio</strong></td><td>Proveedor + cliente</td><td>Todo lo de arriba. Hasta que esté, nadie recupera su contraseña</td></tr>
+        <tr><td class="num">2</td><td><strong>Fotos de producto</strong>: 13 de 2.929</td><td>Cliente</td><td>Nada que programar: la tarjeta cambia sola por producto, y <strong>ya está pasando</strong></td></tr>
+        <tr><td class="num">3</td><td><strong>Precios reales</strong></td><td>Cliente</td><td><code>06-cargar-precios-reales.sql</code> listo y probado. <strong>Preguntar antes si sus precios llevan IVA</strong></td></tr>
+        <tr><td class="num">4</td><td>Etiqueta «Nuevo» en los 70 productos de la portada</td><td>Decisión</td><td>Acotarla a N días o quitarla: hoy no informa de nada</td></tr>
+        <tr><td class="num">5</td><td>Entradas de blog</td><td>Cliente</td><td>La sección se oculta sola mientras no haya ninguna</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="paso" id="ficheros">
+  <div class="paso__cab">
+    <div class="paso__n">≡</div>
+    <div class="paso__t">
+      <h2>Qué es cada fichero del paquete</h2>
+      <p>Para no volver a dudar mirando la carpeta</p>
+    </div>
+  </div>
+  <div class="paso__cuerpo">
+    <div class="tabla"><table>
+      <thead><tr><th>Fichero</th><th>Esta noche</th><th>Qué hace</th></tr></thead>
+      <tbody>
+        <tr><td><code>23-PASO-A-PASO-20260809.md</code></td><td><strong>Es la fuente de este HTML</strong></td><td>El operativo vigente, medido contra producción</td></tr>
+        <tr><td><code>14a-caches-off-al-empezar.sql</code></td><td><strong>Sí</strong> — paso 2</td><td>Apaga la caché de Smarty y cierra la tienda</td></tr>
+        <tr><td><code>16-mejoras-cliente-20260808.sql</code></td><td><strong>Sí</strong> — paso 4</td><td>Quita Proto, Irwin y Grainger del menú</td></tr>
+        <tr><td><code>22-hero-imagen-demo.sql</code></td><td><strong>Sí</strong> — paso 5</td><td>Solo informa del estado del carrusel</td></tr>
+        <tr><td><code>25-SIN-TERMINAL.sql</code></td><td><strong>Sí</strong> — paso 6</td><td>Las páginas 4 y 7 + el hook del slideshow, sin PHP. <strong>Es el que hay que usar</strong></td></tr>
+        <tr><td><code>17-…php</code> · <code>15-…php</code></td><td>Solo con Terminal</td><td>Lo mismo que el 25, pero por línea de comandos</td></tr>
+        <tr><td><code>14b-caches-on-al-terminar.sql</code></td><td><strong>Sí</strong> — paso 10</td><td>Cachés a valores de producción</td></tr>
+        <tr><td><code>14c-abrir-la-tienda.sql</code></td><td><strong>Sí</strong> — paso 10, al final</td><td>Una línea: abre la tienda</td></tr>
+        <tr><td><code>20-CORREO-DEL-DOMINIO.md</code> · <code>21-…sql</code></td><td>Mañana</td><td>Cuentas, DNS y SMTP</td></tr>
+        <tr><td><code>06-cargar-precios-reales.sql</code></td><td>No</td><td>Cuando lleguen los precios. Preguntar antes lo del IVA</td></tr>
+        <tr><td><code>07-transportistas-colombia.sql</code></td><td>No</td><td>En pausa: sin carrito no hacen falta</td></tr>
+        <tr><td><code>02-ajustes-tras-importar.sql</code></td><td>No</td><td>Solo va detrás de importar un volcado</td></tr>
+        <tr><td><code>02b</code> · <code>02c</code></td><td><strong>⛔ Nunca en producción</strong></td><td>Preparan un volcado limpio; borran datos reales</td></tr>
+        <tr><td><code>00</code>, <code>05</code>, <code>19</code>, <code>EMPEZAR-AQUI</code></td><td>Lectura</td><td>Comprobaciones previas, credenciales, plan desde cero, contexto</td></tr>
+        <tr><td><code>historico/</code></td><td>No</td><td>Planes de rondas anteriores. El 18 lo sustituye el 23</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<footer class="pie">
+  <p><strong>Este documento</strong> se genera de <code>deploy/paquete/23-PASO-A-PASO-20260809.md</code>
+  con el estado de producción medido el 09/08 y la auditoría del 10/08. Los recuentos de los zips
+  (475 · 18 · 60 entradas, 0 con barra invertida, 0 con BOM) están comprobados sobre los ficheros del
+  paquete de hoy, no copiados del plan.</p>
+  <p style="margin-bottom:0">El progreso de las casillas se guarda en este navegador. «Reiniciar»
+  las vacía todas.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+(function () {
+  var CLAVE = 'itc-runbook-20260810';
+  var cajas = Array.prototype.slice.call(document.querySelectorAll('ul.lista input[type=checkbox]'));
+  var riel = document.getElementById('riel');
+  var hechos = document.getElementById('hechos');
+  var total = document.getElementById('total');
+  var estado = document.getElementById('estado');
+  var indice = document.getElementById('ix');
+
+  total.textContent = cajas.length;
+
+  /* Índice lateral a partir de los propios pasos */
+  Array.prototype.forEach.call(document.querySelectorAll('section.paso[data-ix]'), function (sec) {
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + sec.id;
+    a.dataset.para = sec.id;
+    a.innerHTML = '<span class="ix-n">' + sec.querySelector('.paso__n').textContent + '</span>' +
+                  '<span>' + sec.dataset.ix + '</span>';
+    li.appendChild(a);
+    indice.appendChild(li);
+  });
+
+  function guardar() {
+    var estados = {};
+    cajas.forEach(function (c) { if (c.checked) { estados[c.id] = 1; } });
+    try { localStorage.setItem(CLAVE, JSON.stringify(estados)); } catch (e) {}
+  }
+
+  function pintar() {
+    var n = cajas.filter(function (c) { return c.checked; }).length;
+    hechos.textContent = n;
+    riel.style.width = (cajas.length ? (n / cajas.length) * 100 : 0) + '%';
+
+    var abre = document.querySelector('[data-abre]');
+    var abierta = abre && abre.checked;
+    estado.textContent = abierta ? 'Tienda abierta' : 'Tienda cerrada';
+    estado.classList.toggle('abierta', !!abierta);
+
+    Array.prototype.forEach.call(document.querySelectorAll('section.paso'), function (sec) {
+      var propias = sec.querySelectorAll('ul.lista input[type=checkbox]');
+      if (!propias.length) { return; }
+      var todas = Array.prototype.every.call(propias, function (c) { return c.checked; });
+      sec.classList.toggle('hecho', todas);
+      var enlace = indice.querySelector('[data-para="' + sec.id + '"]');
+      if (enlace) { enlace.classList.toggle('ok', todas); }
+    });
+  }
+
+  try {
+    var previo = JSON.parse(localStorage.getItem(CLAVE) || '{}');
+    cajas.forEach(function (c) { if (previo[c.id]) { c.checked = true; } });
+  } catch (e) {}
+
+  cajas.forEach(function (c) {
+    c.addEventListener('change', function () { guardar(); pintar(); });
+  });
+
+  document.getElementById('reiniciar').addEventListener('click', function () {
+    if (!window.confirm('¿Vaciar todas las casillas de este runbook?')) { return; }
+    cajas.forEach(function (c) { c.checked = false; });
+    guardar(); pintar();
+  });
+
+  /* Copiar bloques de código */
+  Array.prototype.forEach.call(document.querySelectorAll('.copiar'), function (btn) {
+    btn.addEventListener('click', function () {
+      var pre = btn.closest('.cod').querySelector('pre');
+      var texto = pre.innerText;
+      var fin = function () {
+        btn.textContent = 'Copiado';
+        btn.classList.add('listo');
+        setTimeout(function () { btn.textContent = 'Copiar'; btn.classList.remove('listo'); }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(fin, function () {});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = texto; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); fin(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  pintar();
+})();
+</script>

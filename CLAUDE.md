@@ -832,6 +832,73 @@ borraron: quedan 1 cliente (el «Anonymous» del RGPD) y 0 listas.
 > se hace y la captura sale igual que sin pulsar — parece que el desplegable no funciona.
 > Usar un selector por clase, o codificar el `#` como `%23`.
 
+### Fase 3-sexies — Subida a producción por FTPS (11/08/2026)
+
+> Aplicado **directamente en producción** por FTPS explícito, con respaldo en el servidor
+> (`*.bak-20260811b`), subida atómica (`STOR` a temporal + `rename`) y marcha atrás
+> automática si la verificación fallaba. Runbook: `deploy/paquete/24-RUNBOOK-20260810.html`.
+
+- [x] ⚠️ **El 301 a un solo dominio NO basta ponerlo en el docroot.** Se aplicó en
+      `public_html/.htaccess` y la verificación dio 301 en la portada, una categoría y una
+      imagen, pero **302 relativo en `/panel-4h5o/`** — la única URL que importaba. El
+      script revirtió solo.
+      Causa: **mod_rewrite es por directorio y no hereda.** Si un `.htaccess` hijo declara
+      `RewriteEngine`, **sustituye entero** el juego de reglas del padre (salvo
+      `RewriteOptions Inherit`). `panel-4h5o/.htaccess` es el estándar de Symfony y trae su
+      `RewriteEngine On`, así que el back office seguía cargando **sin `www`** — el origen
+      exacto que bloquea el AJAX de los módulos Leo.
+      Las tres carpetas del docroot con reglas propias: `panel-4h5o` (3.623 B),
+      `admin-api` (3.807 B) y `tools` (233 B).
+      Solución: el bloque va **en los dos** ficheros, y con **`%{REQUEST_URI}`** en lugar de
+      `$1` — en contexto de subcarpeta la ruta que casa es relativa a esa carpeta.
+      Reproducido antes en un Apache de usar y tirar con el `.htaccess` real: sin la regla en
+      el hijo, 200; con ella, 301 correcto incluso con query string.
+      ⚠️ Y el guardián de idempotencia **no puede buscar `R=301`**: el `.htaccess` de Symfony
+      ya trae uno (`RewriteRule ^index\.php… [R=301,L]`). Hay que buscar la condición propia.
+- [x] **`LEOSLIDESHOW_GROUP_DE` estaba en 1, no en 4.** El grupo 1 («Slide Home 1») es de la
+      demo y no se renderiza en ninguna página: el cliente **guardaba bien y no veía cambios**.
+      Determinado **midiendo producción**, no el espejo: pidiendo la portada con user-agent de
+      escritorio y de iPhone, el HTML devuelve `iview-group-…-3` y `iview-group-…-5`
+      respectivamente. Los grupos vivos son el **3** (escritorio) y el **5** (móvil).
+      ⚠️ El bloque B de `25-SIN-TERMINAL.sql` **no lo corrigió y no avisó**: su guardián
+      `AND value NOT IN (SELECT …)` se evalúa a `NULL` —no a verdadero— si la subconsulta no
+      devuelve filas, así que el `UPDATE` afectó a 0 filas. El `INSERT` del hook sí corrió.
+      Corregido a mano con `UPDATE … SET value = '3'`.
+- [x] **`25-SIN-TERMINAL.sql`**: los pasos que necesitaban PHP CLI (`17-contenido-cms` y
+      `15-arreglo-slideshow`) convertidos a SQL, porque el hosting no da Terminal. Probado
+      rompiendo el espejo a propósito y comprobando que el HTML queda **idéntico byte a byte**
+      (mismo MD5, 11.610 y 11.840 bytes), idempotente y con marcha atrás.
+- [x] ⚠️ **El editor de ficheros de cPanel no puede guardar el `.htaccess`**: el desafío
+      anti-bot del hosting (Imunify360, `wsidchk`) intercepta el POST del editor y la petición
+      se queda en «verificando». No es un problema de permisos ni del fichero. **Por FTP no
+      pasa por ese filtro.**
+- [x] **Hero de *Quiénes somos* y *Quiero ser cliente* a ancho completo.** El cliente los veía
+      «muy pequeños»: las dos fotos traen el **~40 % izquierdo en negro puro** —están
+      recortadas para llevar el texto encima— y estaban metidas en una columna del 58 %, así
+      que ese negro caía al lado del texto (sobre fondo también negro) y el motivo real
+      quedaba en ~465 px de 1440. Pasadas a **fondo de la banda** con velo degradado:
+
+  | | Antes | Después |
+  |---|---|---|
+  | Foto (Quiénes somos) | 775 × 338 | **1422 × 550** |
+  | Foto (Quiero ser cliente) | 775 × **245** | **1422 × 512** |
+  | Motivo visible | ~465 px (33 %) | **~853 px (60 %)** |
+  | Móvil | tira de 206 px | **296 px**, recortada a 16/10 |
+
+  Solo CSS: **no toca el HTML**, así que no hay que repetir el import de las páginas CMS.
+  `.itqs-banda` ya sangra a todo el viewport (`margin-inline: calc(50% - 50vw)`), así que la
+  figura **no** se sangra — eso era lo que en julio estiraba la banda a 920 px.
+- [ ] ⚠️ **`admin-api.zip`, 186 MB en el docroot y descargable por cualquiera** (responde
+      **206** a una petición con Range). Hay que sacarlo de `public_html`.
+- [ ] ⚠️ **`error_log` de 28,8 MB** y creciendo. Leído por la cola: **0 errores fatales**, el
+      100 % son `PHP Deprecated` de módulos escritos para PHP viejo (`psshipping/vendor/sentry`
+      827 veces en 400 KB, `Cart.php`, `Customer.php`, `leoelements`, `leopartsfilter`). Come
+      disco e inodos y entierra los errores de verdad. Se calla con
+      `error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT` en el MultiPHP INI Editor.
+- [x] **`memory_limit` ya está en 1G** (leído del `.htaccess` y del `.user.ini` de producción),
+      con `max_input_vars 10000`, `max_execution_time 300` y `upload_max_filesize 1G`. El
+      pendiente de §4 sobre fijarlo en 512 MB queda resuelto y con holgura.
+
 ### Fase 4 — Pruebas y entrega (contra 30% final)
 - [ ] Pruebas responsive (desktop / tablet / móvil).
 - [ ] Revisión de checkout y flujo de compra.
