@@ -821,6 +821,13 @@ borraron: quedan 1 cliente (el «Anonymous» del RGPD) y 0 listas.
 > rompe el AJAX de los módulos Leo **sigue viva justo donde el cliente trabaja**. Sin la
 > regla de `.htaccess` (301 en el servidor) no está cerrado. Ver
 > `deploy/paquete/23-PASO-A-PASO-20260809.md` §8.
+>
+> ✅ **CERRADO, verificado el 12/08/2026.** `https://importtoolsas.com/panel-4h5o/` devuelve
+> ahora **301 → `https://www.importtoolsas.com/panel-4h5o/`** (301 del servidor, con
+> `Location` absoluto, no el 302 relativo de PHP). O sea que el bloque del `.htaccess` está
+> puesto también en el hijo `panel-4h5o/.htaccess`, que era la parte que faltaba: mod_rewrite
+> es por directorio y no hereda. Con esto el AJAX de los módulos Leo ya no puede salir a otro
+> origen, que era la causa raíz de «no me deja editar ni subir contenido».
 
 > 🔧 **Constante de PS 9: es `_PS_PRODUCT_IMG_DIR_`, no `_PS_PROD_IMG_DIR_`.** La
 > segunda no existe y da «Undefined constant» — un fatal que en PHP CLI puede salir
@@ -956,16 +963,17 @@ borraron: quedan 1 cliente (el «Anonymous» del RGPD) y 0 listas.
       modo dev encendido sale el mensaje exacto del cliente; con el arreglo puesto, 200 en
       2,5 s **incluso con el modo dev encendido**. El script es idempotente (ejecutado dos
       veces, mismas 4 comprobaciones a 0).
-- [ ] ⚠️ **El back office está en 500 y hay que confirmar la causa en el servidor.** Medido
-      el 11/08: `/panel-4h5o/` devuelve **500 en 4 de 4 intentos, en 0,3 s y con 0 bytes de
-      cuerpo** — o sea un fatal **al arrancar**, no al renderizar (el front sigue en 200
-      porque reutiliza la cabecera cacheada). Encaja con que el kernel `dev` de Symfony no
-      pueda escribir `var/cache/dev`: esa caché crea **miles** de ficheros y el plan H2 trae
-      ~200.000 inodos, con `admin-api.zip` (186 MB) y `error_log` (28,8 MB) todavía en el
-      docroot. **No está probado**: hay que mirar el `error_log` (cPanel → Métricas →
-      Errores) y el uso de disco/inodos.
-      El primer paso es el mismo en cualquier caso: apagar el modo dev y borrar
-      `var/cache/dev`.
+- [x] ✅ **El back office ya NO está en 500** — resuelto, verificado el 12/08/2026.
+      `https://www.importtoolsas.com/panel-4h5o/` devuelve **302 → `/login?_token=`** y la
+      página de login carga con **200 y 9.943 bytes**, con su `name="email"` y
+      `name="passwd"`. Ningún desafío anti-bot de por medio.
+      La causa del 500 era la que se sospechaba: el modo de depuración encendido. Lo apagó
+      `deploy/paquete/config/defines_custom.inc.php`, que declara `_PS_MODE_DEV_ = false`
+      antes de `defines.inc.php` —donde cada constante va envuelta en `if (!defined(...))`—,
+      así que gana sin editar ningún fichero del núcleo. Con eso Symfony vuelve a `prod` y
+      `var/cache/dev` deja de usarse.
+      ⚠️ Medido el 11/08 daba 500 en 4 de 4 intentos, en 0,3 s y con 0 bytes de cuerpo: un
+      fatal **al arrancar**. Queda como referencia de la huella que deja ese fallo.
 
 > 🔧 **OPcache al probar el modo de depuración.** Tras editar `config/defines.inc.php` hay
 > que esperar `opcache.revalidate_freq` (2 s en el espejo) o reiniciar PHP, o el servidor
