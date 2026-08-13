@@ -981,8 +981,51 @@ borraron: quedan 1 cliente (el «Anonymous» del RGPD) y 0 listas.
 > devuelve **texto** por stdout (`--dump-dom` + extracción del informe) en vez de un PNG.
 > Casi todo lo de esta ronda salió de ahí; leer una captura para enterarse de un `w=0` es
 > caro y se presta a interpretar mal.
-> ⚠️ **Producción no se tocó**: no hay `.env` en este equipo, así que no hay credenciales
-> FTPS ni acceso a la base de producción. Todo se entrega como ficheros + SQL.
+> ✅ **APLICADO EN PRODUCCIÓN el 12/08/2026**, ya con credenciales: 18 ficheros por FTPS
+> (16 imágenes + `custom.css` + `custom.js`), con respaldo doble —local en
+> `backups/produccion-20260812/` y `*.bak-20260812` en el servidor—, subida atómica y
+> verificación HTTP: **18/18 con 200 y el byte exacto**. El SQL 29 lo ejecutó el cliente en
+> phpMyAdmin: 12 filas respaldadas, 10+10+10+10+2+2 afectadas, `json_roto` 0.
+> Pruebas para recorrer en incógnito: **`deploy/paquete/33-PRUEBAS-20260812.md`**.
+> Subidor: **`deploy/subir-a-produccion-ftps.py`** (sustituye a `subir-imagenes-ftps.py`).
+
+- [x] ⚠️ **`FTP_HOST` va con el nombre del SERVIDOR, no con el del dominio.** Con
+      `ftp.importtoolsas.com` el saludo TLS funciona y la verificación del certificado
+      falla: `Hostname mismatch`. En compartido, Pure-FTPd presenta el certificado **del
+      servidor** — aquí un Let's Encrypt emitido a `host303.latinoamericahosting.com`, leído
+      del propio certificado con `local-dev/leer-certificado-ftps.py`, que solo hace el
+      saludo TLS y **no envía usuario ni contraseña**.
+      Se apunta `FTP_HOST` ahí y se **mantiene la verificación completa**. El atajo —
+      desactivar `check_hostname`— deja el tráfico cifrado pero **sin autenticar**, que es
+      justo lo que el certificado existe para evitar.
+- [x] ⚠️ **Subir el fichero no basta: el CSS/JS COMBINADO no se renueva solo.** Con CCC
+      activo la portada no carga `custom.css`, carga
+      `themes/vt_autosoe_child/assets/cache/theme-<hash>.css`, y **el hash se calcula sobre
+      la LISTA de ficheros, no sobre su contenido**. Medido tras subir: los 18 ficheros
+      verificaban al byte y el combinado seguía con **0** apariciones de `data-it-hero`, el
+      `#1B3560` retirado y el radio viejo de la hamburguesa. O sea: todo subido, nada
+      visible.
+      Se resuelve vaciando esa carpeta (`--vaciar-cache` del subidor, que además respalda y
+      **restaura solo** si PrestaShop no reconstruyera). Verificado después: el combinado
+      trae `data-it-hero` y ya **no** trae `0 0 0 6px`.
+      ⚠️ Se vacían solo dos cachés **regenerables**: `assets/cache` y
+      `modules/leoelements/gencode`. **`var/cache/` no se toca por FTP**: son miles de
+      ficheros y un borrado a medias puede dejar PrestaShop sin arrancar; en esta ronda no
+      hizo falta, porque el front ya servía el contenido nuevo.
+- [x] **El CSS de Elementor se regenera solo al borrar sus filas.** El PASO 6 del SQL 29
+      hace `DELETE … WHERE name LIKE '%elementor_css%'` (5 filas), y la portada volvió a
+      servir las URLs nuevas **sin vaciar ninguna caché de ficheros**. Comprobado antes de
+      tocar `assets/cache`: `bulto`, `nikatto`, `medicion` y `corte` ya salían, y
+      `banner-med-` a 0.
+- [ ] ⚠️ **Rotar las credenciales usadas hoy.** Llegaron pegadas dentro de `.env.example`,
+      que **sí se versiona**, y además pasaron por el chat. Se movieron a `.env` (ignorado) y
+      la plantilla se dejó vacía —comprobado: 0 coincidencias en el árbol versionado y nada
+      commiteado, así que no hay historial que reescribir—. Pendiente: borrar y recrear la
+      cuenta FTP `leotheme@` y cambiar la clave de SSH.
+- [ ] **El SSH todavía no es usable desde este equipo.** La clave se generó **en el
+      servidor** (`/home/importto/.ssh/id_rsa_cckey`); la privada está allí. Para usarla hay
+      que descargarla de cPanel → *Acceso SSH → Administrar claves SSH* y guardarla **fuera
+      del repo**.
 
 - [x] ⚠️ **El anillo del hero no está roto: el grupo tiene UNA sola diapositiva.**
       El cliente reportó que el `iview-timer` rojo con play/pause y el autoavance «se dañó».
