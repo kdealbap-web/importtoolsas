@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# sync-from-wsl.sh — trae del ENTORNO DE TRABAJO (WSL) al REPO (D:) SOLO lo
+# sync-from-wsl.sh — trae del ENTORNO DE TRABAJO (WSL) al REPO SOLO lo
 # que debe quedar versionado, según las convenciones de CLAUDE.md §8.
 #
 # Se trae:
@@ -12,8 +12,12 @@
 #   - el core de PrestaShop, img/, var/, cache/
 #   - parameters.php (credenciales) ni la base de datos
 #
+# El script se auto-localiza (REPO sale de su propia ruta), así que mover el
+# repo de unidad no lo rompe. Ubicación actual: F:\Gitlab Personal\importtoolsas
+# (antes D:\Desarrollo\...), montada en WSL como /mnt/f — ver README §0.bis.
+#
 # Uso (desde WSL):
-#     bash /mnt/d/Desarrollo/Gitlab\ Personal/importtoolsas/local-dev/sync-from-wsl.sh
+#     bash /mnt/f/Gitlab\ Personal/importtoolsas/local-dev/sync-from-wsl.sh
 #     bash .../sync-from-wsl.sh --dry-run
 #
 # Después:  cd al repo y revisar con `git status` / `git diff` antes de commitear.

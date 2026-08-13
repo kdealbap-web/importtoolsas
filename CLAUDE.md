@@ -899,6 +899,228 @@ borraron: quedan 1 cliente (el «Anonymous» del RGPD) y 0 listas.
       con `max_input_vars 10000`, `max_execution_time 300` y `upload_max_filesize 1G`. El
       pendiente de §4 sobre fijarlo en 512 MB queda resuelto y con holgura.
 
+### Fase 3-septies — El icono que la tienda pedía a la LAN del autor del tema (11/08/2026)
+
+> Script: **`deploy/paquete/27-iconos-svg-remotos.sql`** (SQL, va por phpMyAdmin).
+> Reproducción y medida: **`local-dev/probar-iconos-svg.sh`**.
+> Lo destapó el cliente al entrar a gestionar un grupo de diapositivas y encender el modo
+> de depuración: la portada devolvió `Uncaught Exception: file_get_contents_curl failed to
+> download http://192.168.1.80/…/phone.svg : (error code 28) Connection timed out`.
+
+- [x] ⚠️ **El fallo no era del gestor de imágenes ni del slideshow: era la portada.** El
+      rastro sale de `displayNav2` → `get_builder_content(9,0)` → `Widget_Icon_Box->render()`
+      → `Svg_Handler::get_inline_svg()`. Los contenidos que venían con la plantilla guardan
+      sus iconos como **URL a `192.168.1.80`**, la máquina de la red local del autor del
+      tema, y el módulo los **descarga por HTTP en cada render**
+      (`svg-handler.php:166`). Desde el hosting esa IP no existe.
+      **22 widgets `icon-box` × 2 idiomas = 44 referencias** en 7 contenidos: los 4 de la
+      barra de utilidades de la cabecera (contenidos 1, 5, 9, 13 — teléfono, reloj, chat,
+      garaje) y los 2 del pie (4, 8, 12 — teléfono y correo). 5 ficheros distintos.
+- [x] ⚠️ **Por qué apareció «al activar el modo de depuración», y por qué llevaba semanas
+      ahí.** `classes/Tools.php`, en `file_get_contents_curl()`:
+      `if (false === $content && _PS_MODE_DEV_) { throw new Exception(...); }`.
+      Con el modo dev **apagado** el curl falla, devuelve `false` y **nadie lanza nada**: la
+      página se pinta con el icono vacío y el fallo es **mudo**. Con el modo dev
+      **encendido** lanza, `Hook.php:1251` lo reenvía como `CoreException` y no lo recoge
+      nadie → **500**. El modo de depuración no causó el fallo: lo **destapó**.
+- [x] ⚠️ **El coste medido, que sí era real todo este tiempo: 51,5 s la primera visita.**
+      3 s de `fopen` + 5 s de `curl` por icono, 6 iconos por página (4 cabecera + 2 pie).
+      Solo no se notaba porque el bloque de la cabecera vive en la **caché de Smarty** y el
+      hook casi nunca se ejecuta: la 2ª visita tarda 0,22 s. Pero **cada vez que se vacía la
+      caché —y Leo la vacía al guardar el slideshow o el menú— el siguiente visitante lo
+      paga entero**. Medido en el espejo: 51,5 s → **2,65 s** tras el arreglo.
+- [x] **El arreglo: vaciar `library`, no la URL.** En `Icons_Manager::render_icon()` la
+      primera línea es `if (empty($icon['library'])) return false;` → con `library` vacío no
+      llega a tocar la red. Y `$has_icon` de `icon-box.php` **no depende de `library`** sino
+      de que `selected_icon.value` no esté vacío (`"icon":` no existe en estos widgets: 0
+      apariciones), así que **se conserva el objeto `{url, id}`** y el
+      `<div class="elementor-icon-box-icon">` se sigue pintando. La URL se pasa además a
+      ruta relativa del tema hijo, para que no quede rastro de la LAN y para que, si alguien
+      volviera a poner `library:"svg"`, falle **sin** salir a la red.
+      💡 `"library":""` **no es un estado inventado**: ya existía en 80 widgets de otros
+      contenidos (3, 7, 11, 15, 16). Es el valor nativo del módulo para un icon-box sin icono.
+- [x] ⚠️ **Lo que NO se debe hacer es «arreglar la descarga».** Si se hace que el SVG se
+      resuelva (apuntándolo al propio dominio, o parcheando `svg-handler.php:131`, cuyo
+      `str_replace('child_','',_THEME_NAME_)` no casa con nuestro `vt_autosoe_child`), se
+      inlinearían los SVG de la demo **encima** de los iconos que ya pinta nuestro
+      `custom.css` → **dos iconos superpuestos**, la misma trampa que la hamburguesa doble
+      de julio. Y uno de ellos, `garage-1.svg`, es **un garaje** en la caja que hoy dice
+      *Cómo llegar*. Los iconos que se ven los pinta el CSS: `::before` sobre el texto en la
+      barra de utilidades (§16.2) y los PNG del cliente de fondo en los círculos del pie
+      (§16.3).
+- [x] **Verificado que el HTML no cambia**: portada antes y después = **476.262 bytes en
+      ambos casos**, y mismos recuentos (42 `elementor-icon-box-icon`, 7 `.elementor-icon`,
+      53 `<svg>`, 79 `elementor-9`). Las únicas líneas que difieren son el `time`/token de la
+      petición y el `uniqid` que LeoSlideshow genera en cada render.
+- [x] **Reproducido y verificado de ida y vuelta en el espejo**: con el arreglo deshecho y
+      modo dev encendido sale el mensaje exacto del cliente; con el arreglo puesto, 200 en
+      2,5 s **incluso con el modo dev encendido**. El script es idempotente (ejecutado dos
+      veces, mismas 4 comprobaciones a 0).
+- [ ] ⚠️ **El back office está en 500 y hay que confirmar la causa en el servidor.** Medido
+      el 11/08: `/panel-4h5o/` devuelve **500 en 4 de 4 intentos, en 0,3 s y con 0 bytes de
+      cuerpo** — o sea un fatal **al arrancar**, no al renderizar (el front sigue en 200
+      porque reutiliza la cabecera cacheada). Encaja con que el kernel `dev` de Symfony no
+      pueda escribir `var/cache/dev`: esa caché crea **miles** de ficheros y el plan H2 trae
+      ~200.000 inodos, con `admin-api.zip` (186 MB) y `error_log` (28,8 MB) todavía en el
+      docroot. **No está probado**: hay que mirar el `error_log` (cPanel → Métricas →
+      Errores) y el uso de disco/inodos.
+      El primer paso es el mismo en cualquier caso: apagar el modo dev y borrar
+      `var/cache/dev`.
+
+> 🔧 **OPcache al probar el modo de depuración.** Tras editar `config/defines.inc.php` hay
+> que esperar `opcache.revalidate_freq` (2 s en el espejo) o reiniciar PHP, o el servidor
+> sigue viendo el valor viejo. La primera pasada de la prueba dio 200 en vez de 500 por
+> esto, y parecía que el diagnóstico estaba mal.
+
+### Fase 3-octies — Las 16 fotos del cliente, el hero y tres arreglos de móvil (12/08/2026)
+
+> Paso a paso de subida en **`deploy/paquete/31-PASO-A-PASO-20260812.md`**.
+> Scripts: **`29-imagenes-cliente.sql`** (repunta 6 huecos) y **`30-slideshow-timer.sql`**
+> (diagnóstico del hero, solo lee).
+> Herramienta nueva: **`local-dev/medir.sh`**, que hace lo mismo que `inspeccionar.sh` pero
+> devuelve **texto** por stdout (`--dump-dom` + extracción del informe) en vez de un PNG.
+> Casi todo lo de esta ronda salió de ahí; leer una captura para enterarse de un `w=0` es
+> caro y se presta a interpretar mal.
+> ⚠️ **Producción no se tocó**: no hay `.env` en este equipo, así que no hay credenciales
+> FTPS ni acceso a la base de producción. Todo se entrega como ficheros + SQL.
+
+- [x] ⚠️ **El anillo del hero no está roto: el grupo tiene UNA sola diapositiva.**
+      El cliente reportó que el `iview-timer` rojo con play/pause y el autoavance «se dañó».
+      No lo rompió ninguno de nuestros cambios: `iview.js` **no monta** el anillo, ni el
+      autoavance, ni los puntos, ni las flechas cuando `iv.defs.total == 1`. Son tres
+      guardas del módulo original: `:127` (crea el Raphael), `:199` (lo dibuja) y `:492`
+      (`if (iv.options.autoAdvance && iv.defs.total > 1)`).
+      Probado con un **A/B en el espejo, mismo código en los dos lados**:
+      grupo con 1 activa → `.iview-timer` **0×0, 0 `<svg>`, 0 `<path>`**; grupo con 2 →
+      **44×44, 1 `<svg>`, 3 `<path>`**. Y activando la 2ª diapositiva del grupo 3 el anillo
+      volvió solo, sin tocar una línea.
+      En producción, medido pidiendo la portada el 12/08: el home sirve el grupo **6** con
+      **una** aparición de `data-leo_image`, con user-agent de escritorio **y** de iPhone.
+      👉 Lo que falta es **una segunda imagen**, y eso es del cliente. El script 30 lo
+      diagnostica contra la base que sea, sin traer ids del espejo.
+- [x] ⚠️ **`iview-timer` = 0 en el HTML no prueba nada.** Mi primera medición fue contra el
+      HTML crudo de producción y concluí que el anillo «no se renderiza». El anillo lo
+      **inyecta el JS** (`iview.js:95`), así que en el HTML del servidor nunca aparece. Lo
+      que sí era dato del HTML era el recuento de diapositivas.
+- [x] **El anillo, en el rojo de marca.** Raphael pinta el arco y el sector con **atributos
+      de presentación SVG** (`stroke` / `fill`), y una regla CSS gana a un atributo de
+      presentación: se resuelve en `custom.css` §21 sin tocar el módulo ni los parámetros
+      del grupo, y vale para cualquier grupo que cree el cliente. Los tres `<path>` salen en
+      el orden en que los crea `iview.js:194` (aro de fondo, arco, sector), comprobado
+      midiendo: `[0]` 30×30, `[1]` 15×30, `[2]` 0×0. Se pintan el 2 y el 3.
+      ⚠️ Al arco **no** se le toca el `fill`: Raphael lo deja en `none` y rellenarlo lo
+      convertiría en una tarta.
+- [x] ⚠️ **El recorte de altura del hero: la caja ahora sigue a la imagen.**
+      `iview.js` da al slider el alto **fijo** del grupo y pinta la foto con
+      `background-size:100%` (escalada al ancho, alto libre); al arrancar escala todo con
+      `transform:scale(anchoCaja/anchoSlider)`. Si la proporción de la foto coincide con la
+      del grupo no hay recorte a **ningún** ancho —medido: a 1440 px caja 1425×520, que es
+      700·(1425/1920), y la foto de 1920×700 encaja al pixel—. Si no coincide, sobra o falta
+      alto: con el grupo móvil (460×460) y una foto de 1920×700 la imagen ocupaba **137 px de
+      los 375** y quedaban **238 px vacíos**, que es la «media banda» que §20 tapaba con un
+      color.
+      Ahora `custom.js` lee la proporción **real** de la imagen y fija los dos altos (§21).
+      Medido: 390 px → caja **137** (antes 375) · 768 px → **275** · 1440 px → 520.
+      Se usa la proporción **menor** del grupo (la imagen más alta) porque el grupo tiene un
+      solo alto: así no se recorta ninguna, que es lo pedido.
+      ⚠️ **`aspect-ratio` no sirve aquí.** El primer intento fue `height:auto` +
+      `aspect-ratio` y medido **no encogía**: a 1440 salía 700 en vez de 520. El slider va
+      dentro en flujo y su alto de **maquetación** es el del grupo (el `transform` cambia lo
+      que se ve, no lo que ocupa), y para una caja con `aspect-ratio` el mínimo automático es
+      el del contenido. Hay que poner el alto **en píxeles**.
+      🔧 Y de paso: el módulo **no escucha el resize de la ventana** (`iview.js:358` engancha
+      un evento propio del contenedor que solo se dispara una vez, desde `startSlider()`),
+      así que girar el teléfono dejaba el hero con el alto del arranque. El nuestro sí.
+- [x] ⚠️ **De las tres declaraciones de §20, dos no pintaban nada.** `background-size` y
+      `background-position` estaban sobre `.iview`, y la imagen de fondo la pone
+      `iview.js:475` en **`.iviewSlider`**. Medido: `.iview` con `background-image: none` y
+      `.iviewSlider` con la URL. Solo hacía algo el color.
+- [x] **La hamburguesa ya no sale recortada.** Estaba pegada a la esquina (`top:0; right:0`)
+      con una sola esquina redondeada, para leerse como una pestaña de la barra negra.
+      Medido a 360/390/480/768/991: caja 46×40 con `x+w` **exactamente igual al
+      `scrollWidth`** en los cinco anchos, o sea dos lados y tres esquinas fuera de pantalla.
+      No lo tapaba nada ni lo cortaba ningún `overflow` (se midió `overflow:visible` y
+      `transform:none` en el botón y en su contenedor): estaba cortado **por el borde**.
+      Ahora 44×33 con `top:4px; right:8px` y `border-radius:8px`. Sigue dentro del viewport,
+      que es la condición que evita reabrir el scroll horizontal de julio (verificado:
+      `scrollWidth` 375 con `innerWidth` 390).
+- [x] **Las marcas, sin placa blanca.** Se retira `background:#fff` + `padding:10px` de
+      `.box__truck .item-image`. Era visible de verdad: la tarjeta de debajo es
+      `rgb(240,238,250)`, así que la placa se leía como un recuadro blanco alrededor de cada
+      logo. Se puede quitar sin que se vea peor porque **los cuatro logotipos traen su propio
+      fondo opaco**, comprobado descargándolos de producción y leyendo el píxel (0,0):
+      Nikato `#030405`, Dragon Tools `#FDC32D`, Proweld `#FDC32D`, Ventum `#E11F1C`. El
+      blanco era 100 % nuestro CSS.
+      🔧 Y de paso: `img/m/1.jpg` y `2.jpg` son los logotipos **de la demo de PrestaShop**
+      («STUDIO DESIGN» y «GRAPHIC CORNER»). No se muestran —el carrusel usa 3, 4, 5 y 6—,
+      pero siguen en disco.
+- [x] **Las tarjetas apiladas, con aire.** Medido a 390 px: *Compra por bulto* acababa en
+      `y=6492` y *Marca Nikato* empezaba en `y=6492`: **cero píxeles**. La separación la
+      daban los `padding` laterales de las columnas, y Elementor los anula al pasarlas a
+      `width:100%` por debajo de 767 px. Ahora 20 px.
+      ⚠️ Solo en la fila de **dos** (`7c65757`). Aplicarlo también a la de tres dejaba 40 px
+      allí frente a 20 aquí, porque esa fila ya se separaba sola; se vio midiendo las dos en
+      la misma pasada.
+
+#### Las 16 fotos: el emparejamiento, y por qué seis no se podían sobrescribir
+
+El cliente entregó 16 imágenes con el nombre de su destino. **Ninguna se colocó a ojo**: para
+cada hueco se cruzaron tres cosas independientes —el **texto** que el bloque muestra en el
+HTML de producción, la **dimensión** del fichero que había, y el **nombre** del cliente— y
+coinciden en los 16. El par (imagen, título) de las tarjetas se leyó del DOM servido:
+`…/img/it/banner-med-a.jpg" alt=""/> Herramientas de Medición`.
+
+| Hueco | Texto que muestra | Fichero |
+|---|---|---|
+| tarjeta 450×360 | Esta semana / Tornillería | `banner-a.jpg` |
+| tarjeta 450×360 | Todo para el taller | `banner-b.jpg` |
+| tarjeta 450×360 | lo más pedido / más vendidos | `banner-c.jpg` |
+| panel vertical | Líneas destacadas / Herramienta eléctrica | `banner-ancho.jpg` |
+| 6 tarjetas 800×800 | Tornillería · Manuales · Eléctricas · Automotriz · Soldadura · Seguridad | mismo nombre |
+| tarjeta 800×800 | Herramientas de Medición | **`medicion.jpg`** (nuevo) |
+| tarjeta 800×800 | Herramientas de Corte | **`corte.jpg`** (nuevo) |
+| banda del home | Mayoristas / Compra por bulto (botón *Ver tornillería*) | **`bulto.jpg`** (nuevo) |
+| banda del home | Marca propia / Marca Nikato | **`nikatto.jpg`** (nuevo) |
+| banda de categoría | Nuestro catálogo / más de 3.000 referencias | **`cat-referencias.jpg`** (nuevo) |
+| banda de categoría | Atención mayorista / precios por volumen | **`cat-volumen.jpg`** (nuevo) |
+
+- [x] ⚠️ **`banner-med-a.jpg` y `banner-med-b.jpg` los comparten TRES bloques cada uno**, con
+      significados distintos: una banda del home, una tarjeta del carrusel de categorías y
+      una banda del contenido 17 (las páginas de categoría). Contado sobre el JSON: **11 usos
+      cada uno**. Sobrescribir el fichero habría puesto la foto de «Compra por bulto» dentro
+      de la tarjeta de «Herramientas de Medición». Es la misma trampa del 03/08 con este
+      mismo fichero en el pie (40 coincidencias en 18 filas).
+      La salida: en el JSON el hueco se distingue por su **clave** —
+      `"background_overlay_image"` para la banda, `"item_image"` para la tarjeta—, así que el
+      `REPLACE` se acota por clave y, para el contenido 17, además por id. Verificado:
+      `quedan_med_a` 0, `quedan_med_b` 0, `json_roto` 0, y **idempotente** (segunda pasada,
+      mismos números).
+- [x] ⚠️ **El CSS tapaba esas cinco bandas con degradados azules, así que cambiar el fichero
+      no se habría visto.** `custom.css` §3 ponía `background-image:none` en el
+      `.elementor-background-overlay`, que es **exactamente donde Elementor guarda la foto**
+      de esas secciones, y pintaba un degradado marino en la sección. Medido antes de tocar:
+      `b9df906` servía `background-color: rgb(27,53,96)` = `#1B3560`, de esta hoja. Los
+      degradados eran relleno provisional mío de agosto («en vez de mis degradados
+      provisionales» decía el propio comentario); ya hay fotos, así que se retiran y queda
+      solo un color de respaldo.
+      🔧 Dos de los cinco selectores **nunca pintaron nada**: `dff2c7b` y `ccce7a0` viven en
+      el contenido **17**, que se renderiza como `.elementor-17`, y el selector empezaba por
+      `body .elementor-11`.
+- [x] **Sin velo añadido.** Se midió la luminancia de cada foto **en la zona donde cae el
+      texto blanco**: `bulto` 18,8 · `nikatto` 13,1 · `cat-volumen` 23,6 ·
+      `cat-referencias` 27,3 · y 6-13 en la franja del titular del panel vertical. El cliente
+      las entregó ya rebajadas para llevar texto encima; añadir velo solo las apagaría.
+      Verificado en captura: los cuatro titulares se leen.
+- [x] **El panel vertical no había que recomponerlo.** `Herramientas electricas.png` es
+      720×1045 (proporción 0,689) y el bloque mide **957×1401** (0,683): el cliente la
+      dimensionó contra el bloque real. Antes de medirlo iba a recortarla a 1600×760, que es
+      lo que decía el nombre del fichero que sustituye.
+- [x] **Los originales del cliente salen de `deploy/img/`.** Esa carpeta es exactamente lo
+      que sube al servidor y `empaquetar.py` mete todo lo que hay dentro; los 16 originales
+      y el respaldo de lo sobrescrito habrían viajado al hosting. Van a
+      `deploy/originales-cliente/20260812/` y a `backups/img-antes-20260812/`.
+      `img-importtools.zip` queda en **66 ficheros, 2,9 MB**.
+
 ### Fase 4 — Pruebas y entrega (contra 30% final)
 - [ ] Pruebas responsive (desktop / tablet / móvil).
 - [ ] Revisión de checkout y flujo de compra.
@@ -948,6 +1170,49 @@ importtools-store/
 - **No subir** `.env`, credenciales, ni la licencia del tema al repositorio.
 - Trabajar cambios de tema como **overrides / child** para no perderlos al actualizar.
 - Documentar cada módulo instalado y su configuración en `docs/`.
+
+### El repo se mudó a un disco externo (12/08/2026)
+
+`D:\Desarrollo\Gitlab Personal\importtoolsas` → **`F:\Gitlab Personal\importtoolsas`**.
+`F:` **no es un disco interno**: es un **Kingston de 931 GB con exFAT**. Los scripts de
+`local-dev/` se auto-localizan (`REPO="$(cd "$LOCAL_DEV/.." && pwd)"`), así que la mudanza
+no rompió ninguno; lo que sí cambió es el entorno alrededor:
+
+| Síntoma | Causa | Arreglo |
+|---|---|---|
+| `git` aborta con *dubious ownership* | exFAT **no registra propietario** | `git config --global --add safe.directory 'F:/Gitlab Personal/importtoolsas'` |
+| WSL no ve el repo (`/mnt/f` no existe) | WSL solo automonta las unidades **presentes al arrancar** la distro | entrada en `/etc/fstab` con **`nofail`** (respaldo en `/etc/fstab.bak-20260812`) |
+| `rsync -a` marca **todos** los ficheros como cambiados | exFAT no guarda modo ni grupo → difieren `p` y `g`, no el contenido | ninguno; es ruido. El destino es ext4 y el script reaplica permisos |
+
+Quedó un `node_modules/` huérfano en la ruta vieja de `D:`; el resto se movió entero.
+
+### ⚠️ El espejo y el repo habían divergido en las dos direcciones
+
+Al sincronizar tras la mudanza, `sync-to-wsl.sh` (que lleva **`--delete`**) iba a **borrar
+9 traducciones** que solo existían en el espejo y que nunca se habían traído con
+`sync-from-wsl.sh`: `In Stock`→**Disponible**, `Out Of Stock`→**Agotado**,
+`Register`→**Registrarse**, los tres textos del **404**, `Setting`→Opciones,
+`Last product`→Último producto y `By`→Por. Rescatadas al repo antes de empujar: los dos
+XLIFF pasan de 17 a **26 `trans-unit`**.
+
+En sentido contrario, el **espejo estaba atrasado**: seguía con el azul marino
+(`--it-navy: #1F3864`, `--itc-navy`, `#16202E`) que se retiró el 10/08, porque esa ronda
+se subió **directamente a producción por FTPS** el 11/08 y nunca se empujó al espejo.
+Confirmado midiendo producción, no suponiéndolo: `cotizacion.css` en línea pesa
+**14.443 B, exactamente igual que el repo**, y trae `--itc-boton`. **El repo es la fuente
+buena.** También había un **BOM UTF-8** de más en `plist3413072022.tpl` del espejo.
+
+> 🔧 **`rsync` falló a medias con *Permission denied* en 6 ficheros**: 511 ficheros del tema
+> en el espejo eran de `www-data` (huella de editar dentro del contenedor). Con `set -e`,
+> el script **abortó antes de reaplicar permisos**, dejando el espejo a medio sincronizar.
+> Se arregla con el mismo paso 4 del script (`chown -R $(id -un):33`, `2775`/`664`) y se
+> repite el sync. Verificado después: **0 divergencias** repo↔espejo.
+
+> 🔧 **Contar en inglés con `grep -i` infla el resultado.** Buscando textos sin traducir en
+> una ficha de producción, `Register` salía **8 veces** y parecía inglés vivo. Con mayúscula
+> exacta sale **1**, y es la clave `"register":"https://…/register"` del objeto JS de
+> PrestaShop — una URL, no texto visible. Y `In Stock`/`Out Of Stock` dan 0 porque el
+> **modo catálogo no pinta el bloque de disponibilidad**. No hay inglés visible.
 
 ---
 
@@ -1126,10 +1391,15 @@ importtools-store/
       `LeoSlideshow.php:188` lo lee bajo `isset()` con defecto `''` y
       `AdminLeoElementsCreator.php:53` lo reescribe con `getAdminLink()` al abrir el editor.
       ⚠️ Quedan **14 filas de `leoelements_contents_lang` con URLs a `192.168.1.80`** dentro
-      del JSON de Elementor (contenidos 1, 4, 5, 8, 9, 12, 13 × 2 idiomas). **No se
-      renderizan** (0 apariciones de `192.168` en el HTML de portada, catálogo, categoría,
-      marcas y *Quiénes somos*) y editar ese JSON por SQL es lo que corrompe los contenidos
-      de Leo, así que se dejan.
+      del JSON de Elementor (contenidos 1, 4, 5, 8, 9, 12, 13 × 2 idiomas).
+      > ⚠️ **CORREGIDO EL 11/08/2026 — la conclusión de arriba («no se renderizan, así que
+      > se dejan») ERA FALSA y costó un 500 en producción.** No aparecen en el HTML
+      > justamente porque **la descarga FALLA**, pero el servidor sí la intenta: son los
+      > iconos SVG de 22 widgets `icon-box` y el módulo los pide por HTTP en cada render.
+      > Coste medido: **51,5 s la primera visita con la caché vacía**, y HTTP 500 en cuanto
+      > se enciende el modo de depuración. Arreglado con
+      > `deploy/paquete/27-iconos-svg-remotos.sql` — ver Fase 3-septies.
+      > **La lección: «no sale en el HTML» no es lo mismo que «no se ejecuta».**
 - [x] **Fallo corregido antes de desplegar**: la página *Quiero ser cliente* (`id_cms 7`)
       tenía dos enlaces absolutos a `http://localhost:8080/` — el botón *Crear mi cuenta* y el
       enlace a contacto. En producción no habrían llevado a ninguna parte. Ahora son relativos

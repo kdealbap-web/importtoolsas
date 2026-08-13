@@ -729,3 +729,118 @@ document.addEventListener("keydown", function (ev) {
             || document.querySelector(".off-canvas-nav-megamenu .off-canvas-button-megamenu");
   if (cerrar) { cerrar.click(); }
 });
+
+
+/* ==========================================================================
+   Hero — la caja se adapta a la imagen, Importtools 12/08/2026
+   --------------------------------------------------------------------------
+   PROBLEMA. LeoSlideshow dimensiona el hero con el alto FIJO del grupo y pinta
+   la foto como fondo con `background-size:100%` (escalada al ancho, alto libre).
+   Si la proporcion de la foto no es la del grupo, o se recorta por abajo o sobra
+   hueco. Medido en el espejo: grupo cuadrado de 460x460 con una foto de 1920x700
+   -> la foto ocupa 137 px de los 375 y quedan 238 px vacios.
+
+   ARREGLO. Se lee la proporcion REAL de la imagen —hay que cargarla, porque en
+   el HTML solo viene la URL, en `data-leo_image`— y se recalculan los dos altos
+   que el modulo fija EN LINEA:
+     · `.iview`       -> `aspect-ratio`   (la regla esta en §21 del custom.css)
+     · `.iviewSlider` -> `ancho / proporcion`
+   Con eso la foto encaja al pixel a cualquier ancho, y suba el cliente la imagen
+   que suba. No se toca el modulo.
+
+   ⚠️ Se usa la proporcion MENOR de las diapositivas del grupo, o sea la imagen
+   mas ALTA. El grupo tiene un solo alto para todas, asi que hay que elegir: con
+   la menor no se recorta ninguna —que es exactamente lo pedido— y a lo sumo
+   sobra un poco de fondo en las mas apaisadas. Con imagenes del mismo tamaño,
+   que es lo normal, da igual cual se elija.
+
+   ⚠️ Se reaplica en `resize`. El modulo NO escucha el resize de la ventana
+   (`iview.js:358` engancha un evento propio del contenedor y solo se dispara una
+   vez, desde `startSlider()`), asi que hasta ahora girar el telefono dejaba el
+   hero con el alto del arranque. Esto tambien lo corrige.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var CAJAS = ".LeoSlideshow .iview, .ApSlideShow .iview";
+
+  /* Proporcion natural de una imagen. Se cachea para no recargarla en cada resize. */
+  var cache = {};
+  function proporcion(url, listo) {
+    if (cache[url] !== undefined) { listo(cache[url]); return; }
+    var img = new Image();
+    img.onload = function () {
+      cache[url] = (img.naturalWidth && img.naturalHeight)
+        ? img.naturalWidth / img.naturalHeight
+        : 0;
+      listo(cache[url]);
+    };
+    img.onerror = function () { cache[url] = 0; listo(0); };
+    img.src = url;
+  }
+
+  function ajustar(caja) {
+    var slides = caja.querySelectorAll(".slide_config[data-leo_image]");
+    if (!slides.length) { return; }
+
+    var urls = [], i, u;
+    for (i = 0; i < slides.length; i++) {
+      u = slides[i].getAttribute("data-leo_image");
+      if (u && urls.indexOf(u) === -1) { urls.push(u); }
+    }
+
+    var pendientes = urls.length, menor = 0;
+    urls.forEach(function (url) {
+      proporcion(url, function (ar) {
+        if (ar > 0 && (menor === 0 || ar < menor)) { menor = ar; }
+        if (--pendientes > 0) { return; }
+        if (menor <= 0) { return; }        // ninguna imagen medible: no se toca nada
+
+        var slider = caja.querySelector(".iviewSlider");
+        // Dos anchos distintos, y hay que no confundirlos:
+        //   · `slider.offsetWidth` es el ancho de MAQUETACION del slider (el del
+        //     grupo, p.ej. 1920 o 460): `offsetWidth` no se ve afectado por el
+        //     `transform:scale()` que le pone el modulo.
+        //   · `caja.clientWidth` es el ancho real en pantalla (p.ej. 1425 o 375).
+        // El slider se dimensiona con el suyo y la caja con el suyo; asi el
+        // escalado del modulo (caja/slider) los deja coincidiendo al pixel.
+        var anchoCaja = caja.clientWidth;
+        var anchoSlider = slider ? slider.offsetWidth : anchoCaja;
+        if (!anchoCaja || !anchoSlider) { return; }
+
+        caja.setAttribute("data-it-hero", "1");
+        caja.style.setProperty("--it-hero-caja", Math.round(anchoCaja / menor) + "px");
+        caja.style.setProperty("--it-hero-alto", Math.round(anchoSlider / menor) + "px");
+      });
+    });
+  }
+
+  function ajustarTodos() {
+    document.querySelectorAll(CAJAS).forEach(ajustar);
+  }
+
+  /* En las paginas sin carrusel no hay nada que hacer y no merece la pena dejar
+     un temporizador dando vueltas: el contenedor `.LeoSlideshow` SI viene en el
+     HTML del servidor (lo que crea el JS por dentro es `.iview`), asi que se
+     puede descartar de entrada. */
+  if (!document.querySelector(".LeoSlideshow, .ApSlideShow")) { return; }
+
+  /* El modulo monta el hero en `document.ready` y ademas espera a que precarguen
+     las imagenes, asi que `.iviewSlider` puede no existir todavia cuando esto
+     corre. Se comprueba unas cuantas veces y se para en cuanto aparece: mas
+     barato y mas facil de seguir que un MutationObserver sobre el documento. */
+  var intentos = 0;
+  var reloj = setInterval(function () {
+    intentos++;
+    if (document.querySelector(".iviewSlider") || intentos > 40) {   // hasta 10 s
+      clearInterval(reloj);
+      ajustarTodos();
+    }
+  }, 250);
+
+  var esperando;
+  window.addEventListener("resize", function () {
+    clearTimeout(esperando);
+    esperando = setTimeout(ajustarTodos, 150);
+  });
+})();

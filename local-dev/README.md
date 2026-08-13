@@ -22,7 +22,7 @@ Comprobación rápida: `wsl -l -v` debe listar `Ubuntu-24.04` y `docker-desktop`
 
 ## 0.bis Dónde se trabaja (importante)
 
-El repo git vive en `D:\Desarrollo\Gitlab Personal\importtoolsas` y es la **fuente de
+El repo git vive en `F:\Gitlab Personal\importtoolsas` y es la **fuente de
 verdad** de lo versionado. Pero el entorno que Docker sirve vive en el **filesystem nativo
 de WSL**:
 
@@ -30,18 +30,52 @@ de WSL**:
 ~/importtools/           →  \\wsl$\Ubuntu-24.04\home\kevin\importtools
 ```
 
-Motivo: `prestashop/` son ~41.000 archivos. Montado desde `/mnt/d` (9p) el back office
+Motivo: `prestashop/` son ~41.000 archivos. Montado desde `/mnt/…` (9p) el back office
 tarda decenas de segundos por página; en ext4 va ~10–20× más rápido. Además, el `umask=22`
 del automount de `/mnt` impide que `www-data` escriba en `var/cache/` e `img/`.
 
 **Todos los comandos `docker compose` se corren desde `~/importtools` dentro de WSL.**
 
+> ⚠️ **El repo se movió de `D:\Desarrollo\…` a `F:\…` el 12/08/2026, y `F:` no es un disco
+> interno: es un **Kingston externo con exFAT**. Tres consecuencias, las tres reales:
+>
+> 1. **WSL no lo automonta.** WSL solo automonta las unidades presentes al arrancar la
+>    distro, así que si el disco se conecta después no hay `/mnt/f` y los scripts de sync
+>    no se pueden ni invocar. Montaje manual:
+>    ```bash
+>    sudo mkdir -p /mnt/f
+>    sudo mount -t drvfs F: /mnt/f -o metadata,uid=1000,gid=1000,umask=22,fmask=111
+>    ```
+>    Está puesto en `/etc/fstab` con `nofail` para que se monte solo y para que WSL
+>    arranque igual si el disco no está conectado.
+> 2. **exFAT no guarda propietario ni permisos.** Por eso git aborta con *dubious
+>    ownership* hasta declarar `git config --global --add safe.directory 'F:/Gitlab
+>    Personal/importtoolsas'`, y por eso `rsync -a` marca **todos** los ficheros como
+>    cambiados en cada pasada (difieren en modo y grupo, no en contenido). Es ruido, no
+>    daño: el destino es ext4 y el script reaplica permisos al final.
+> 3. **Si el disco no está conectado, no hay repo.** Conviene que `origin` esté al día.
+>
+> Los dos scripts de sync **se auto-localizan** (`REPO` sale de su propia ruta), así que
+> mover el repo otra vez no los rompe: basta actualizar este apartado.
+
 Sincronización entre repo y entorno (ambos aceptan `--dry-run`):
 
 ```bash
-bash /mnt/d/Desarrollo/Gitlab\ Personal/importtoolsas/local-dev/sync-to-wsl.sh    # repo -> WSL
-bash /mnt/d/Desarrollo/Gitlab\ Personal/importtoolsas/local-dev/sync-from-wsl.sh  # WSL -> repo
+bash /mnt/f/Gitlab\ Personal/importtoolsas/local-dev/sync-to-wsl.sh    # repo -> WSL
+bash /mnt/f/Gitlab\ Personal/importtoolsas/local-dev/sync-from-wsl.sh  # WSL -> repo
 ```
+
+> ⚠️ **`sync-to-wsl.sh` lleva `--delete`: lo que esté solo en el espejo se borra.** El
+> 12/08/2026 el espejo tenía **9 traducciones** (`Disponible`, `Agotado`, `Registrarse`,
+> los textos del 404…) que nunca se habían traído al repo con `sync-from-wsl.sh`, y el
+> empujón las habría eliminado. Antes de empujar, comparar en contenido:
+> ```bash
+> diff -rq --strip-trailing-cr \
+>   "$REPO/theme-autosoe/vt_autosoe_child" ~/importtools/prestashop/themes/vt_autosoe_child
+> ```
+> Y si `rsync` falla con *Permission denied*, es que hay ficheros de `www-data` (huella de
+> haber editado dentro del contenedor). Se arregla con el mismo paso 4 del script:
+> `sudo chown -R "$(id -un):33" <ruta>` + `chmod 2775`/`664`.
 
 `sync-to-wsl.sh` empuja compose, Dockerfile, `config/php.ini`, el tema hijo
 `vt_autosoe_child` y los módulos de `modules-custom/`; luego reaplica permisos y vacía la

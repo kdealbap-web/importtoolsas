@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# sync-to-wsl.sh — empuja del REPO (D:) al ENTORNO DE TRABAJO (ext4 en WSL).
+# sync-to-wsl.sh — empuja del REPO al ENTORNO DE TRABAJO (ext4 en WSL).
 #
-# El repo en D: es la fuente de verdad de lo versionado (compose, Dockerfile,
+# El repo es la fuente de verdad de lo versionado (compose, Dockerfile,
 # php.ini, tema hijo, módulos propios). El entorno que Docker realmente sirve
-# vive en ~/importtools dentro de WSL, sobre ext4, porque /mnt/d vía 9p hace
+# vive en ~/importtools dentro de WSL, sobre ext4, porque el repo vía 9p hace
 # que el back office de PrestaShop tarde decenas de segundos por página.
 #
+# El script se auto-localiza (REPO sale de su propia ruta), así que mover el
+# repo de unidad no lo rompe. Ubicación actual: F:\Gitlab Personal\importtoolsas
+# (antes D:\Desarrollo\...), montada en WSL como /mnt/f — ver README §0.bis.
+#
 # Uso (desde WSL):
-#     bash /mnt/d/Desarrollo/Gitlab\ Personal/importtoolsas/local-dev/sync-to-wsl.sh
+#     bash /mnt/f/Gitlab\ Personal/importtoolsas/local-dev/sync-to-wsl.sh
 #     bash .../sync-to-wsl.sh --dry-run      # solo mostrar qué cambiaría
 #
 # NO toca la base de datos ni prestashop/var/cache.

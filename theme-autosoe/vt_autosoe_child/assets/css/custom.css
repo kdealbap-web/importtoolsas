@@ -143,12 +143,24 @@ footer img[src*="logo-importtools-white"] {
      proposito: `.elementor-section{position:relative}`, asi que TODAS las
      secciones de Elementor son contexto de posicionamiento y un absolute
      quedaria anclado a la seccion del megamenu, no a la del logo.
-     Se funde con la barra superior negra (que mide 40 px): al estar arriba del
-     todo se lee como una pestaña de la propia barra, no como un boton flotante. */
+
+     ⚠️ CORREGIDO EL 12/08/2026 — el boton se veia RECORTADO.
+     Estaba pegado a la esquina con `top:0; right:0` y solo una esquina
+     redondeada (`border-radius:0 0 0 6px`), para que se leyera como una pestaña
+     de la barra negra. Medido a 360/390/480/768/991 px: la caja es 46x40 y su
+     borde derecho cae EXACTAMENTE en el borde del documento (x+w = 345, 375,
+     465, 753, 976 = scrollWidth en cada ancho). O sea que dos de sus cuatro
+     lados y tres de sus cuatro esquinas quedan fuera de la pantalla: no es que
+     algo lo tape ni que un `overflow` lo corte —se midio `overflow:visible` y
+     `transform:none` en el boton y en su contenedor—, es que ESTA cortado por el
+     borde, por diseño. De ahi que el cliente vea «el recorte» y no «las curvitas».
+     Ahora el boton se separa del borde y se redondea entero, asi se ve su
+     silueta completa. Sigue dentro del viewport (right:8px, nunca negativo), que
+     es la condicion que evita reabrir el scroll horizontal de julio. */
   .ApMegamenu .navbar-header {
     position: fixed;
-    top: 0;
-    right: 0;
+    top: 4px;
+    right: 8px;
     z-index: 1040;
     margin: 0;
     padding: 0;
@@ -157,14 +169,14 @@ footer img[src*="logo-importtools-white"] {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 46px;               /* 44 px es el minimo comodo para el pulgar */
-    height: 40px;              /* el alto exacto de la barra superior */
+    width: 44px;               /* 44 px es el minimo comodo para el pulgar */
+    height: 33px;              /* 4 + 33 = 37, cabe en la barra negra de 41 px */
     border: 0;
-    border-radius: 0 0 0 6px;
+    border-radius: 8px;        /* las cuatro esquinas, y todas a la vista */
     background: #E2211C;
     color: #fff;
     line-height: 1;
-    box-shadow: -2px 2px 10px -3px rgba(0,0,0,.45);
+    box-shadow: 0 2px 8px -2px rgba(0,0,0,.55);
   }
   /* ⚠️ El tema apaga el caracter ☰ que trae el HTML con `font-size:0` y dibuja
      su propia hamburguesa con `::before{content:"\f0c9"}`. La regla de julio le
@@ -282,38 +294,35 @@ body .elementor-11 .full__height > .elementor-column-wrap > .elementor-widget-wr
    empiezan en 895 y queda el hueco de 90 px que ya pedia el propio diseno. */
 body .elementor-11 .elementor-element.elementor-element-c7864ac { margin-top: 0; }
 
-/* --- 3. Fondos de marca en vez de mis degradados provisionales ------------- */
-/* Banda ancha (categorias destacadas). Azul de marca con barrido rojo en
-   diagonal: el acento de AutoSoe, sin la trama de rayas. */
-body .elementor-11 .elementor-element.elementor-element-17dbbfb > .elementor-background-overlay,
-body .elementor-11 .elementor-element.elementor-element-dff2c7b > .elementor-background-overlay,
-body .elementor-11 .elementor-element.elementor-element-ccce7a0 > .elementor-background-overlay,
-body .elementor-11 .elementor-element.elementor-element-b9df906 > .elementor-background-overlay,
-body .elementor-11 .elementor-element.elementor-element-0712bb7 > .elementor-background-overlay {
-  background-image: none;
-  /* velo oscuro: garantiza el contraste del texto blanco sea cual sea el fondo */
-  background-color: rgba(11, 22, 44, .55);
-  opacity: 1;
-}
-body .elementor-11 .elementor-element.elementor-element-17dbbfb {
-  background-image:
-    linear-gradient(118deg, rgba(226,33,28,.30) 0%, rgba(226,33,28,0) 46%),
-    linear-gradient(180deg, #22406F 0%, #172E52 55%, #101F3A 100%);
-  background-color: #172E52;
-}
-body .elementor-11 .elementor-element.elementor-element-dff2c7b,
-body .elementor-11 .elementor-element.elementor-element-b9df906 {
-  background-image:
-    linear-gradient(122deg, rgba(226,33,28,.26) 0%, rgba(226,33,28,0) 52%),
-    linear-gradient(180deg, #22406F 0%, #162B4E 100%);
-  background-color: #1B3560;
-}
-body .elementor-11 .elementor-element.elementor-element-ccce7a0,
+/* --- 3. Las fotos del cliente, en vez de mis degradados provisionales ------
+   ⚠️ REESCRITO EL 12/08/2026. Aqui habia degradados azul marino que yo puse en
+   agosto como relleno mientras no hubiera fotos («en vez de mis degradados
+   provisionales» decia el comentario). Ya hay fotos: el cliente entrego 16, y
+   cinco de ellas son justo para estas bandas. Los degradados sobran, y no eran
+   inofensivos: la regla ponia `background-image:none` en el
+   `.elementor-background-overlay`, que es EXACTAMENTE donde Elementor guarda la
+   foto de estas secciones. O sea que aunque se cambiara el fichero o el JSON, la
+   foto no se habria visto. Medido antes de tocar: `b9df906` servia
+   `background-color: rgb(27,53,96)` = #1B3560, el degradado de esta hoja.
+
+   Tampoco hace falta velo. Se midio la luminancia de cada foto en la zona donde
+   cae el texto blanco: `bulto` 18,8 · `nikatto` 13,1 · `cat-volumen` 23,6 ·
+   `cat-referencias` 27,3 · y el panel vertical de herramienta electrica 6-13 en
+   la franja del titular (la foto viene oscura arriba a proposito). El cliente
+   las entrego ya rebajadas para llevar texto encima; añadir velo solo las
+   apagaria.
+
+   🔧 Y de paso: dos de los cinco selectores NUNCA pintaron nada. `dff2c7b` y
+   `ccce7a0` viven en el contenido 17 (la banda de las paginas de categoria), que
+   se renderiza como `.elementor-17`, asi que `body .elementor-11 …-dff2c7b` no
+   casaba con ningun elemento. Se quedan fuera; su foto la cambia el SQL.
+
+   Lo que si se conserva es el color de respaldo, para que si una foto tarda o
+   falla la banda no se quede en blanco con texto blanco encima. */
+body .elementor-11 .elementor-element.elementor-element-17dbbfb,
+body .elementor-11 .elementor-element.elementor-element-b9df906,
 body .elementor-11 .elementor-element.elementor-element-0712bb7 {
-  background-image:
-    linear-gradient(238deg, rgba(226,33,28,.34) 0%, rgba(226,33,28,0) 55%),
-    linear-gradient(180deg, #1E3A66 0%, #13253F 100%);
-  background-color: #17304F;
+  background-color: #0F1113;
 }
 
 /* Contraste: el texto sobre banda va en blanco de verdad, y los titulares
@@ -1161,22 +1170,37 @@ body .header__contacto a i { color: var(--theme-color-default); }
   body .box__truck .slick-cloned { display: none; }
 }
 
-/* Los logotipos del cliente son rectangulos opacos de proporciones distintas
-   (Nikato apaisado sobre negro, Dragon Tools casi cuadrado sobre amarillo...).
+/* Los logotipos del cliente son rectangulos opacos de proporciones distintas.
    El tema esperaba logos sueltos sobre un circulo blanco de 120 px
    (`.box__truck .item-image::before`) que aqui no se ve nunca porque el propio
    JPG lo tapa, y cada tarjeta quedaba con el logo a una altura distinta.
-   Se les da una placa blanca comun y se recorta el hueco que reservaba el circulo. */
+   Se recorta el hueco que reservaba el circulo y se les da un alto comun.
+
+   ⚠️ LA PLACA BLANCA SE RETIRA (12/08/2026, pedido del cliente).
+   Habia aqui `background:#fff; padding:10px; border-radius:6px`, y era visible:
+   medido, la tarjeta que hay debajo es `rgb(240,238,250)` —un lila muy claro—,
+   asi que la placa se leia como un recuadro blanco alrededor de cada marca
+   (`.item-image` 133x88 con el logo a 113x65 dentro).
+   Se puede retirar sin que se vea peor porque los CUATRO logotipos traen su
+   propio fondo opaco, comprobado descargandolos de produccion y midiendo el
+   pixel (0,0): Nikato `#030405`, Dragon Tools `#FDC32D`, Proweld `#FDC32D`,
+   Ventum `#E11F1C`. Ninguno es blanco, o sea que el blanco que veia el cliente
+   era 100 % esta regla y no las imagenes.
+   👉 Si algun dia se suben logos en PNG con transparencia, esto sigue valiendo:
+      el logo caera sobre el lila de la tarjeta, que es lo pedido. */
 body .box__truck .item-image::before { display: none; }
 body .box__truck .item-image {
   margin-bottom: 22px;
   display: grid;
   place-items: center;
   height: 88px;
-  padding: 10px;
-  background: #fff;
-  border-radius: 6px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
 }
+/* El redondeo pasa al propio logotipo: son rectangulos de color a sangre y sin
+   esto quedan con esquinas en pico sobre la tarjeta redondeada. */
+body .box__truck .item-image img { border-radius: 4px; }
 body .box__truck .item-image img {
   max-width: 100%;
   max-height: 100%;
@@ -1926,11 +1950,106 @@ body .popup-over.leo_block_top .popup-content p.itcuenta__nota {
    👉 Lo definitivo esta en manos del cliente, y ahora puede hacerlo: subir las
       imagenes del grupo «Slide Mobile» en formato CUADRADO (460x460) desde
       Diseño → Leo Slideshow Configuration. Mientras tanto, esto lo deja limpio.
+
+   ⚠️ REVISADO EL 12/08/2026. De las tres declaraciones que habia aqui, DOS no
+   pintaban nada: la imagen de fondo NO esta en `.iview` sino en `.iviewSlider`
+   (`iview.js:475`), asi que `background-size` y `background-position` sobre
+   `.iview` se aplicaban a un elemento sin imagen. Medido: `.iview` tiene
+   `background-image: none` y `.iviewSlider` tiene
+   `background-image: url(.../slide-1.jpg)` con `background-size: 100%`.
+   Lo unico que hacia algo era el color. Se deja el color —sigue siendo el
+   respaldo si una imagen tarda o falla— y el ajuste de verdad pasa a §21, que
+   adapta el ALTO de la caja a la imagen y con eso desaparece la banda.
    ============================================================================ */
 @media (max-width: 767px) {
-  .iview {
-    background-color: #0B0D11;
-    background-size: cover;
-    background-position: center center;
+  .iview { background-color: #0B0D11; }
+}
+
+
+/* ============================================================================
+   21) HERO — que no se recorte la altura de la imagen, y el anillo rojo
+   ----------------------------------------------------------------------------
+   COMO DIMENSIONA EL MODULO (leido en `iview.js`, no supuesto):
+     · `.iviewSlider` recibe un alto FIJO en px, el del grupo (`iview.js:23`),
+       y la foto se pinta como su fondo con `background-size:100%`
+       (`iview.js:476`), o sea escalada al ANCHO y con el alto libre.
+     · al arrancar se dispara un `resize` (`iview.js:463`) que calcula
+       `ratio = anchoDelContenedor / anchoDelSlider`, escala el slider con
+       `transform:scale(ratio)` y pone el alto de `.iview` a `alto * ratio`
+       (`iview.js:380-416`).
+   Conclusion medida en el espejo: si la proporcion de la imagen coincide con la
+   del grupo, NO hay recorte a ningun ancho (1440 px -> caja 1425x520, que es
+   700*(1425/1920)=519,5, y la foto de 1920x700 encaja al pixel). Si NO coincide,
+   sobra o falta alto: con el grupo 5 (460x460, cuadrado) y una foto apaisada de
+   1920x700 la imagen ocupa 137 px de los 375 y quedan 238 px de hueco.
+
+   Lo que hace §21: el alto lo decide LA IMAGEN, no el grupo. Los dos altos los
+   calcula `custom.js` y los pasa en variables, porque la proporcion real solo se
+   conoce cargando el fichero.
+
+   ⚠️ `height` va con `!important` porque los dos altos los escribe el modulo
+   como estilo EN LINEA (`iview.js:23` y `:416`), y contra un estilo en linea no
+   hay especificidad que valga.
+
+   ⚠️ Y va en PIXELES, no con `aspect-ratio`. El primer intento fue
+   `height:auto` + `aspect-ratio`, y medido NO encoge la caja: a 1440 px salia de
+   700 px en vez de los 520 que tocaban. La razon es que el slider va dentro, en
+   flujo, y su alto de MAQUETACION es el del grupo (700) —el `transform:scale()`
+   que le pone el modulo cambia lo que se ve, no lo que ocupa—, y para una caja
+   con `aspect-ratio` el minimo automatico es el del contenido, asi que el
+   contenido la estiraba. Con el alto en pixeles manda el alto y el contenido
+   desborda ya escalado, que es exactamente lo que hace el propio modulo. */
+.iview[data-it-hero] {
+  height: var(--it-hero-caja) !important;
+}
+.iview[data-it-hero] .iviewSlider {
+  height: var(--it-hero-alto) !important;
+  background-position: center center !important;
+}
+
+/* --- El anillo de progreso, en el rojo de marca ---------------------------
+   El anillo lo dibuja Raphael dentro de `.iview-timer` y le pone el color como
+   ATRIBUTO de presentacion SVG (`stroke`/`fill`), no como estilo en linea: una
+   regla CSS gana a un atributo de presentacion, asi que basta esto y no hay que
+   tocar el modulo ni los parametros del grupo.
+   Los tres `<path>` salen en el orden en que los crea `iview.js:194`
+     1) `timerBgPath` — el aro de fondo, `stroke: timerBg` (#000)
+     2) `timerPath`   — el arco que avanza, `stroke: timerColor` (#EEE)
+     3) `pieTimer`    — el sector relleno, `fill: timerColor`
+   Comprobado midiendo: 3 paths, el [0] de 30x30, el [1] de 15x30 y el [2] a 0x0
+   (el sector, vacio mientras el angulo es 0). Se pintan de rojo el 2 y el 3 y se
+   deja el aro de fondo oscuro, que es lo que da contraste sobre la foto.
+   ⚠️ No se toca el `fill` del arco: Raphael lo deja en `none` y rellenarlo
+   convertiria el arco en una tarta.
+   El modulo lo sirve a `opacity:.5` (parametro `timerOpacity`) y encima de una
+   foto oscura casi no se ve; se sube, y al pasar por encima va a opaco para que
+   se lea que es un boton de pausa. */
+.iview-timer { opacity: .9 !important; }
+.iview-timer:hover,
+.iview-timer:focus-visible { opacity: 1 !important; }
+.iview-timer svg path:nth-of-type(2) { stroke: var(--it-red); }
+.iview-timer svg path:nth-of-type(3) { fill: var(--it-red); }
+
+
+/* ============================================================================
+   22) HOME EN MOVIL — las tarjetas apiladas necesitan aire entre ellas
+   ----------------------------------------------------------------------------
+   Medido a 390 px: «Mayoristas / Compra por bulto» acaba en y=6730 y «Marca
+   propia / Marca Nikato» empieza en y=6730. Cero pixeles entre las dos: se leen
+   como un solo bloque partido.
+   La causa es que la separacion la daban los `padding` laterales de las columnas
+   (`0 15px 0 0` y `0 0 0 15px`), y Elementor los anula al pasar las columnas a
+   `width:100%` por debajo de 767 px. Al apilarse no queda nada vertical.
+   Se le da margen inferior a todas las columnas menos a la ultima.
+
+   ⚠️ Solo en la fila de DOS (`7c65757`). La primera version lo aplicaba tambien
+   a la fila de tres (`9867cfe`) y medido dejaba 40 px alli frente a 20 px aqui:
+   esa fila ya se separaba sola —sus columnas son mas altas que sus secciones— y
+   el margen se sumaba encima. Se comprobo midiendo las dos filas en la misma
+   pasada, no leyendo el CSS.
+   ============================================================================ */
+@media (max-width: 767px) {
+  body .elementor-element-7c65757 .elementor-column:not(:last-child) {
+    margin-bottom: 20px;
   }
 }
